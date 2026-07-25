@@ -1,0 +1,61 @@
+[gd_scene load_steps=2 format=3 uid="uid://blackjack_arcade"]
+
+[ext_resource type="Script" path="res://src/games/arcade/blackjack.gd" id="1"]
+
+[node name="BlackjackScene" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 12
+
+[node name="DealerArea" type="VBoxContainer" parent="VBox"]
+
+[node name="DealerTitle" type="Label" parent="VBox/DealerArea"]
+text = "Dealer"
+
+[node name="Hand" type="HBoxContainer" parent="VBox/DealerArea"]
+
+[node name="ValueLabel" type="Label" parent="VBox/DealerArea"]
+text = "Dealer: ?"
+
+[node name="PlayerArea" type="VBoxContainer" parent="VBox"]
+
+[node name="PlayerTitle" type="Label" parent="VBox/PlayerArea"]
+text = "Your Hand"
+
+[node name="Hand" type="HBoxContainer" parent="VBox/PlayerArea"]
+
+[node name="ValueLabel" type="Label" parent="VBox/PlayerArea"]
+text = "Value: ?"
+
+[node name="Controls" type="HBoxContainer" parent="VBox"]
+
+[node name="DealBtn" type="Button" parent="VBox/Controls"]
+size_flags_horizontal = 3
+text = "DEAL"
+
+[node name="HitBtn" type="Button" parent="VBox/Controls"]
+size_flags_horizontal = 3
+text = "HIT"
+
+[node name="StandBtn" type="Button" parent="VBox/Controls"]
+size_flags_horizontal = 3
+text = "STAND"
+
+[node name="DoubleBtn" type="Button" parent="VBox/Controls"]
+size_flags_horizontal = 3
+text = "DOUBLE"
+
+[node name="BetSpin" type="SpinBox" parent="VBox/Controls"]
+min_value = 10.0
+max_value = 10000.0
+step = 10.0
+value = 50.0
+
+[node name="ResultLabel" type="Label" parent="VBox"]
+horizontal_alignment = 1
+text = "Place a bet and deal."

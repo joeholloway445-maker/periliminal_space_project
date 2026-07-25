@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://layer_extraliminal"]
+
+[ext_resource type="Script" path="res://src/layers/extraliminal_layer.gd" id="1"]
+
+[node name="Extraliminal" type="Node3D"]
+script = ExtResource("1")

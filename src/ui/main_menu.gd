@@ -1,0 +1,173 @@
+extends Control
+# Main menu after login — shows district selector and quick access buttons.
+# No class_name: maaacks_menus_template also defines MainMenu.
+
+signal enter_district(district_id: String)
+signal open_inventory()
+signal open_companions()
+signal open_shop()
+signal open_achievements()
+signal open_settings()
+signal open_game_modes()
+
+var _player_info_label: Label
+
+const CUSTOM_LOGO_PATH := "res://assets/ui/custom_logo.png"
+const CUSTOM_BG_PATH := "res://assets/ui/custom_bg.png"
+const THEME_SONG_PATH := "res://assets/audio/theme_song.ogg"
+
+const DISTRICTS = [
+	{id="paw_vegas",     name="Paws Vegas",     icon="🎰", desc="Slots, cards, and neon lights."},
+	{id="cat_coliseum",  name="Cat Coliseum",   icon="⚔️", desc="Combat arena. Prove yourself."},
+	{id="neon_alley",    name="Neon Alley",     icon="🏁", desc="Racing district. High speed."},
+	{id="cat_forest",    name="Cat Forest",     icon="🌿", desc="Quests, companions, and mystery."},
+	{id="arcade_galaxy", name="Arcade Galaxy",  icon="👾", desc="Mini-games and fortune wheels."},
+]
+
+func _ready() -> void:
+	_build_ui()
+	_play_theme_song()
+	_refresh_player_info()
+
+func _build_ui() -> void:
+	_add_custom_background()
+
+	var root = VBoxContainer.new()
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(root)
+
+	# Header
+	var header = HBoxContainer.new()
+	root.add_child(header)
+
+	_add_logo(header)
+
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(spacer)
+
+	_player_info_label = Label.new()
+	_player_info_label.text = "Loading..."
+	header.add_child(_player_info_label)
+
+	# Quick actions row
+	var quick_row = HBoxContainer.new()
+	root.add_child(quick_row)
+
+	for action in [
+		{label="🎒 Inventory", scene="res://scenes/ui/inventory.tscn"},
+		{label="🐾 Companions", scene="res://scenes/ui/companion_viewer.tscn"},
+		{label="🛒 Shop", scene="res://scenes/ui/shop.tscn"},
+		{label="🏆 Achievements", scene="res://scenes/ui/achievements.tscn"},
+		{label="🌐 Game Modes", scene="res://scenes/ui/game_mode_store.tscn"},
+		{label="🗺️ Overworld", scene="res://scenes/layers/supraliminal.tscn"},
+		{label="🌀 Reality Layers", scene="res://scenes/layers/layer_select.tscn"},
+		{label="🌗 Ascension", scene="res://scenes/ui/ascension.tscn"},
+		{label="🔴 The PVXC", scene="res://scenes/pvxc/pvxc_gate.tscn"},
+		{label="🏟️ Arena", scene="res://scenes/ui/arena_hub.tscn"},
+		{label="⚔️ Combat", scene="res://scenes/ui/combat_ui.tscn"},
+		{label="🏁 Tournaments", scene="res://scenes/ui/tournament.tscn"},
+		{label="👑 Crown Hall", scene="res://scenes/ui/crown_hall.tscn"},
+		{label="📖 Skills", scene="res://scenes/ui/skill_tree.tscn"},
+		{label="🏦 Bank & Guild", scene="res://scenes/ui/city_services.tscn"},
+		{label="📜 Quests", scene="res://scenes/ui/quest.tscn"},
+		{label="🎁 Daily", scene="res://scenes/ui/daily_reward.tscn"},
+		{label="🎰 Gacha", scene="res://scenes/ui/gacha.tscn"},
+		{label="📊 Leaderboard", scene="res://scenes/ui/leaderboard.tscn"},
+		{label="🗳️ Wager Hall", scene="res://scenes/ui/arena_hub.tscn"},
+		{label="⚙️ Settings", scene="res://scenes/ui/settings.tscn"},
+	]:
+		var btn = Button.new()
+		btn.text = action.label
+		var scene_path: String = str(action.get("scene", ""))
+		btn.pressed.connect(func():
+			if scene_path != "" and ResourceLoader.exists(scene_path):
+				get_tree().change_scene_to_file(scene_path)
+			elif scene_path != "":
+				NotificationUI.notify_error("Scene missing: %s" % scene_path)
+		)
+		quick_row.add_child(btn)
+
+	# District grid
+	var district_title = Label.new()
+	district_title.text = "SELECT DISTRICT"
+	district_title.add_theme_font_size_override("font_size", 16)
+	root.add_child(district_title)
+
+	var grid = GridContainer.new()
+	grid.columns = 3
+	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(grid)
+
+	for district in DISTRICTS:
+		var panel = _make_district_button(district)
+		grid.add_child(panel)
+
+func _make_district_button(district: Dictionary) -> Button:
+	var btn = Button.new()
+	btn.custom_minimum_size = Vector2(200, 120)
+	btn.text = "%s\n%s\n%s" % [district.icon, district.name, district.desc]
+	btn.pressed.connect(func(): _travel_district(str(district.id)))
+	return btn
+
+func _travel_district(district_id: String) -> void:
+	enter_district.emit(district_id)
+	var path := "res://scenes/world/%s.tscn" % district_id
+	if district_id == "paw_vegas":
+		path = "res://scenes/world/paw_vegas_hub.tscn"
+	if ResourceLoader.exists(path):
+		get_tree().change_scene_to_file(path)
+	else:
+		NotificationUI.notify_error("District scene missing: %s" % district_id)
+
+func _add_custom_background() -> void:
+	if not ResourceLoader.exists(CUSTOM_BG_PATH):
+		return
+	var texture: Texture2D = ResourceLoader.load(CUSTOM_BG_PATH) as Texture2D
+	if texture == null:
+		return
+	var background := TextureRect.new()
+	background.name = "CustomBackground"
+	background.texture = texture
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
+func _add_logo(header: HBoxContainer) -> void:
+	if ResourceLoader.exists(CUSTOM_LOGO_PATH):
+		var texture: Texture2D = ResourceLoader.load(CUSTOM_LOGO_PATH) as Texture2D
+		if texture != null:
+			var logo := TextureRect.new()
+			logo.name = "CustomLogo"
+			logo.texture = texture
+			logo.custom_minimum_size = Vector2(320, 80)
+			logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			header.add_child(logo)
+			return
+
+	var logo_label := Label.new()
+	logo_label.text = "CATSINO.CASINO"
+	logo_label.add_theme_font_size_override("font_size", 28)
+	header.add_child(logo_label)
+
+func _play_theme_song() -> void:
+	if not ResourceLoader.exists(THEME_SONG_PATH):
+		return
+	var stream: AudioStream = ResourceLoader.load(THEME_SONG_PATH) as AudioStream
+	if stream == null:
+		return
+	stream.set("loop", true)
+	var player := AudioStreamPlayer.new()
+	player.name = "ThemeSongPlayer"
+	player.stream = stream
+	add_child(player)
+	player.play()
+
+func _refresh_player_info() -> void:
+	if not PlayerProfile: return
+	_player_info_label.text = "%s | Lv.%d" % [PlayerProfile.get_display_name(), PlayerProfile.level]
+	if EconomyManager:
+		_player_info_label.text += " | 🪙%d 💎%d" % [EconomyManager.get_coins(), EconomyManager.get_gems()]
