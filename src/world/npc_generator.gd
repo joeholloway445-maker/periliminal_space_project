@@ -255,7 +255,7 @@ func _get_schedule() -> Dictionary:
 		return {"name": "vendor", "hours": "8-18", "availability": 0.8}
 	return schedules[_rng.randi() % schedules.size()].duplicate()
 
-func _generate_greeting(name: String, archetype_id: String, disposition: Dictionary, layer: String) -> String:
+func _generate_greeting(_npc_name: String, archetype_id: String, disposition: Dictionary, layer: String) -> String:
 	var greetings := {
 		"barista": [
 			"What can I get you?",
@@ -299,9 +299,9 @@ func _generate_greeting(name: String, archetype_id: String, disposition: Diction
 
 	# Modify by disposition and layer
 	if disposition.greeting_shift < -0.2:
-		return "[%s seems uninterested] %s" % [name, base_greeting]
+		return "[%s seems uninterested] %s" % [_npc_name, base_greeting]
 	elif layer == "periliminal":
-		return "[%s speaks from the void] %s" % [name, base_greeting]
+		return "[%s speaks from the void] %s" % [_npc_name, base_greeting]
 	else:
 		return base_greeting
 
@@ -312,7 +312,7 @@ func _generate_greeting(name: String, archetype_id: String, disposition: Diction
 ## _ready() before any in-game NPC generation runs). archetype_id/layer
 ## are accepted for call-site compatibility and future faction/layer-
 ## aware filtering, not yet used to narrow the pool.
-func _generate_quest_ids(_archetype_id: String, _layer: String) -> Array:
+func _generate_quest_ids(_archetype_id: String, _layer_name: String) -> Array:
 	var result: Array = []
 	if _rng.randf() < 0.3:
 		var pool: Array[Dictionary] = QuestManager.all_quests()

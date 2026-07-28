@@ -1,0 +1,65 @@
+; Engine Configuration File
+; Godot version: 4.2+
+; Template: Periliminal.Space MVP
+
+[application]
+config/name="Periliminal Space"
+config/description="Observer-driven holographic reality simulation"
+run/main_scene="res://scenes/Bootstrap.tscn"
+config/features=PackedStringArray("4.2", "C#", "Mobile")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/show_image=false
+config/icon="res://assets/icon.svg"
+config/windows_native_icon="res://assets/icon.ico"
+
+[autoload]
+HOPE="*res://src/Pillars/HOPE.cs"
+DREAM="*res://src/Pillars/DREAM.cs"
+VISION="*res://src/Pillars/VISION.cs"
+APEX="*res://src/Pillars/APEX.cs"
+KNOLL="*res://src/Pillars/KNOLL.cs"
+MatrixRouter="*res://src/Core/MatrixRouter.cs"
+Telemetry="*res://src/Core/Telemetry.cs"
+RealityGenerator="*res://src/Core/RealityGenerator.cs"
+
+[display]
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=5
+
+[dotnet]
+project/assembly_name="PeriliminalSpace"
+
+[layer_names]
+3d_physics/layer_1="Player"
+3d_physics/layer_2="Environment"
+3d_physics/layer_3="NPC"
+3d_physics/layer_4="Trigger"
+
+[rendering]
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.01, 0.01, 0.02, 1)
+
+[audio]
+buses/default_bus_layout="res://assets/audio_bus_layout.tres"
+
+[network]
+limits/tcp/connect_timeout_seconds=30
+limits/tcp/max_clients=4096
+
+[periliminal]
+matrix/pillar_count=5
+matrix/nodes_per_pillar=4096
+matrix/personas_per_node=100
+matrix/total_nodes=20480
+cloud/api_endpoint="https://your-vercel-api.vercel.app"
+cloud/supabase_url="https://your-project.supabase.co"
+cloud/supabase_key="your-anon-key"
+cloud/n8n_webhook="https://your-n8n-instance/webhook/periliminal"
+telemetry/entropy_window=50
+telemetry/hmm_states=5
+reality/chunk_size=64
+reality/render_distance=4

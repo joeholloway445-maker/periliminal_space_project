@@ -11,6 +11,7 @@ signal opened(door_id: String, behind: Dictionary)
 
 @export var door_id := ""
 @export var layer := "liminal"
+@export var door_scale: float = 1.0  ## Multiplier for visual size (1.0=standard, 0.6=small, 1.5=grand)
 
 var _watch_start := -1.0
 var _bearing_accum := 0.0
@@ -34,9 +35,9 @@ func _ready() -> void:
 	_required_tier = maxi(lock_roll - 1, 0) # 0,0,1,2,3
 	_panel = MeshInstance3D.new()
 	var box := BoxMesh.new()
-	box.size = Vector3(1.6, 3.0, 0.15)
+	box.size = Vector3(1.6 * door_scale, 3.0 * door_scale, 0.15 * door_scale)
 	_panel.mesh = box
-	_panel.position.y = 1.5
+	_panel.position.y = 1.5 * door_scale
 	var panel_color := Color(0.4, 0.35, 0.3) if _required_tier == 0 else Color(0.45, 0.3, 0.5)
 	_panel.material_override = IdentityLens.world_material(panel_color, 0.4)
 	if _required_tier > 0:
@@ -44,7 +45,7 @@ func _ready() -> void:
 	add_child(_panel)
 	var cs := CollisionShape3D.new()
 	var sph := SphereShape3D.new()
-	sph.radius = 6.0 # the watching ring, not the door itself
+	sph.radius = 6.0 * door_scale # the watching ring, not the door itself
 	cs.shape = sph
 	add_child(cs)
 	body_entered.connect(_on_body_entered)

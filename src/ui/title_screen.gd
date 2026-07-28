@@ -8,6 +8,10 @@ class_name TitleScreen
 ## or Continue Expedition (existing character -> straight to the
 ## Subliminal), the latter only lit up once a character actually exists.
 
+var _god_seq: String = ""
+var _god_seq_time: float = 0.0
+var _god_btn: Button = null
+
 func _ready() -> void:
 	MusicManager.play_context("theme")
 	_build_ui()
@@ -112,18 +116,41 @@ func _build_ui() -> void:
 			get_tree().change_scene_to_file("res://scenes/layers/subliminal.tscn"))
 	middle.add_child(continue_btn)
 
+	# Hidden God-mode login — type GOD on the title screen to reveal
+	_god_btn = Button.new()
+	_god_btn.text = "☠  Testing Arbiter  ☠"
+	_god_btn.custom_minimum_size = Vector2(320, 48)
+	_god_btn.modulate = Color(0.9, 0.2, 0.2, 0.85)
+	_god_btn.visible = false
+	_god_btn.tooltip_text = "Infinite money, no damage, full creative access. Saves persist — use for testing only."
+	_god_btn.pressed.connect(_start_god_mode)
+	middle.add_child(_god_btn)
+
 	# Walkable Gate-3 spine: Liminal → Metroplex → HiddenDoor → pull → blessing.
 	# Shortens the Liminal pull; does NOT add pull warnings (design invariant).
 	var proto_btn := Button.new()
-	proto_btn.text = "🧪  Play Prototype Spine"
+	proto_btn.text = "🎮  Play Offline"
 	proto_btn.custom_minimum_size = Vector2(320, 48)
-	proto_btn.tooltip_text = "Dev prototype: shortened Liminal pull + guaranteed Metroplex exit near spawn."
+	proto_btn.tooltip_text = "Offline mode: shortened Liminal pull + guaranteed Metroplex exit near spawn."
 	proto_btn.pressed.connect(_start_prototype_spine)
 	middle.add_child(proto_btn)
 
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 40)
 	root.add_child(spacer)
+
+func _start_god_mode() -> void:
+	## Hidden testing login — full God mode (infinite money, no damage).
+	LayerManager.enable_prototype_mode(true)
+	PlayerProfile.set_race("tabby")
+	PlayerProfile.set_frame("veil")
+	PlayerProfile.set_mod("catalyst")
+	PlayerProfile.set_faction("Factionless")
+	PlayerProfile.is_testing = true
+	PlayerProfile.has_expedition = true
+	PlayerProfile.save()
+	NotificationUI.notify_win("☠ Test Arbiter online. All currencies ∞. Damage OFF. Creative access ON.")
+	LayerManager.transition_to("liminal", true)
 
 func _start_prototype_spine() -> void:
 	LayerManager.enable_prototype_mode(true)
@@ -134,7 +161,7 @@ func _start_prototype_spine() -> void:
 		PlayerProfile.set_mod("catalyst")
 		PlayerProfile.set_faction("Factionless")
 		PlayerProfile.has_expedition = true
-		PlayerProfile._save()
+		PlayerProfile.save()
 	NotificationUI.notify_info("Prototype spine armed. Walk the Metroplex archway — the Between is already watching.")
 	LayerManager.transition_to("liminal", true)
 
@@ -144,6 +171,25 @@ func _toggle_omni_dex() -> void:
 	var dex := OmniDexUI.new()
 	dex.name = "OmniDex"
 	add_child(dex)
+
+func _input(event: InputEvent) -> void:
+	## Hidden sequence: type G, O, D within 3s → reveals the god-mode button.
+	if event is InputEventKey and event.pressed and not event.echo:
+		var key := OS.get_keycode_string(event.keycode).to_upper()
+		if key.length() == 1 and key >= "A" and key <= "Z":
+			_god_seq += key
+			_god_seq_time = 0.0
+			if _god_seq.length() > 3:
+				_god_seq = _god_seq.right(3)
+			if _god_seq == "GOD" and _god_btn != null:
+				_god_btn.visible = not _god_btn.visible
+				if _god_btn.visible:
+					NotificationUI.notify_info("✦ Debug terminal online. Handle with care.")
+
+func _process(delta: float) -> void:
+	_god_seq_time += delta
+	if _god_seq_time > 3.0:
+		_god_seq = ""
 
 func _show_info() -> void:
 	NotificationUI.notify_info("Periliminal.Space — a psychology XRMMORPG across six reality layers. The Catsino is one of them, not the main game. City streets: © OpenStreetMap contributors (ODbL).")

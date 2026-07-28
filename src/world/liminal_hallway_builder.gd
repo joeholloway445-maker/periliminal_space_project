@@ -73,9 +73,8 @@ static func build(
 	if not low_quality:
 		_build_ceiling_beams_merged(root, grid, maze_size, hw, wall_height, half_extent, rng)
 
-	# ---- door frames - merged mesh (skipped on low quality) ---------------
-	if not low_quality:
-		_build_door_frames_merged(root, grid, maze_size, hw, wall_height, half_extent, rng)
+	# ---- door frames (always built — doors are our signature) --------------
+	_build_door_frames_merged(root, grid, maze_size, hw, wall_height, half_extent, rng)
 
 	return root
 

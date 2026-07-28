@@ -25,3 +25,25 @@ builds/
 # Editor & tooling
 *.swp
 *.swo
+
+# Large addon binaries (exceed GitHub 100MB limit or aren't needed in source)
+addons/ziva_agent/zivacode/
+addons/ziva_agent/bin/
+addons/ziva_agent/dist/
+addons/fennara/bin/
+addons/terrain_3d/bin/
+
+# Temp files
+*.TMP
+*~
+nul
+errors*.txt
+
+# Backup files
+project.godot.bak
+
+# Build artifacts
+periliminal-space-mvp/
+
+# Temp junk
+%PROJ%

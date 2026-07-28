@@ -39,9 +39,9 @@ const PROP_POOL: Array[Dictionary] = [
 
 ## Generate a room PackedScene. seed = deterministic per-door seed.
 ## rfm = {race, frame, mod, faction, identity_seed, sensorium:{...}, sound_profile:{...}}
-static func generate(room_id: String, seed: int, rfm: Dictionary) -> PackedScene:
+static func generate(room_id: String, seed_val: int, rfm: Dictionary) -> PackedScene:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = seed_val
 
 	var room := Node3D.new()
 	room.name = "Room_%s" % room_id
@@ -223,8 +223,8 @@ static func _build_floor(
 ) -> void:
 	var w: float = dim.get("w", 8.0)
 	var d: float = dim.get("d", 8.0)
-	var floor := _make_floor(Vector3(0, 0.01, 0), Vector3(w, 0.05, d), race_id, base_color)
-	parent.add_child(floor)
+	var floor_mesh := _make_floor(Vector3(0, 0.01, 0), Vector3(w, 0.05, d), race_id, base_color)
+	parent.add_child(floor_mesh)
 	# Add a StaticBody for physics collision
 	var sb := StaticBody3D.new()
 	var cs := CollisionShape3D.new()
@@ -242,8 +242,8 @@ static func _build_ceiling(
 	var w: float = dim.get("w", 8.0)
 	var d: float = dim.get("d", 8.0)
 	var h: float = dim.get("h", 4.0)
-	var ceil := _make_ceiling(Vector3(0, h, 0), Vector3(w, 0.05, d), race_id, base_color)
-	parent.add_child(ceil)
+	var ceiling_mesh := _make_ceiling(Vector3(0, h, 0), Vector3(w, 0.05, d), race_id, base_color)
+	parent.add_child(ceiling_mesh)
 
 static func _build_lighting(parent: Node3D, sensorium: Dictionary) -> void:
 	var light := OmniLight3D.new()

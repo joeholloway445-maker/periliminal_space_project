@@ -292,7 +292,7 @@ func _build_exit_button() -> void:
 	_map_root.add_child(btn)
 
 func _build_status_bar() -> void:
-	## Top-left: player faction / level info.
+	## Top-left: player faction / level + economy.
 	var bar := Label.new()
 	bar.name = "StatusBar"
 	bar.text = "%s  •  LVL %d" % [PlayerProfile.faction, PlayerProfile.level]
@@ -302,6 +302,17 @@ func _build_status_bar() -> void:
 	bar.size = Vector2(250, 24)
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_map_root.add_child(bar)
+
+	# Economy strip beneath
+	var econ := Label.new()
+	econ.name = "EconBar"
+	econ.add_theme_font_size_override("font_size", 12)
+	econ.modulate = Color(0.6, 0.6, 0.4)
+	econ.position = Vector2(16, 74)
+	econ.size = Vector2(350, 20)
+	econ.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_update_econ_text(econ)
+	_map_root.add_child(econ)
 
 # ── Input — WASD moves the player dot on the map ──────────────────────────
 func _input(event: InputEvent) -> void:
@@ -329,6 +340,11 @@ func _input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	_animate_pulses()
 	_check_proximity()
+	_econ_tick += 1
+	if _econ_tick % 30 == 0:
+		var econ := _map_root.get_node_or_null("EconBar") as Label
+		if econ != null:
+			_update_econ_text(econ)
 
 func _update_player_dot() -> void:
 	_player_dot.position = _player_map_pos - Vector2(7, 7)
@@ -339,6 +355,7 @@ func _update_player_dot() -> void:
 			break
 
 var _pulse_time := 0.0
+var _econ_tick := 0
 var _encounter_flash: ColorRect = null
 
 func _animate_pulses() -> void:
@@ -350,6 +367,16 @@ func _animate_pulses() -> void:
 		if ring == null:
 			continue
 		ring.modulate = Color(0.8, 0.5, 1.0, pulse)
+
+func _update_econ_text(label: Label) -> void:
+	if not is_inside_tree():
+		return
+	var coins := EconomyManager.get_balance("cat_coins")
+	var frags := EconomyManager.get_balance("fragments")
+	var tokens := EconomyManager.get_balance("tokens")
+	var charges := EconomyManager.get_balance("charges")
+	var prestige := EconomyManager.get_balance("prestige")
+	label.text = "🪙%d  🧩%d  ⚔️%d  ⚡%d  🌟%d" % [coins, frags, tokens, charges, prestige]
 
 func _check_proximity() -> void:
 	## Auto-hint when player is near a landmark.
@@ -442,6 +469,9 @@ func _on_claim_landmark() -> void:
 	var ok := ExtraliminalManager.claim_landmark(_current_lid, guild)
 	if ok:
 		NotificationUI.notify_win("🏴 %s claimed for %s!" % [LANDMARK_NAMES.get(_current_lid, _current_lid), guild])
+		# Reward: prestige + tokens for the claim (territory PvP resource)
+		EconomyManager.earn_currency("prestige", 15, "extraliminal_landmark_claim")
+		EconomyManager.earn_currency("tokens", 10, "extraliminal_landmark_claim")
 		_just_won_at = ""
 	else:
 		NotificationUI.notify_error("Someone already claimed this landmark.")
@@ -717,11 +747,14 @@ func _on_encounter_won() -> void:
 		_set_status_text("✦ %s bonded with you!" % ent_name)
 		_flash_overlay(Color(0.3, 0.9, 0.3, 0.3))
 		NotificationUI.notify_win("✦ %s bonded with you!" % ent_name)
+		EconomyManager.earn_currency("prestige", ent_rarity * 3, "extraliminal_bond")
 	else:
 		_set_status_text("Bond failed — %s retreats. Try again!" % ent_name)
 		NotificationUI.notify_info("%s defeated but not yet bonded. Hope tilts fate next time." % ent_name)
 
 	EconomyManager.earn_currency("fragments", 5 + ent_rarity * 2, "extraliminal_encounter")
+	EconomyManager.earn_currency("cat_coins", 10 + ent_rarity * 5, "extraliminal_encounter")
+	EconomyManager.earn_currency("prestige", 2 + ent_rarity * 2, "extraliminal_encounter")
 
 	await get_tree().create_timer(1.5).timeout
 
@@ -737,6 +770,13 @@ func _on_encounter_lost() -> void:
 	_flash_overlay(Color(0.8, 0.05, 0.05, 0.4))
 	PlayerProfile.health = maxi(PlayerProfile.health - 15, 0)
 	NotificationUI.notify_error("The entity overwhelmed you.")
+	# Token cost to respawn at the landmark
+	var revive_cost := 5
+	if EconomyManager.get_balance("cat_coins") >= revive_cost:
+		EconomyManager.spend_currency_local("cat_coins", revive_cost, "extraliminal_revive")
+		NotificationUI.notify_info("Lost %d coins — you revive at the landscape below." % revive_cost)
+	else:
+		NotificationUI.notify_info("You have no coins to spare — return when you have some.")
 
 	await get_tree().create_timer(1.5).timeout
 	_hide_encounter_screen()

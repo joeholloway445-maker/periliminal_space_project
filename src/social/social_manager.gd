@@ -185,9 +185,9 @@ func _on_status_presence(presence) -> void:
 		online_friends.erase(leave_data.user_id)
 		emit_signal("friend_offline", leave_data.user_id)
 
-func _on_notification(notification) -> void:
-	match notification.code:
+func _on_notification(_notification) -> void:
+	match _notification.code:
 		1:  # Friend request
-			emit_signal("friend_request_received", notification.sender_id, "")
+			emit_signal("friend_request_received", _notification.sender_id, "")
 		2:  # Guild invite
-			emit_signal("invite_received", notification.subject, notification.content, notification.sender_id)
+			emit_signal("invite_received", _notification.subject, _notification.content, _notification.sender_id)

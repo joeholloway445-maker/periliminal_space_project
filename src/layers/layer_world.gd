@@ -4,6 +4,9 @@ extends Node3D
 
 @export var layer_id: String = "supraliminal"
 
+const DungeonEntrance = preload("res://src/world/dungeon_entrance.gd")
+const WorldEntity = preload("res://src/world/world_entity.gd")
+
 var _terrain: TerrainBridge
 var _sky: DayNightSky
 var _player: ThirdPersonController
@@ -254,24 +257,30 @@ func _liminal_setup_maze() -> void:
 	# Place a few Liminal doors in the maze at intersections
 	_place_maze_doors(maze_seed)
 
+	# Place rare high-stage entities in the maze (capturable, no bosses)
+	_place_maze_rare_entities(maze_seed)
+
 func _place_maze_doors(rseed: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash("maze_doors_" + str(rseed))
 	var hw: float = 4.0
 	var half := 24.0 * hw * 0.5
 	
-	# Place 4-6 doors at random corridor intersections
-	var count: int = rng.randi_range(4, 6)
+	# Place 8-14 Liminal doors — doors are our signature, varied sizes.
+	# Prestige gating is built into LiminalDoor (hash-based _required_tier).
+	var count: int = rng.randi_range(8, 14)
 	for i in count:
 		var cx: int = rng.randi_range(2, 21)  # avoid edges
 		var cz: int = rng.randi_range(2, 21)
 		var door := LiminalDoor.new()
 		door.layer = "liminal"
+		# Varied door sizes: 0.6=narrow, 1.0=standard, 1.5=grand
+		door.door_scale = [0.6, 0.8, 1.0, 1.0, 1.0, 1.2, 1.5][rng.randi() % 7]
 		door.position = Vector3(cx * hw - half + hw * 0.5, 0.5, cz * hw - half + hw * 0.5)
 		add_child(door)
 	
-	# Place 2-3 exit archways back to hub layers
-	var exit_count: int = rng.randi_range(2, 3)
+	# Place 3-5 exit archways back to hub layers
+	var exit_count: int = rng.randi_range(3, 5)
 	for i in exit_count:
 		var cx: int = rng.randi_range(1, 22)
 		var cz: int = rng.randi_range(1, 22)
@@ -280,6 +289,74 @@ func _place_maze_doors(rseed: int) -> void:
 		exit_door.target_layer = targets[rng.randi() % targets.size()]
 		exit_door.position = Vector3(cx * hw - half + hw * 0.5, 0.5, cz * hw - half + hw * 0.5)
 		add_child(exit_door)
+
+	# Place 1-2 dungeon entrances at dead-end cells
+	var dungeon_count: int = rng.randi_range(1, 2)
+	for i in range(dungeon_count):
+		var cx: int = rng.randi_range(3, 20)
+		var cz: int = rng.randi_range(3, 20)
+		var entrance := DungeonEntrance.new()
+		entrance.dungeon_id = "maze_dungeon_%d_%d" % [cx, cz]
+		entrance.position = Vector3(cx * hw - half + hw * 0.5, 0.5, cz * hw - half + hw * 0.5)
+		entrance.name = "DungeonEntrance_%d_%d" % [cx, cz]
+		add_child(entrance)
+
+func _place_maze_rare_entities(rseed: int) -> void:
+	## Spawn 1-2 rare high-stage entities in the maze. Deferred until _player exists.
+	## These are capturable — no bosses, just tough critters.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("maze_rares_" + str(rseed))
+	var hw: float = 4.0
+	var half := 24.0 * hw * 0.5
+	var count: int = rng.randi_range(1, 2)
+
+	var faction_raw := "Factionless"
+	if PlayerProfile != null:
+		faction_raw = PlayerProfile.faction
+	var faction := CompanionRegistry.normalize_faction(faction_raw)
+
+	# Queue spawn data; actual entities created deferred so _player exists.
+	var queue: Array[Dictionary] = []
+	for i in range(count):
+		var cx: int = rng.randi_range(4, 19)
+		var cz: int = rng.randi_range(4, 19)
+		var stage: int = rng.randi_range(2, 3)
+		var line := EntityDexData.random_line(faction)
+		if line.is_empty():
+			continue
+		queue.append({
+			"pos": Vector3(cx * hw - half + hw * 0.5, 0.5, cz * hw - half + hw * 0.5),
+			"line": line,
+			"stage": stage,
+		})
+
+	call_deferred("_spawn_rare_entities", queue)
+
+func _spawn_rare_entities(queue: Array[Dictionary]) -> void:
+	## Create high-stage WorldEntity nodes. _player is set by now.
+	for data in queue:
+		var ent := WorldEntity.new()
+		ent.position = data["pos"]
+		ent.name = "RareEntity_%d" % (queue.find(data))
+		add_child(ent)
+		ent.call_deferred("setup", data["line"], data["stage"], _player)
+
+		# Subtle visual cue — a faint shimmer to mark it as rare
+		var glow := MeshInstance3D.new()
+		var gmesh := CylinderMesh.new()
+		gmesh.top_radius = 1.5
+		gmesh.bottom_radius = 2.0
+		gmesh.height = 0.05
+		glow.mesh = gmesh
+		glow.position.y = 0.02
+		var gmat := StandardMaterial3D.new()
+		gmat.albedo_color = Color(0.6, 0.7, 1.0, 0.25)
+		gmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		gmat.emission_enabled = true
+		gmat.emission = Color(0.4, 0.6, 1.0)
+		gmat.emission_energy_multiplier = 0.5
+		glow.material_override = gmat
+		ent.add_child(glow)
 
 const HubRegionData = preload("res://src/data/hub_region_data.gd")
 
@@ -576,6 +653,10 @@ func _maybe_spawn_entity(coord: Vector2i) -> void:
 	_entities[ent.get_instance_id()] = ent
 
 func _on_entity_bite(ent: WorldEntity, dmg: int) -> void:
+	# God mode: immune to all damage
+	if PlayerProfile.is_god_mode():
+		SkillVFX.hit_spark(self, _player.global_position)
+		return
 	var hit := dmg
 	if _shield > 0:
 		var ab := mini(_shield, hit)

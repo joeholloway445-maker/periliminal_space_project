@@ -68,10 +68,10 @@ func _build_room() -> void:
 	# Slot markers
 	for x in range(grid.x):
 		for y in range(grid.y):
-			var slot := _make_slot(Vector2i(x, y), w, d)
+			var slot := _make_slot(Vector2i(x, y))
 			_slots[Vector2i(x, y)] = slot
 
-func _make_slot(gpos: Vector2i, w: float, d: float) -> MeshInstance3D:
+func _make_slot(gpos: Vector2i) -> MeshInstance3D:
 	var grid: Vector2i = SubliminalManager.APARTMENT_GRID
 	var mi := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
@@ -237,6 +237,64 @@ func _build_panel() -> void:
 ## From your calm room you step into any of the six realities (entry rules
 ## enforced by LayerManager; the Periliminal shows but never opens — it
 ## takes you, you don't take it). The casino is one door of six.
+func _show_saved_rooms_preview(box: VBoxContainer) -> void:
+	## Show up to 3 saved rooms + an "Open Gallery" button.
+	var rooms: Array = SubliminalManager.saved_rooms
+	if rooms.is_empty():
+		var empty := Label.new()
+		empty.text = "No saved rooms yet — save one from any door."
+		empty.modulate = Color(0.5, 0.5, 0.55)
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		box.add_child(empty)
+		return
+
+	# Show up to 3 entries
+	var count := mini(rooms.size(), 3)
+	for i in range(count):
+		var entry: Dictionary = rooms[i]
+		var rid: String = str(entry.get("room_id", ""))
+		var label: String = str(entry.get("label", "Room " + rid.left(6)))
+		var author_rfm: Dictionary = entry.get("author_rfm", {})
+		var alignment: String = str(author_rfm.get("alignment", "neutral"))
+
+		var h := HBoxContainer.new()
+		var color := Color(0.6, 0.6, 0.8)
+		match alignment:
+			"just":    color = Color(0.4, 0.7, 0.9)
+			"wild":    color = Color(0.85, 0.5, 0.3)
+			"void":    color = Color(0.6, 0.3, 0.8)
+			"current": color = Color(0.3, 0.8, 0.7)
+		var indicator := ColorRect.new()
+		indicator.color = color
+		indicator.custom_minimum_size = Vector2(8, 24)
+		h.add_child(indicator)
+
+		var name_lbl := Label.new()
+		name_lbl.text = label
+		name_lbl.custom_minimum_size = Vector2(120, 24)
+		h.add_child(name_lbl)
+
+		var enter_btn := Button.new()
+		enter_btn.text = "Enter"
+		enter_btn.pressed.connect(func(): SubliminalManager.enter_saved_room(rid))
+		h.add_child(enter_btn)
+
+		var remove_btn := Button.new()
+		remove_btn.text = "X"
+		remove_btn.modulate = Color(0.7, 0.3, 0.3)
+		remove_btn.pressed.connect(func():
+			SubliminalManager.remove_saved_room(rid)
+			NotificationUI.notify_info("Room removed from saved list."))
+		h.add_child(remove_btn)
+
+		box.add_child(h)
+
+	if rooms.size() > 3:
+		var more := Label.new()
+		more.text = "... +%d more saved rooms" % (rooms.size() - 3)
+		more.modulate = Color(0.5, 0.5, 0.6)
+		box.add_child(more)
+
 func _build_mode_selector() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
@@ -245,17 +303,53 @@ func _build_mode_selector() -> void:
 	panel.position += Vector2(-360, 0)
 	panel.custom_minimum_size = Vector2(340, 0)
 	layer.add_child(panel)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(340, 600)
+	panel.add_child(scroll)
 	var box := VBoxContainer.new()
-	panel.add_child(box)
+	scroll.add_child(box)
 
 	var title := Label.new()
-	title.text = "WHERE TO, %s?" % PlayerProfile.username.to_upper()
+	title.text = "%s's SUBLIMINAL" % PlayerProfile.username.to_upper()
 	title.add_theme_font_size_override("font_size", 18)
 	box.add_child(title)
 
+	# ── Play Mode ──────────────────────────────────────────────────────────
+	var mode_lbl := Label.new()
+	mode_lbl.text = "PLAY MODE (Superliminal rules)"
+	mode_lbl.modulate = Color(0.7, 0.6, 0.9)
+	box.add_child(mode_lbl)
+
+	var creative_btn := Button.new()
+	var has_creative_access := PlayerProfile.is_god_mode()
+	creative_btn.text = "🎨 Creative / God Sandbox"
+	creative_btn.tooltip_text = "Full creative access, no restrictions. Requires Creator Pack or testing mode."
+	creative_btn.disabled = not has_creative_access
+	creative_btn.pressed.connect(func(): _set_mode("creative"))
+	box.add_child(creative_btn)
+
+	var ai_aware := Button.new()
+	ai_aware.text = "🤖 AI Aware Normal"
+	ai_aware.tooltip_text = "Standard play: NPCs and systems recognize you as a player. The world knows you're here."
+	ai_aware.pressed.connect(func(): _set_mode("ai_aware"))
+	box.add_child(ai_aware)
+
+	var ai_unaware := Button.new()
+	ai_unaware.text = "👤 AI Unaware Normal"
+	ai_unaware.tooltip_text = "Hardcore: the world treats you as part of the environment. No special treatment."
+	ai_unaware.pressed.connect(func(): _set_mode("ai_unaware"))
+	box.add_child(ai_unaware)
+
+	# ── Travel ─────────────────────────────────────────────────────────────
+	box.add_child(HSeparator.new())
+	var travel_lbl := Label.new()
+	travel_lbl.text = "TRAVEL"
+	travel_lbl.modulate = Color(0.6, 0.7, 1.0)
+	box.add_child(travel_lbl)
+
 	for l in RealityLayers.LAYERS:
 		if l.id == "subliminal":
-			continue # you're standing in it
+			continue
 		var btn := Button.new()
 		btn.text = str(l.name)
 		btn.tooltip_text = str(l.desc)
@@ -263,8 +357,41 @@ func _build_mode_selector() -> void:
 		if not bool(gate.get("ok", true)):
 			btn.disabled = true
 			btn.text += "  (%s)" % str(gate.get("reason", "locked"))
-		btn.pressed.connect(func(): LayerManager.transition_to(str(l.id)))
+		btn.pressed.connect(func(lid := l.id): LayerManager.transition_to(lid))
 		box.add_child(btn)
+
+	# ── Studio Utilities ───────────────────────────────────────────────────
+	box.add_child(HSeparator.new())
+	var util_lbl := Label.new()
+	util_lbl.text = "STUDIO"
+	util_lbl.modulate = Color(0.9, 0.75, 0.6)
+	box.add_child(util_lbl)
+
+	var wardrobe := Button.new()
+	wardrobe.text = "👔 Wardrobe"
+	wardrobe.tooltip_text = "Change your look: race, frame, outfit, accessories."
+	wardrobe.pressed.connect(_open_wardrobe)
+	box.add_child(wardrobe)
+
+	var repair := Button.new()
+	repair.text = "🔧 Repair Station"
+	repair.tooltip_text = "Fix worn gear and equipment."
+	repair.pressed.connect(_open_repair_station)
+	box.add_child(repair)
+
+	var storage := Button.new()
+	storage.text = "📦 Storage Vault"
+	storage.tooltip_text = "Store gear, weapons, and entities."
+	storage.pressed.connect(_open_storage_vault)
+	box.add_child(storage)
+
+	var has_creator := has_creative_access or PlayerProfile.is_god_mode()
+	var creation := Button.new()
+	creation.text = "⚒️ Creation Station"
+	creation.tooltip_text = "Build custom content. Requires Creator Pack."
+	creation.disabled = not has_creator
+	creation.pressed.connect(_open_creation_station)
+	box.add_child(creation)
 
 	box.add_child(HSeparator.new())
 
@@ -277,8 +404,7 @@ func _build_mode_selector() -> void:
 			add_child(f))
 	box.add_child(forge)
 
-	# Tier shop: buy the space that fits — private studio up to a 300-soul
-	# public pavilion.
+	# ── Tier shop ──────────────────────────────────────────────────────────
 	box.add_child(HSeparator.new())
 	var tier_lbl := Label.new()
 	var cur: Dictionary = SubliminalManager.current_tier()
@@ -302,3 +428,33 @@ func _build_mode_selector() -> void:
 		pub.button_pressed = SubliminalManager.is_public
 		pub.toggled.connect(func(on): SubliminalManager.set_public(on))
 		box.add_child(pub)
+
+	# ── Saved room gallery ──────────────────────────────────────────────────
+	box.add_child(HSeparator.new())
+	var saved_label := Label.new()
+	saved_label.text = "Saved Rooms (%d)" % SubliminalManager.saved_rooms.size()
+	saved_label.modulate = Color(0.75, 0.6, 0.9)
+	box.add_child(saved_label)
+	_show_saved_rooms_preview(box)
+
+func _set_mode(mode: String) -> void:
+	## Set the current play mode for Superliminal rules.
+	PlayerProfile.set_meta("play_mode", mode)
+	NotificationUI.notify_info("Play mode set: " + mode.replace("_", " ").capitalize())
+	PlayerProfile.profile_updated.emit()
+
+func _open_wardrobe() -> void:
+	## Open the wardrobe UI — change look, race, frame, outfit.
+	NotificationUI.notify_info("Wardrobe — customize your look. (Full UI coming soon.)")
+
+func _open_repair_station() -> void:
+	## Open repair station for worn gear.
+	NotificationUI.notify_info("Repair Station — fix your gear. (Full UI coming soon.)")
+
+func _open_storage_vault() -> void:
+	## Open storage vault — gear, weapons, entities.
+	NotificationUI.notify_info("Storage Vault — store your gear and entities. (Full UI coming soon.)")
+
+func _open_creation_station() -> void:
+	## Open creation station for custom content (Creator Pack required).
+	NotificationUI.notify_info("Creation Station — build custom content. (Full UI coming soon.)")

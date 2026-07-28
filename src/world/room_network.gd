@@ -29,10 +29,10 @@ func get_or_create(door_pos: Vector3, door_id: String, opener_rfm: Dictionary) -
 		return _door_map[door_id]
 
 	var room_id: String = _generate_room_id(door_id)
-	var seed: int = hash(door_id + str(opener_rfm.get("identity_seed", 0)))
+	var rng_seed: int = hash(door_id + str(opener_rfm.get("identity_seed", 0)))
 
 	var room_data: Dictionary = {
-		"seed": seed,
+		"seed": rng_seed,
 		"pos": [door_pos.x, door_pos.z],
 		"exits": [],
 		"author_rfm": {

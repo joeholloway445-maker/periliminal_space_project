@@ -1,0 +1,4 @@
+DREAM=*res://src/core/dream_engine.gd
+VISION=*res://src/core/vision_observer.gd
+APEX=*res://src/core/apex_orchestrator.gd
+KNOLL=*res://src/core/knoll_boundary.gd

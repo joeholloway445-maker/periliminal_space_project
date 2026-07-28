@@ -50,8 +50,8 @@ static func build_starting_stats(race_id: String, faction: String, frame_id: Str
 		base = FrameModData.apply_mod_stats(mod_id, base)
 	return base
 
-static func validate_name(name: String) -> bool:
-	var trimmed := name.strip_edges()
+static func validate_name(player_name: String) -> bool:
+	var trimmed := player_name.strip_edges()
 	if trimmed.length() < 2 or trimmed.length() > 20:
 		return false
 	# Allow spaces between words; reject control / punctuation noise.
@@ -81,7 +81,7 @@ static func build_loadout(race_id: String, frame_id: String, mod_id: String = ""
 		"mod": FrameModData.get_mod(mod_id) if not mod_id.is_empty() else {},
 	}
 
-static func apply_creation(race_id: String, faction: String, frame_id: String, name: String) -> void:
+static func apply_creation(race_id: String, faction: String, frame_id: String, player_name: String) -> void:
 	var profile := AutoloadGate.get_node("PlayerProfile")
 	if profile == null:
 		push_error("CharacterCreatorLogic: PlayerProfile unavailable")
@@ -89,7 +89,7 @@ static func apply_creation(race_id: String, faction: String, frame_id: String, n
 	profile.call("set_faction", faction)
 	profile.call("set_race", race_id)
 	profile.call("set_frame", frame_id)
-	profile.set("username", name.strip_edges())
+	profile.set("username", player_name.strip_edges())
 	var companions := get_starter_companions(faction)
 	var active: Array = profile.get("active_companion_ids")
 	if active == null:

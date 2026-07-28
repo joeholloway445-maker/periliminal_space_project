@@ -19,7 +19,7 @@ config/description="Cat-themed social casino MMO"
 config/version="0.1.0"
 config/tags=PackedStringArray("mmo", "casino", "social", "cats")
 run/main_scene="res://scenes/ui/splash.tscn"
-config/features=PackedStringArray("4.6", "Forward Plus")
+config/features=PackedStringArray("4.7", "Forward Plus")
 boot_splash/bg_color=Color(0.02, 0, 0.05, 1)
 boot_splash/image="res://assets/ui/boot_splash.png"
 config/icon="res://assets/ui/icon.png"
@@ -104,6 +104,13 @@ APEX="*res://src/core/apex_orchestrator.gd"
 KNOLL="*res://src/core/knoll_boundary.gd"
 RoomNetwork="*res://src/world/room_network.gd"
 _fennara_game_capture="*res://addons/fennara/runtime/game_capture_helper.gd"
+PhantomCameraManager="*uid://duq6jhf6unyis"
+ProjectMusicController="*uid://r5t485lr3p7t"
+ProjectUISoundController="*uid://cc37235kj4384"
+Panku="*uid://cyftuo4syatlv"
+BeehaveGlobalMetrics="*uid://c3ktl6ontsdt7"
+BeehaveGlobalDebugger="*uid://bl3ma400hpvsh"
+DialogueManager="*uid://c3rodes2l3gxb"
 
 [debug]
 
@@ -123,7 +130,7 @@ project/assembly_name="Periliminal"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/beehave/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/gloot/plugin.cfg", "res://addons/maaacks_menus_template/plugin.cfg", "res://addons/panku_console/plugin.cfg", "res://addons/phantom_camera/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
 
 [input]
 
@@ -225,10 +232,18 @@ crouch={
 ]
 }
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://addons/maaacks_menus_template/base/translations/menus_translations.en.translation", "res://addons/maaacks_menus_template/base/translations/menus_translations.fr.translation")
+
+[maaacks_menus_template]
+
+disable_install_audio_busses=true
+disable_update_check=false
+disable_install_wizard=true
+
 [physics]
 
-common/physics_ticks_per_second=60
-common/physics_jitter_fix=0.5
 3d/sleep_threshold_linear=0.2
 3d/sleep_threshold_angular=0.2
 
