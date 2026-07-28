@@ -25,9 +25,6 @@ var active_companion_ids: Array[String] = []
 var titles: Array[String] = []
 var active_title: String = ""
 var playtime_seconds: float = 0.0
-## Hidden testing flag — only settable via the secret god-mode login
-## sequence on the title screen. Enables infinite currency, no damage, etc.
-var is_testing: bool = false
 ## Soft state for TitleEffects / dialogue gates (not all persisted yet).
 var _stat_modifiers: Dictionary = {}
 var _unlocked_abilities: Array[String] = []
@@ -55,7 +52,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	playtime_seconds += Time.get_unix_time_from_system() - _session_start
-	save()
+	_save()
 
 func _load() -> void:
 	if not FileAccess.file_exists(SAVE_PATH): return
@@ -66,7 +63,6 @@ func _load() -> void:
 	username = data.get("username", username)
 	level = data.get("level", 1)
 	xp = data.get("xp", 0)
-	is_testing = bool(data.get("is_testing", false))
 	faction = data.get("faction", "Factionless")
 	selected_race_id = data.get("selected_race_id", "tabby")
 	selected_frame = data.get("selected_frame", "veil")
@@ -83,7 +79,7 @@ func _load() -> void:
 		level > 1 or selected_frame != "veil" or selected_mod != "" or not active_companion_ids.is_empty()))
 	playtime_seconds = float(data.get("playtime_seconds", 0))
 
-func save() -> void:
+func _save() -> void:
 	var f = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	f.store_string(JSON.stringify({
 		"username": username,
@@ -99,7 +95,6 @@ func save() -> void:
 		"titles": titles,
 		"active_title": active_title,
 		"playtime_seconds": playtime_seconds,
-		"is_testing": is_testing,
 	}))
 	f.close()
 
@@ -111,7 +106,7 @@ func add_xp(amount: int) -> void:
 		level_up.emit(level)
 		SkillManager.grant_points(1, "level %d" % level)
 		threshold = xp_for_level(level + 1)
-	save()
+	_save()
 	profile_updated.emit()
 
 func xp_for_level(lv: int) -> int:
@@ -124,24 +119,19 @@ func xp_progress() -> float:
 	if span <= 0: return 1.0
 	return clampf(float(xp - current_thresh) / float(span), 0.0, 1.0)
 
-## Returns true if the current player has the hidden testing flag.
-## Checked by EconomyManager, damage handlers, and other systems.
-func is_god_mode() -> bool:
-	return is_testing
-
 func set_faction(new_faction: String) -> void:
 	faction = new_faction
-	save()
+	_save()
 	profile_updated.emit()
 
 func set_race(race_id: String) -> void:
 	selected_race_id = race_id
-	save()
+	_save()
 	profile_updated.emit()
 
 func set_frame(frame_id: String) -> void:
 	selected_frame = frame_id
-	save()
+	_save()
 	profile_updated.emit()
 
 ## Ascension frame: only choosable once Champion (level 50+); multiplies
@@ -151,19 +141,19 @@ func set_ascended_frame(frame_id: String) -> bool:
 		NotificationUI.notify_error("A second frame is chosen at Champion ascension (level 50).")
 		return false
 	ascended_frame = frame_id
-	save()
+	_save()
 	profile_updated.emit()
 	return true
 
 func set_mod(mod_id: String) -> void:
 	selected_mod = mod_id
-	save()
+	_save()
 	profile_updated.emit()
 
 func add_title(title: String) -> void:
 	if title not in titles:
 		titles.append(title)
-		save()
+		_save()
 		# Apply TitleEffects immediately so identity/faction/ability shifts land.
 		TitleEffects.apply_title_effects({
 			"titles": titles,
@@ -173,7 +163,7 @@ func add_title(title: String) -> void:
 
 func set_active_title(title: String) -> void:
 	active_title = title
-	save()
+	_save()
 	TitleEffects.apply_title_effects({
 		"titles": titles,
 		"active_title": active_title,
@@ -182,7 +172,7 @@ func set_active_title(title: String) -> void:
 
 func set_active_companions(ids: Array[String]) -> void:
 	active_companion_ids = ids
-	save()
+	_save()
 	profile_updated.emit()
 
 func add_stat_modifier(stat: String, amount: float) -> void:

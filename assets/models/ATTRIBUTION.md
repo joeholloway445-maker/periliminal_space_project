@@ -44,13 +44,19 @@
 | `godot/src/vehicles/land_vehicle.gd` | Steering/throttle model adapted from the official [godotengine/godot-demo-projects](https://github.com/godotengine/godot-demo-projects) `3d/truck_town` sample's `vehicles/vehicle.gd` (whole-repo MIT, no split code/asset license unlike tps-demo) — rewritten for our input map, procedural placeholder body/wheels, and VehicleSeat enter/exit instead of their multi-vehicle trailer/tow-truck rig | MIT (code) |
 | `godot/src/vehicles/water_vehicle.gd`, `air_vehicle.gd`, `space_vehicle.gd` | Original — no equivalent official Godot demo exists for buoyancy or flight (unlike VehicleBody3D for land, Godot has no built-in boat/aircraft physics node), so these are from-scratch arcade models | MIT (code) |
 
+**STATUS (2026-07-17): the human gap is CLOSED.** Real MPFB2/MakeHuman
+bodies ship for both the player and NPCs — see the "MakeHuman-generated
+humans" section at the bottom for the exact pipeline and file details.
+
 **PeriHuman policy:** characters and NPCs **ship inside the game**. Players
 never install Unreal, MakeHuman, DAZ, or Character Creator. Slots:
 
-- `peri_human_player.glb` / `metahuman_player.glb` — local player
-- `peri_human_npc.glb` / `metahuman_npc.glb` — generic NPC
+- `peri_human_player.glb` / `metahuman_player.glb` / `player_human.glb` — local player
+- `peri_human_npc.glb` / `metahuman_npc.glb` / `npc_human.glb` — generic NPC
 - `peri_human_<race_id>.glb` / `metahuman_<race_id>.glb` — optional per-race
-- `variants/metahuman_npc/*.glb` (+ peri/npc_human pools) — NPC outfit variety
+- `variants/{metahuman_npc,peri_human_npc,npc_human}/*.glb` — NPC skin/hair/cloth
+  and build (slim/average/athletic/heavy) variety, picked deterministically
+  per NPC id via `AssetLibrary.instance_variant` / `MetahumanCharacter.build_npc(rng)`.
 
 **Current look (studio bake):** MPFB2 humans with textured skin, eyes,
 teeth, brows/lashes, hair, and fitted clothes (`scripts/bake_mpfb_characters.py`).
@@ -106,7 +112,8 @@ what each pack actually ships, kept modest for repo size):
 | `vehicle_aircraft_body` | 1 (Bob) | Quaternius Spaceships |
 | `apartment_prop` | 6 furniture pieces | Kenney Furniture Kit |
 | `ruin_pillar` | 5 castle pieces | Kenney Castle Kit |
-| `metahuman_npc` / `peri_human_npc` / `npc_human` | 5 skin/hair/cloth variants | Blender Studio Human Base Meshes |
+| `metahuman_npc` / `peri_human_npc` | 5 skin/hair/cloth variants each | MPFB2/MakeHuman bake |
+| `npc_human` | 5 skin/hair/cloth variants + 6 MakeHuman body builds (slim/average/athletic/heavy) | MPFB2/MakeHuman bake |
 
 `road_segment`/`sidewalk` stay single-file on purpose — road tiles have
 to interlock at fixed pivots/edges, and swapping them per-instance without
@@ -128,3 +135,27 @@ wants to go further:
 | [Kenney Space Kit](https://kenney.nl/assets/space-kit) | 6 craft + full station/corridor kit | CC0 |
 
 See `docs/VISUAL_DIRECTION_ESO.md`.
+
+## MakeHuman-generated humans (2026-07-17 — the human gap is CLOSED)
+
+| File | Source | License |
+|---|---|---|
+| `npc_human.glb`, `metahuman_player.glb`, `variants/npc_human/*.glb` (6 bodies) | Generated headlessly in this repo's pipeline: **MPFB v2.0.16** (MakeHuman Plugin For Blender, from extensions.blender.org, sha256-verified) running inside **bpy 5.0.1** (Blender as a Python module, PyPI). Parametric macro targets (gender/age/muscle/weight/proportions/height) baked per variant; helper cage stripped (13,380 verts each); real-world heights 1.64–1.84 m verified in the exported glTF accessors. | **CC0** — the MakeHuman project licenses characters exported with its tools as CC0; MPFB is GPL but its *output meshes* carry no license restriction. |
+
+Details that matter to consumers:
+- Materials are named `Skin` and `Outfit` — `NpcBody._apply_surface_tints`
+  keys on those names: Skin gets the per-NPC natural skin-tone lerp,
+  Outfit gets the archetype palette (brass barista / gunmetal authority /
+  jewel-red lover / graphite archivist / violet reflection).
+- Six builds ship in `variants/npc_human/` (f_slim/f_average/f_athletic/
+  m_average/m_heavy/m_athletic); `NpcBody` picks one deterministically
+  per NPC id via `AssetLibrary.instance_variant`. `npc_human.glb`
+  (= m_average) remains the single-slot fallback; `metahuman_player.glb`
+  (= m_athletic) upgrades the player from the tps-demo robot.
+- Unrigged and unclothed-but-material-split (head/neck = Skin, below =
+  fitted Outfit — reads as a bodysuit consistent with the identity-lens
+  aesthetic). No skeletal animation exists in the game yet, so no rig is
+  currently a non-loss; when animation lands, regenerate with MPFB's rig
+  (`scripts/` pipeline can be re-run — see AGENTS.md).
+- The tps-demo robot (`player_human.glb`) stays on disk as the last-chance
+  fallback and for anything that intentionally wants the robot.

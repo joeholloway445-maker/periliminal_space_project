@@ -182,11 +182,11 @@ func get_camera() -> Camera3D:
 const TOUCH_LOOK_SENSITIVITY := 0.006
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
+	if event is InputEventMouseButton and event.pressed and not TouchControls.active():
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if event.is_action_pressed("ui_cancel"):
+	elif event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		_cam_yaw -= event.relative.x * MOUSE_SENSITIVITY
 		_cam_pitch = clampf(_cam_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.2, 0.4)
 		_update_camera_rotation()
@@ -215,7 +215,7 @@ func _physics_process(delta: float) -> void:
 	_apply_touch_look()
 	velocity.y -= _gravity * delta
 
-	var input_2d := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var input_2d := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	# Touch devices: the virtual joystick overrides/merges with keys.
 	if TouchControls.move_vector.length() > 0.05:
 		input_2d = TouchControls.move_vector
@@ -223,14 +223,15 @@ func _physics_process(delta: float) -> void:
 	var dir := (cam_basis * Vector3(input_2d.x, 0.0, input_2d.y)).normalized()
 
 	# Crouch: hold Ctrl/C (or the touch posture button). Slower, lower.
-	var want_crouch := Input.is_action_pressed("crouch") or TouchControls.crouch_held
+	var want_crouch := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_C) \
+		or TouchControls.crouch_held
 	if want_crouch != _crouched:
 		_crouched = want_crouch
 		if is_instance_valid(_visual_root):
 			var tw := create_tween()
 			tw.tween_property(_visual_root, "scale:y", 0.55 if _crouched else 1.0, 0.12)
 
-	var sprinting := Input.is_action_pressed("sprint") or TouchControls.sprint_held
+	var sprinting := Input.is_key_pressed(KEY_SHIFT) or TouchControls.sprint_held
 	var target_speed := SPRINT_SPEED if sprinting else MAX_SPEED
 	if _crouched:
 		target_speed = CROUCH_SPEED
@@ -244,7 +245,7 @@ func _physics_process(delta: float) -> void:
 	velocity.z = flat.z
 
 	if is_on_floor() and not _crouched \
-			and (Input.is_action_just_pressed("jump") or TouchControls.consume_jump()):
+			and (Input.is_action_just_pressed("ui_accept") or TouchControls.consume_jump()):
 		velocity.y = JUMP_VELOCITY
 	# Touch E replay moved to TouchControls._process() itself (always
 	# running regardless of whether this controller's _physics_process is

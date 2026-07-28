@@ -4,9 +4,6 @@ extends Node3D
 
 @export var layer_id: String = "supraliminal"
 
-const DungeonEntrance = preload("res://src/world/dungeon_entrance.gd")
-const WorldEntity = preload("res://src/world/world_entity.gd")
-
 var _terrain: TerrainBridge
 var _sky: DayNightSky
 var _player: ThirdPersonController
@@ -15,38 +12,39 @@ func _ready() -> void:
 	LayerManager.current_layer_id = layer_id
 	add_to_group("layer_world")
 
+	_terrain = TerrainBridge.new()
+	add_child(_terrain)
+	await _terrain.ensure_built(layer_id)
+
 	_sky = DayNightSky.new()
 	match layer_id:
 		"liminal":
-			_sky.day_length_seconds = 90.0 # time slides wrong here
+			# Was 90s — phone prototype nightfall felt broken. Slow cycle +
+			# freeze in prototype mode so show-off stays readable.
+			_sky.day_length_seconds = 2400.0
+			_sky.start_hour = 11.0
 		"periliminal":
 			_sky.day_length_seconds = 999999.0
-			_sky.start_hour = 3.0 # permanent dead-of-night
+			_sky.start_hour = 4.5 # permanent night, but not pitch-black
+	if LayerManager != null and LayerManager.has_method("is_prototype_mode") \
+			and LayerManager.is_prototype_mode():
+		_sky.freeze_cycle = true
+		_sky.start_hour = 11.0
 	IdentityLens.tune_sky(_sky)
 	add_child(_sky)
-
-	if layer_id == "liminal":
-		# Liminal is a hallway maze, not open terrain
-		_liminal_setup_maze()
-	else:
-		_terrain = TerrainBridge.new()
-		add_child(_terrain)
-		await _terrain.ensure_built(layer_id)
 
 	_player = ThirdPersonController.new()
 	_player.visual_mode = "identity"
 	add_child(_player)
 
 	var spawn := _spawn_point()
-	if _terrain != null:
-		_terrain.stream_around(DiscoveryManager.world_pos_to_chunk(spawn))
-		spawn.y = _terrain.height_at(spawn.x, spawn.z) + 2.0
+	_terrain.stream_around(DiscoveryManager.world_pos_to_chunk(spawn))
+	spawn.y = _terrain.height_at(spawn.x, spawn.z) + 2.0
 	_player.global_position = spawn
 	_player.chunk_changed.connect(_on_chunk_changed)
-	if _terrain != null:
-		add_child(SensoriumAmbience.new()) # your build's own hum, under the music
-		var vehicles := VehicleWorldWiring.spawn_hub_vehicles(self, _terrain, spawn)
-		VehicleWorldWiring.wire_streaming_bump(vehicles, _terrain, _sky)
+	add_child(SensoriumAmbience.new()) # your build's own hum, under the music
+	var vehicles := VehicleWorldWiring.spawn_hub_vehicles(self, _terrain, spawn)
+	VehicleWorldWiring.wire_streaming_bump(vehicles, _terrain, _sky)
 	add_child(RealityBendOverlay.new(_reality_bend_baseline()))
 	var hotbar := HotbarUI.new()
 	hotbar.cast_requested.connect(_on_cast)
@@ -83,9 +81,8 @@ func _ready() -> void:
 				Color(0.75, 0.35, 0.95), _player, pos)
 			hideout.position = pos
 			add_child(hideout)
-	if layer_id != "liminal":
-		_populate_layer_npcs(spawn)
-	if layer_id == "liminal" and LayerManager.is_prototype_mode() and _terrain != null:
+	_populate_layer_npcs(spawn)
+	if layer_id == "liminal" and LayerManager.is_prototype_mode():
 		_spawn_prototype_spine_exits(spawn)
 
 ## Prototype-only: a guaranteed Metroplex archway within sight of spawn so
@@ -114,14 +111,14 @@ func _wire_presence() -> void:
 	PresenceManager.peer_joined.connect(func(pid, prof):
 		if _peers.has(pid): return
 		var rp := RemotePlayer.new()
-		add_child(rp)
 		rp.setup(pid, prof)
+		add_child(rp)
 		_peers[pid] = rp)
 	PresenceManager.peer_updated.connect(func(pid, pos):
 		if not _peers.has(pid):
 			var rp := RemotePlayer.new()
-			add_child(rp)
 			rp.setup(pid, PresenceManager.peer_profile(pid))
+			add_child(rp)
 			_peers[pid] = rp
 		_peers[pid].move_to(pos, _terrain))
 	PresenceManager.peer_left.connect(func(pid):
@@ -129,7 +126,20 @@ func _wire_presence() -> void:
 			_peers[pid].queue_free()
 			_peers.erase(pid))
 	PresenceManager.bot_wants_cast.connect(_on_bot_cast)
+	if PresenceManager.has_signal("peer_cast"):
+		PresenceManager.peer_cast.connect(_on_peer_cast)
 	PresenceManager.join_layer(layer_id)
+
+## Remote player cast — play telegraph/VFX only (damage is local-authority).
+func _on_peer_cast(_pid: String, sk: Dictionary, pos: Vector3) -> void:
+	if sk.is_empty():
+		return
+	var ghost := Node3D.new()
+	add_child(ghost)
+	ghost.global_position = pos
+	SkillCastResolver.play_telegraph(self, ghost, sk)
+	SkillCastResolver.play_cast_vfx(self, ghost, sk)
+	get_tree().create_timer(0.6).timeout.connect(ghost.queue_free)
 
 ## Tiered bots (see PresenceManager) "attacking" — gives them a visible
 ## skill flash instead of only the silent hostile-tick damage, and feeds
@@ -178,7 +188,8 @@ func _ensure_city(hub_id: String) -> void:
 	# ids, so each city pulls its own residents (LOD/impostors inside).
 	var spawner := NPCSpawner.new()
 	spawner.district_id = hub_id
-	spawner.max_npcs_in_district = 50
+	# Phone/web: fewer nameplates + less dialogue-pressure density.
+	spawner.max_npcs_in_district = 16 if OS.get_name() == "Web" else 50
 	spawner.player = _player
 	spawner.height_provider = func(x, z): return _terrain.height_at(x, z)
 	spawner.position = origin
@@ -194,9 +205,9 @@ func _populate_layer_npcs(near: Vector3) -> void:
 	if layer_id == "subliminal":
 		return # hard lock — no automatic ambient NPCs in private zones
 	var district_and_cap := {
-		"liminal": ["liminal_hub", 8],
-		"extraliminal": ["territories", 24],
-		"periliminal": ["abstract_realm", 6],
+		"liminal": ["liminal_hub", 4 if OS.get_name() == "Web" else 8],
+		"extraliminal": ["territories", 12 if OS.get_name() == "Web" else 24],
+		"periliminal": ["abstract_realm", 4 if OS.get_name() == "Web" else 6],
 	}
 	if not district_and_cap.has(layer_id):
 		return
@@ -231,151 +242,21 @@ func _spawn_point() -> Vector3:
 			var b: Dictionary = hub["chunk_bounds"]
 			var size := float(HubRegionData.CHUNK_SIZE)
 			return Vector3((b.x + b.w / 2.0) * size, 0, (b.y + b.h / 2.0) * size)
-		"liminal":
-			# Center of the maze (maze is centered at world origin)
-			return Vector3(0.0, 0.5, 0.0)
 		_:
 			return Vector3.ZERO
-
-## Build the Liminal corridor maze — replaces open terrain with halls.
-var _liminal_hallways: Node3D = null
-
-func _liminal_setup_maze() -> void:
-	var maze_seed := IdentityLens.identity_seed() if IdentityLens != null else 42
-	var low_quality := LiminalHallwayBuilder.is_low_quality_device()
-	var hallway := LiminalHallwayBuilder.build(maze_seed, 24, 4.0, 3.5, low_quality)
-	hallway.name = "LiminalHallways"
-	add_child(hallway)
-	_liminal_hallways = hallway
-	
-	# Mobile: reduce 3D render resolution for performance
-	if low_quality:
-		var vp := get_viewport()
-		if vp != null:
-			vp.scaling_3d_scale = 0.75
-	
-	# Place a few Liminal doors in the maze at intersections
-	_place_maze_doors(maze_seed)
-
-	# Place rare high-stage entities in the maze (capturable, no bosses)
-	_place_maze_rare_entities(maze_seed)
-
-func _place_maze_doors(rseed: int) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash("maze_doors_" + str(rseed))
-	var hw: float = 4.0
-	var half := 24.0 * hw * 0.5
-	
-	# Place 8-14 Liminal doors — doors are our signature, varied sizes.
-	# Prestige gating is built into LiminalDoor (hash-based _required_tier).
-	var count: int = rng.randi_range(8, 14)
-	for i in count:
-		var cx: int = rng.randi_range(2, 21)  # avoid edges
-		var cz: int = rng.randi_range(2, 21)
-		var door := LiminalDoor.new()
-		door.layer = "liminal"
-		# Varied door sizes: 0.6=narrow, 1.0=standard, 1.5=grand
-		door.door_scale = [0.6, 0.8, 1.0, 1.0, 1.0, 1.2, 1.5][rng.randi() % 7]
-		door.position = Vector3(cx * hw - half + hw * 0.5, 0.5, cz * hw - half + hw * 0.5)
-		add_child(door)
-	
-	# Place 3-5 exit archways back to hub layers
-	var exit_count: int = rng.randi_range(3, 5)
-	for i in exit_count:
-		var cx: int = rng.randi_range(1, 22)
-		var cz: int = rng.randi_range(1, 22)
-		var exit_door := LayerExitDoor.new()
-		var targets := ["supraliminal", "hyperliminal", "extraliminal", "subliminal"]
-		exit_door.target_layer = targets[rng.randi() % targets.size()]
-		exit_door.position = Vector3(cx * hw - half + hw * 0.5, 0.5, cz * hw - half + hw * 0.5)
-		add_child(exit_door)
-
-	# Place 1-2 dungeon entrances at dead-end cells
-	var dungeon_count: int = rng.randi_range(1, 2)
-	for i in range(dungeon_count):
-		var cx: int = rng.randi_range(3, 20)
-		var cz: int = rng.randi_range(3, 20)
-		var entrance := DungeonEntrance.new()
-		entrance.dungeon_id = "maze_dungeon_%d_%d" % [cx, cz]
-		entrance.position = Vector3(cx * hw - half + hw * 0.5, 0.5, cz * hw - half + hw * 0.5)
-		entrance.name = "DungeonEntrance_%d_%d" % [cx, cz]
-		add_child(entrance)
-
-func _place_maze_rare_entities(rseed: int) -> void:
-	## Spawn 1-2 rare high-stage entities in the maze. Deferred until _player exists.
-	## These are capturable — no bosses, just tough critters.
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash("maze_rares_" + str(rseed))
-	var hw: float = 4.0
-	var half := 24.0 * hw * 0.5
-	var count: int = rng.randi_range(1, 2)
-
-	var faction_raw := "Factionless"
-	if PlayerProfile != null:
-		faction_raw = PlayerProfile.faction
-	var faction := CompanionRegistry.normalize_faction(faction_raw)
-
-	# Queue spawn data; actual entities created deferred so _player exists.
-	var queue: Array[Dictionary] = []
-	for i in range(count):
-		var cx: int = rng.randi_range(4, 19)
-		var cz: int = rng.randi_range(4, 19)
-		var stage: int = rng.randi_range(2, 3)
-		var line := EntityDexData.random_line(faction)
-		if line.is_empty():
-			continue
-		queue.append({
-			"pos": Vector3(cx * hw - half + hw * 0.5, 0.5, cz * hw - half + hw * 0.5),
-			"line": line,
-			"stage": stage,
-		})
-
-	call_deferred("_spawn_rare_entities", queue)
-
-func _spawn_rare_entities(queue: Array[Dictionary]) -> void:
-	## Create high-stage WorldEntity nodes. _player is set by now.
-	for data in queue:
-		var ent := WorldEntity.new()
-		ent.position = data["pos"]
-		ent.name = "RareEntity_%d" % (queue.find(data))
-		add_child(ent)
-		ent.call_deferred("setup", data["line"], data["stage"], _player)
-
-		# Subtle visual cue — a faint shimmer to mark it as rare
-		var glow := MeshInstance3D.new()
-		var gmesh := CylinderMesh.new()
-		gmesh.top_radius = 1.5
-		gmesh.bottom_radius = 2.0
-		gmesh.height = 0.05
-		glow.mesh = gmesh
-		glow.position.y = 0.02
-		var gmat := StandardMaterial3D.new()
-		gmat.albedo_color = Color(0.6, 0.7, 1.0, 0.25)
-		gmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		gmat.emission_enabled = true
-		gmat.emission = Color(0.4, 0.6, 1.0)
-		gmat.emission_energy_multiplier = 0.5
-		glow.material_override = gmat
-		ent.add_child(glow)
 
 const HubRegionData = preload("res://src/data/hub_region_data.gd")
 
 var _prev_chunk := Vector2i(2147483647, 0)
 
 func _on_chunk_changed(coord: Vector2i) -> void:
-	if _terrain != null:
-		_terrain.stream_around(coord)
+	_terrain.stream_around(coord)
 	match layer_id:
 		"supraliminal":
 			_supraliminal_enter(coord)
 		"liminal":
-			if _terrain != null:
-				# Only spawn chunk doors in the open-terrain Liminal;
-				# the maze-based Liminal has doors pre-placed.
-				_liminal_enter(coord)
+			_liminal_enter(coord)
 		"periliminal":
-			if _terrain == null:
-				return
 			if DungeonRuns.active:
 				DungeonRuns.advance_depth()
 				_apply_periliminal_floor(coord)
@@ -391,6 +272,9 @@ var _active_floor: Dictionary = {}
 var _active_floor_hazards: Array = []
 var _floor_hazard_tick := 0.0
 var _floor_applied_depth := -1
+var _floor_hud: PanelContainer
+var _hud_layer: CanvasLayer
+var _last_hazard_tick_dmg := 0
 
 func _ensure_periliminal_gauntlet() -> void:
 	if not _periliminal_gauntlet.is_empty():
@@ -423,6 +307,7 @@ func _apply_periliminal_floor(coord: Vector2i) -> void:
 	_clear_floor_entities()
 	_active_floor_hazards.clear()
 	_floor_hazard_tick = 0.0
+	_last_hazard_tick_dmg = 0
 	var floor: Dictionary = floors[(depth - 1) % floors.size()]
 	_active_floor = floor
 	var trap := str(floor.get("trap_type", "unknown")).replace("_", " ")
@@ -438,6 +323,10 @@ func _apply_periliminal_floor(coord: Vector2i) -> void:
 	for hz in floor.get("hazards", []):
 		if hz is Dictionary:
 			_active_floor_hazards.append(hz)
+	PeriliminalHazardFX.apply_floor(self, _player, _active_floor_hazards)
+	if _floor_hud == null and _hud_layer != null:
+		_floor_hud = PeriliminalHazardFX.ensure_hud(_hud_layer)
+	PeriliminalHazardFX.refresh_hud(_floor_hud, _active_floor, depth, 0)
 	var exits: Array = floor.get("exits", [])
 	if not exits.is_empty():
 		NotificationUI.notify_info("Exit: %s" % str(exits[0]).replace("_", " "))
@@ -448,6 +337,9 @@ func _clear_floor_entities() -> void:
 		if is_instance_valid(ent):
 			ent.queue_free()
 	_entities.clear()
+	PeriliminalHazardFX.clear(self)
+	if is_instance_valid(_player):
+		PeriliminalHazardFX.clear(_player)
 
 func _spawn_floor_entity(token: String, coord: Vector2i) -> void:
 	var resolved: Dictionary = PeriliminalGenerator.resolve_entity_token(token)
@@ -476,6 +368,7 @@ func _spawn_floor_entity(token: String, coord: Vector2i) -> void:
 func _tick_floor_hazards() -> void:
 	if _active_floor_hazards.is_empty() or not is_instance_valid(_player):
 		return
+	var tick_total := 0
 	for hz in _active_floor_hazards:
 		if not hz is Dictionary:
 			continue
@@ -500,6 +393,8 @@ func _tick_floor_hazards() -> void:
 				continue
 		if dmg <= 0:
 			continue
+		tick_total += dmg
+		PeriliminalHazardFX.pulse_tick(self, _player, hz, dmg)
 		var hit := dmg
 		if _shield > 0:
 			var ab := mini(_shield, hit)
@@ -508,8 +403,13 @@ func _tick_floor_hazards() -> void:
 		_player_hp -= hit
 		_refresh_hud_vitals()
 		if _player_hp <= 0:
+			_last_hazard_tick_dmg = tick_total
+			PeriliminalHazardFX.refresh_hud(_floor_hud, _active_floor, _floor_applied_depth, tick_total)
 			_on_player_died(str(_active_floor.get("trap_type", "the floor")))
 			return
+	_last_hazard_tick_dmg = tick_total
+	if tick_total > 0:
+		PeriliminalHazardFX.refresh_hud(_floor_hud, _active_floor, _floor_applied_depth, tick_total)
 
 ## The Periliminal's one exit: no door exists until the run has gone deep
 ## enough (personal — PeriliminalRuns.blessing_ready reads your Hope
@@ -653,10 +553,6 @@ func _maybe_spawn_entity(coord: Vector2i) -> void:
 	_entities[ent.get_instance_id()] = ent
 
 func _on_entity_bite(ent: WorldEntity, dmg: int) -> void:
-	# God mode: immune to all damage
-	if PlayerProfile.is_god_mode():
-		SkillVFX.hit_spark(self, _player.global_position)
-		return
 	var hit := dmg
 	if _shield > 0:
 		var ab := mini(_shield, hit)
@@ -686,6 +582,7 @@ func _build_hud() -> void:
 	var layer := CanvasLayer.new()
 	layer.name = "LayerHud"
 	add_child(layer)
+	_hud_layer = layer
 	var back := Button.new()
 	back.text = "⬅ Catsino"
 	back.position = Vector2(10, 10)
@@ -723,6 +620,9 @@ func _build_hud() -> void:
 	_hud_shield_bar.show_percentage = false
 	_hud_shield_bar.modulate = Color(0.35, 0.75, 1.0)
 	layer.add_child(_hud_shield_bar)
+	_floor_hud = PeriliminalHazardFX.ensure_hud(layer)
+	if layer_id != "periliminal" and _floor_hud != null:
+		_floor_hud.visible = false
 	_refresh_hud_vitals()
 
 func _refresh_hud_vitals() -> void:
@@ -751,19 +651,17 @@ func _in_pvp_zone() -> bool:
 		"supraliminal": return TerritoryControl.is_pvp_at(_player.global_position)
 		_: return false
 
-## Cast resolution in the open world — targets are other players (or their
-## offline ghost stand-ins). Hub interiors are sanctuaries: nothing lands.
+## Cast resolution in the open world — targets are entities, breakables,
+## and (in PvP zones) other players. Shared SkillCastResolver owns windup,
+## telegraph, element riders, and VFX; we supply targets + shield hooks.
 func _on_cast(sk: Dictionary) -> void:
-	# Forge override: an equipped skill blueprint replaces the stock flash
-	# with the player's own shape/color/sound design.
-	var cast_bp := BlueprintManager.equipped_for("skill", str(sk.get("id", "")))
-	if not cast_bp.is_empty():
-		SkillVFX.blueprint_cast(self, _player.global_position, cast_bp)
-	else:
-		SkillVFX.cast_flash(self, _player.global_position)
+	if _player == null or not is_instance_valid(_player):
+		return
+	# Online: broadcast cast so remotes can flash the same telegraph/VFX.
+	if PresenceManager != null and PresenceManager.has_method("report_cast"):
+		PresenceManager.report_cast(sk, _player.global_position)
 	if Hope.maybe_manifest(str(sk.get("id", ""))):
 		SkillVFX.aoe_ring(self, _player.global_position, 2.0, Color(1.0, 0.95, 0.6))
-		# If the player forged a companion form, Hope wears it when she shows.
 		var hope_bp := BlueprintManager.equipped_for("entity", "companion")
 		if not hope_bp.is_empty():
 			var form := BlueprintMesh.build(hope_bp)
@@ -772,75 +670,54 @@ func _on_cast(sk: Dictionary) -> void:
 			SkillVFX.add_aura_shell(form, Color(1.0, 0.9, 0.65))
 			BlueprintAudio.play(self, hope_bp)
 			get_tree().create_timer(4.0).timeout.connect(form.queue_free)
-	var shape: String = sk.get("shape", "single")
-	var radius: float = float(sk.get("radius", 3.0))
-	var power: float = float(sk.get("power", 1.0))
-	if sk.get("ult_cost", 0) > 0:
-		SkillVFX.ultimate_burst(self, _player.global_position, maxf(radius, 6.0))
-	elif shape == "aoe":
-		SkillVFX.aoe_ring(self, _player.global_position, radius)
-	elif shape == "line":
-		SkillVFX.line_beam(self, _player.global_position, -_player.global_transform.basis.z, radius)
-	match sk.get("kind", "damage"):
-		"shield":
-			_shield = maxi(_shield, int(30 * power))
-			SkillVFX.shield_bubble(self, _player, 6.0)
-			_refresh_hud_vitals()
-			return
-		"mobility":
-			_player.global_position += -_player.global_transform.basis.z * (6.0 + 6.0 * power)
-			return
-		_:
-			pass
-	var dmg := int(_attack_damage * power)
-	var reach := maxf(radius, 4.0)
-	# Element rider — the entity force this line channels (SkillData.ELEMENTS).
-	var elem := str(sk.get("element", ""))
-	if elem == "energy":
-		dmg = int(dmg * 1.15)
-	# Demolishable city props are fair game for any cast.
+	var targets: Array = []
 	for node in get_tree().get_nodes_in_group("breakable"):
 		if node is BreakableProp and is_instance_valid(node):
-			if node.global_position.distance_to(_player.global_position) <= reach:
-				node.take_hit(dmg)
-	# World-threat wildlife lands regardless of PvP zone — entities aren't
-	# players, hitting them was never a PvP question.
+			targets.append(node)
 	for iid in _entities.keys().duplicate():
 		var ent: WorldEntity = _entities[iid]
-		if not is_instance_valid(ent): continue
-		if ent.global_position.distance_to(_player.global_position) > reach: continue
-		ent.take_hit(dmg)
-		SkillVFX.hit_spark(self, ent.global_position)
-		_apply_element_rider(elem, ent, dmg)
-		SkillManager.gain_ultimate(4.0)
-	if not _in_pvp_zone():
-		if _entities.is_empty():
+		if is_instance_valid(ent):
+			targets.append(ent)
+	var in_pvp := _in_pvp_zone()
+	if in_pvp:
+		for pid in _peers.keys():
+			var rp: RemotePlayer = _peers[pid]
+			if is_instance_valid(rp):
+				targets.append(rp)
+	var opts := {
+		"base_attack": _attack_damage,
+		"targets": targets,
+		"on_self_shield": func(amount: int):
+			_shield = maxi(_shield, amount)
+			SkillVFX.shield_bubble(self, _player, 6.0)
+			_refresh_hud_vitals(),
+		"on_self_mobility": func(dist: float):
+			_player.global_position += -_player.global_transform.basis.z * dist,
+		"on_hit": func(node: Node3D, dmg: int, elem: String):
+			if node is RemotePlayer:
+				var hit_pid := ""
+				for pid in _peers.keys():
+					if _peers[pid] == node:
+						hit_pid = pid
+						break
+				if hit_pid != "":
+					_peer_hp[hit_pid] = _peer_hp.get(hit_pid, 80 + randi() % 60) - dmg
+					SkillManager.gain_ultimate(2.0) # resolver already granted 4
+					if _peer_hp[hit_pid] <= 0:
+						_on_peer_killed(hit_pid, node)
+			if elem == "matter":
+				_shield += 8
+				_refresh_hud_vitals(),
+	}
+	var result: Dictionary = await SkillCastResolver.resolve_async(self, _player, sk, opts)
+	if int(result.get("hits", 0)) == 0 and str(sk.get("kind", "damage")) in ["damage", "chance", "control"]:
+		if not in_pvp and _entities.is_empty():
 			NotificationUI.notify_info("PvE sanctuary — your skills won't land on anyone here.")
-		return
-	for pid in _peers.keys():
-		var rp: RemotePlayer = _peers[pid]
-		if not is_instance_valid(rp): continue
-		if rp.global_position.distance_to(_player.global_position) > reach: continue
-		_peer_hp[pid] = _peer_hp.get(pid, 80 + randi() % 60) - dmg
-		SkillVFX.hit_spark(self, rp.global_position)
-		_apply_element_rider(elem, rp, dmg)
-		if elem == "quantum" and randf() < 0.2:
-			# The timeline disagrees: the hit lands twice.
-			_peer_hp[pid] -= dmg
-			SkillVFX.hit_spark(self, rp.global_position)
-		elif elem == "entropy":
-			# Decay echo: a second tick a beat later.
-			get_tree().create_timer(1.0).timeout.connect(func():
-				if _peer_hp.has(pid):
-					_peer_hp[pid] -= int(dmg * 0.4))
-		SkillManager.gain_ultimate(6.0)
-		if _peer_hp[pid] <= 0:
-			_on_peer_killed(pid, rp)
-	if elem == "matter":
-		# Substance answers you: landing casts skins you in shield.
-		_shield += 8
+		elif in_pvp or not _entities.is_empty():
+			NotificationUI.notify_info("Nothing in reach — close distance or use an AoE.")
 
 ## Physical element effects that act on a target's transform.
+## Kept for bot casts / legacy callers; SkillCastResolver applies the same riders.
 func _apply_element_rider(elem: String, target: Node3D, _dmg: int) -> void:
 	match elem:
 		"gravity":
@@ -890,8 +767,7 @@ func _on_player_died(killer: String) -> void:
 	_player_hp = 100
 	_shield = 0
 	var spawn := _spawn_point()
-	if _terrain != null:
-		spawn.y = _terrain.height_at(spawn.x, spawn.z) + 2.0
+	spawn.y = _terrain.height_at(spawn.x, spawn.z) + 2.0
 	_player.global_position = spawn
 	_player.velocity = Vector3.ZERO
 
@@ -902,13 +778,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			forge.name = "BlueprintForge"
 			add_child(forge)
 
-var _position_report_tick := 0
-
 func _process(_delta: float) -> void:
-	# Throttle position reports to ~10 Hz (every 6 frames at 60 FPS) —
-	# full-rate 60 Hz network spam kills mobile battery and CPU.
-	_position_report_tick += 1
-	if is_instance_valid(_player) and _position_report_tick % 6 == 0:
+	if is_instance_valid(_player):
 		PresenceManager.report_position(_player.global_position)
 	# Hope-driven trap floors tick hazards once per second.
 	if layer_id == "periliminal" and not _active_floor_hazards.is_empty():

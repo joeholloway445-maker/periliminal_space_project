@@ -22,8 +22,7 @@ func setup(district_type: String) -> void:
 		var real := AssetLibrary.sound(slot, true)
 		player.stream = real if real != null else _synth_bed(slot)
 		add_child(player)
-		if is_inside_tree():
-			player.play()
+		player.play()
 
 ## Procedural looping bed per layer archetype — a 4s 16-bit mono WAV.
 func _synth_bed(slot: String) -> AudioStreamWAV:

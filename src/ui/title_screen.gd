@@ -1,29 +1,28 @@
 extends Control
 class_name TitleScreen
-## The actual front door: shown once, right after login. Periliminal Space
-## logo/title fills the upper portion, breathing gently (glow fade in/out)
-## over an ambient background until a button is pressed. Below the title:
-## an Omni Dex toggle, Settings, and Info button. Center: Start New
-## Venture (fresh character -> race/frame/mod -> thrown into the Liminal)
-## or Continue Expedition (existing character -> straight to the
-## Subliminal), the latter only lit up once a character actually exists.
-
-var _god_seq: String = ""
-var _god_seq_time: float = 0.0
-var _god_btn: Button = null
+## Front door after login. Dark purple ambient is intentional brand —
+## not a broken render. Button sizes use PhoneUI.boost() so 1080p
+## canvas_items stretch still lands thumb-sized on phones.
 
 func _ready() -> void:
 	MusicManager.play_context("theme")
 	_build_ui()
 
 func _build_ui() -> void:
+	var b := PhoneUI.boost()
+	var phone := PhoneUI.is_phone()
+	# Cap brand mark so a 3–4× button boost doesn't eat the whole phone screen.
+	var emblem_size := minf(200.0 * minf(b, 1.85), 360.0)
+	var title_fs := PhoneUI.font(36) if phone else 48
+	var btn_w := minf(280.0 * b, 520.0)
+	var btn_h := 56.0 * b
+
 	var bg := ColorRect.new()
 	bg.color = Color(0.02, 0.01, 0.05)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
-	# Slow ambient glow breathing behind everything — the "fading in and
-	# out" ambience the title sits on until a choice is made.
+	# Slow ambient glow — purple haze is the title brand, not a bug.
 	var glow := ColorRect.new()
 	glow.color = Color(0.35, 0.15, 0.55, 0.25)
 	glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -36,27 +35,31 @@ func _build_ui() -> void:
 
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.add_theme_constant_override("separation", 18)
+	root.add_theme_constant_override("separation", int(18.0 * b))
+	# Keep content clear of notches / home indicators.
+	var safe := DisplayServer.get_display_safe_area() if DisplayServer.has_method("get_display_safe_area") else Rect2i()
+	if safe.size.x > 0:
+		root.offset_left = float(safe.position.x) * 0.5
+		root.offset_right = -float(DisplayServer.window_get_size().x - safe.end.x) * 0.5
+		root.offset_top = float(safe.position.y) * 0.35
+		root.offset_bottom = -float(DisplayServer.window_get_size().y - safe.end.y) * 0.35
 	add_child(root)
 
-	# ---- upper portion: title/logo ----
 	var upper := VBoxContainer.new()
 	upper.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	upper.alignment = BoxContainer.ALIGNMENT_CENTER
 	root.add_child(upper)
 
-	# The emblem: shadow-god in the broken 9-point star, twin ouroboros.
-	# Uses assets/ui/logo.png when present; otherwise procedural emblem.
 	var emblem_center := CenterContainer.new()
 	upper.add_child(emblem_center)
 	var emblem := LogoEmblem.new()
-	emblem.custom_minimum_size = Vector2(300, 300)
+	emblem.custom_minimum_size = Vector2(emblem_size, emblem_size)
 	emblem_center.add_child(emblem)
 
 	var title := Label.new()
 	title.text = "PERILIMINAL.SPACE"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 56)
+	title.add_theme_font_size_override("font_size", title_fs)
 	upper.add_child(title)
 	var title_tw := create_tween()
 	title_tw.set_loops()
@@ -67,101 +70,82 @@ func _build_ui() -> void:
 	tagline.text = "Six realities. One of you."
 	tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tagline.modulate = Color(0.7, 0.6, 0.9)
+	tagline.add_theme_font_size_override("font_size", PhoneUI.font(18))
 	upper.add_child(tagline)
 
-	# ---- toggle row: Omni Dex / Settings / Info ----
+	if phone:
+		var hint := Label.new()
+		hint.text = "Tap PLAY OFFLINE on the login screen first if you haven’t."
+		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hint.modulate = Color(0.55, 0.5, 0.65)
+		hint.add_theme_font_size_override("font_size", PhoneUI.font(14))
+		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		upper.add_child(hint)
+
 	var toggles := HBoxContainer.new()
 	toggles.alignment = BoxContainer.ALIGNMENT_CENTER
-	toggles.add_theme_constant_override("separation", 12)
+	toggles.add_theme_constant_override("separation", int(12.0 * b))
 	root.add_child(toggles)
 
-	var dex_btn := Button.new()
-	dex_btn.text = "📖 Omni Dex"
-	dex_btn.pressed.connect(_toggle_omni_dex)
-	toggles.add_child(dex_btn)
+	for spec in [
+		{"text": "📖 Omni Dex", "fn": _toggle_omni_dex},
+		{"text": "⚙️ Settings", "fn": func(): get_tree().change_scene_to_file("res://scenes/ui/settings.tscn")},
+		{"text": "ℹ️ Info", "fn": _show_info},
+	]:
+		var tb := Button.new()
+		tb.text = str(spec.text)
+		tb.custom_minimum_size = Vector2(0, 44.0 * b)
+		tb.add_theme_font_size_override("font_size", PhoneUI.font(16))
+		tb.pressed.connect(spec.fn)
+		toggles.add_child(tb)
 
-	var settings_btn := Button.new()
-	settings_btn.text = "⚙️ Settings"
-	settings_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/ui/settings.tscn"))
-	toggles.add_child(settings_btn)
-
-	var info_btn := Button.new()
-	info_btn.text = "ℹ️ Info"
-	info_btn.pressed.connect(_show_info)
-	toggles.add_child(info_btn)
-
-	# ---- middle: the two entry points ----
 	var middle := VBoxContainer.new()
 	middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	middle.alignment = BoxContainer.ALIGNMENT_CENTER
-	middle.add_theme_constant_override("separation", 14)
+	middle.add_theme_constant_override("separation", int(14.0 * b))
 	root.add_child(middle)
 
 	var new_btn := Button.new()
 	new_btn.text = "⚔️  Start New Venture"
-	new_btn.custom_minimum_size = Vector2(320, 56)
+	new_btn.custom_minimum_size = Vector2(btn_w, btn_h)
+	new_btn.add_theme_font_size_override("font_size", PhoneUI.font(20))
 	new_btn.pressed.connect(func():
 		get_tree().change_scene_to_file("res://scenes/ui/venture_wizard.tscn"))
 	middle.add_child(new_btn)
 
 	var continue_btn := Button.new()
 	continue_btn.text = "🌀  Continue Expedition"
-	continue_btn.custom_minimum_size = Vector2(320, 56)
+	continue_btn.custom_minimum_size = Vector2(btn_w, btn_h)
+	continue_btn.add_theme_font_size_override("font_size", PhoneUI.font(20))
 	continue_btn.disabled = not PlayerProfile.has_expedition
 	if not PlayerProfile.has_expedition:
 		continue_btn.tooltip_text = "No expedition yet — start a new venture first."
 	continue_btn.pressed.connect(func():
 		if not LayerManager.transition_to("subliminal"):
-			# Fallback if can_enter blocks — still honor Continue for local play.
 			get_tree().change_scene_to_file("res://scenes/layers/subliminal.tscn"))
 	middle.add_child(continue_btn)
 
-	# Hidden God-mode login — type GOD on the title screen to reveal
-	_god_btn = Button.new()
-	_god_btn.text = "☠  Testing Arbiter  ☠"
-	_god_btn.custom_minimum_size = Vector2(320, 48)
-	_god_btn.modulate = Color(0.9, 0.2, 0.2, 0.85)
-	_god_btn.visible = false
-	_god_btn.tooltip_text = "Infinite money, no damage, full creative access. Saves persist — use for testing only."
-	_god_btn.pressed.connect(_start_god_mode)
-	middle.add_child(_god_btn)
-
-	# Walkable Gate-3 spine: Liminal → Metroplex → HiddenDoor → pull → blessing.
-	# Shortens the Liminal pull; does NOT add pull warnings (design invariant).
 	var proto_btn := Button.new()
-	proto_btn.text = "🎮  Play Offline"
-	proto_btn.custom_minimum_size = Vector2(320, 48)
-	proto_btn.tooltip_text = "Offline mode: shortened Liminal pull + guaranteed Metroplex exit near spawn."
+	proto_btn.text = "🧪  Play Prototype Spine"
+	proto_btn.custom_minimum_size = Vector2(btn_w, btn_h * 0.9)
+	proto_btn.add_theme_font_size_override("font_size", PhoneUI.font(18))
+	proto_btn.tooltip_text = "Dev prototype: shortened Liminal pull + guaranteed Metroplex exit near spawn."
 	proto_btn.pressed.connect(_start_prototype_spine)
 	middle.add_child(proto_btn)
 
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 40)
+	spacer.custom_minimum_size = Vector2(0, 24.0 * b)
 	root.add_child(spacer)
-
-func _start_god_mode() -> void:
-	## Hidden testing login — full God mode (infinite money, no damage).
-	LayerManager.enable_prototype_mode(true)
-	PlayerProfile.set_race("tabby")
-	PlayerProfile.set_frame("veil")
-	PlayerProfile.set_mod("catalyst")
-	PlayerProfile.set_faction("Factionless")
-	PlayerProfile.is_testing = true
-	PlayerProfile.has_expedition = true
-	PlayerProfile.save()
-	NotificationUI.notify_win("☠ Test Arbiter online. All currencies ∞. Damage OFF. Creative access ON.")
-	LayerManager.transition_to("liminal", true)
 
 func _start_prototype_spine() -> void:
 	LayerManager.enable_prototype_mode(true)
-	# Ensure Continue/identity systems have something to read — and persist it.
 	if not PlayerProfile.has_expedition:
 		PlayerProfile.set_race(PlayerProfile.selected_race_id)
 		PlayerProfile.set_frame("veil")
 		PlayerProfile.set_mod("catalyst")
 		PlayerProfile.set_faction("Factionless")
 		PlayerProfile.has_expedition = true
-		PlayerProfile.save()
+		PlayerProfile._save()
 	NotificationUI.notify_info("Prototype spine armed. Walk the Metroplex archway — the Between is already watching.")
 	LayerManager.transition_to("liminal", true)
 
@@ -171,25 +155,6 @@ func _toggle_omni_dex() -> void:
 	var dex := OmniDexUI.new()
 	dex.name = "OmniDex"
 	add_child(dex)
-
-func _input(event: InputEvent) -> void:
-	## Hidden sequence: type G, O, D within 3s → reveals the god-mode button.
-	if event is InputEventKey and event.pressed and not event.echo:
-		var key := OS.get_keycode_string(event.keycode).to_upper()
-		if key.length() == 1 and key >= "A" and key <= "Z":
-			_god_seq += key
-			_god_seq_time = 0.0
-			if _god_seq.length() > 3:
-				_god_seq = _god_seq.right(3)
-			if _god_seq == "GOD" and _god_btn != null:
-				_god_btn.visible = not _god_btn.visible
-				if _god_btn.visible:
-					NotificationUI.notify_info("✦ Debug terminal online. Handle with care.")
-
-func _process(delta: float) -> void:
-	_god_seq_time += delta
-	if _god_seq_time > 3.0:
-		_god_seq = ""
 
 func _show_info() -> void:
 	NotificationUI.notify_info("Periliminal.Space — a psychology XRMMORPG across six reality layers. The Catsino is one of them, not the main game. City streets: © OpenStreetMap contributors (ODbL).")

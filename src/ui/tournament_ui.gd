@@ -49,7 +49,7 @@ func _render(tournaments: Array) -> void:
 
 		var enter_btn := Button.new()
 		enter_btn.text = "Enter Tournament"
-		var tid: String = t.get("id", "")
+		var tid := t.get("id", "")
 		enter_btn.pressed.connect(func(): _enter(tid))
 		card.add_child(enter_btn)
 

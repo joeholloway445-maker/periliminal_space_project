@@ -261,8 +261,7 @@ static func _tune_surface_material(mat: Material, sname: String, skin_shader: Sh
 		if is_skin:
 			std.roughness = clampf(std.roughness * 0.75, 0.28, 0.62)
 			std.metallic = 0.0
-			if "metallic_specular" in std:
-				std.metallic_specular = 0.45
+			std.specular = 0.45
 			if not RenderCaps.is_compatibility():
 				# Property names differ slightly across 4.x — set only if present.
 				if "subsurf_scatter_enabled" in std:
@@ -275,12 +274,10 @@ static func _tune_surface_material(mat: Material, sname: String, skin_shader: Sh
 		elif is_eye:
 			std.roughness = 0.08
 			std.metallic = 0.0
-			if "metallic_specular" in std:
-				std.metallic_specular = 0.7
+			std.specular = 0.7
 		elif is_hair:
 			std.roughness = clampf(std.roughness, 0.35, 0.7)
-			if "metallic_specular" in std:
-				std.metallic_specular = 0.55
+			std.specular = 0.55
 		elif is_cloth:
 			std.roughness = maxf(std.roughness, 0.7)
 			std.metallic = minf(std.metallic, 0.05)

@@ -34,7 +34,7 @@ func _ready() -> void:
 
 func _summon(count: int) -> void:
 	var factions := ["", "SovereignCrown", "WildlandsAscendant", "VeiledCurrent", "Factionless"]
-	var faction: String = factions[faction_option.selected] if faction_option else ""
+	var faction := factions[faction_option.selected] if faction_option else ""
 	if single_btn:
 		single_btn.disabled = true
 	if multi_btn:

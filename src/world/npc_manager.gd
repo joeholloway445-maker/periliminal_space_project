@@ -187,5 +187,5 @@ func update_lod(player_pos: Vector3) -> void:
 			inst.call("update_lod", level)
 
 func _process(_delta: float) -> void:
-	if _player and is_instance_valid(_player) and _player.is_inside_tree():
+	if _player and is_instance_valid(_player):
 		update_lod(_player.global_position)

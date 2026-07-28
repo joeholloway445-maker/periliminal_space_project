@@ -82,14 +82,11 @@ func known_lines() -> Array[Dictionary]:
 
 func find_skill(skill_id: String) -> Dictionary:
 	for line in known_lines():
-		if not line is Dictionary or line.is_empty():
-			continue
-		for a in line.get("actives", []):
-			if a.get("id", "") == skill_id:
+		for a in line.actives:
+			if a.id == skill_id:
 				return a
-		var ult: Dictionary = line.get("ultimate", {})
-		if ult.get("id", "") == skill_id:
-			return ult
+		if line.ultimate.id == skill_id:
+			return line.ultimate
 	return {}
 
 ## ── Points, ranks, morphs ─────────────────────────────────────────────────
@@ -119,8 +116,6 @@ func unlock(skill_id: String) -> bool:
 ## Prestige soft-power trees (Social Politics, Wagering Arts).
 func is_prestige_skill(skill_id: String) -> bool:
 	for line in known_lines():
-		if not line is Dictionary or line.is_empty():
-			continue
 		if str(line.get("source", "")) != "prestige":
 			continue
 		for a in line.get("actives", []):
@@ -217,13 +212,11 @@ func attunement_of(line_id: String) -> String:
 ## Which element a specific skill carries (via its line's attunement).
 func element_of_skill(skill_id: String) -> String:
 	for line in known_lines():
-		if not line is Dictionary or line.is_empty():
-			continue
 		for a in line.get("actives", []):
 			if a.get("id", "") == skill_id:
-				return attunement_of(str(line.get("id", "")))
+				return attunement_of(str(line.id))
 		if line.get("ultimate", {}).get("id", "") == skill_id:
-			return attunement_of(str(line.get("id", "")))
+			return attunement_of(str(line.id))
 	return ""
 
 func resolved(skill_id: String) -> Dictionary:
