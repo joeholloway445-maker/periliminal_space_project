@@ -1,0 +1,148 @@
+{
+ "total": 1952,
+ "naming": "<omnidex_race>_<m|f>[_<frame>][_<mod>].png",
+ "canon_to_omnidex": {
+  "Keth": "crownless",
+  "Lumari": "lumenari",
+  "Vex": "veilstriders",
+  "Kryos": "coldmarrow",
+  "Volt": "pulseborn",
+  "Sylva": "thorned",
+  "Myco": "mirekin",
+  "Chimera": "dreamflesh",
+  "Astra": "starfall",
+  "Aquis": "deepborne",
+  "Geara": "echoes",
+  "Azhul": "chronarchs",
+  "Ferox": "gutterkin",
+  "Petra": "glassborn",
+  "Sanguis": "rotweavers",
+  "Igni": "ashen_choir",
+  "Nyx": "nullborn",
+  "Etherea": "hollowed",
+  "Ferros": "riftspawn",
+  "Glyphe": "sunspun"
+ },
+ "races": {
+  "crownless": {
+   "canon": "Keth",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "lumenari": {
+   "canon": "Lumari",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "veilstriders": {
+   "canon": "Vex",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 50
+  },
+  "coldmarrow": {
+   "canon": "Kryos",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "pulseborn": {
+   "canon": "Volt",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "thorned": {
+   "canon": "Sylva",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 66
+  },
+  "mirekin": {
+   "canon": "Myco",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "dreamflesh": {
+   "canon": "Chimera",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 79
+  },
+  "starfall": {
+   "canon": "Astra",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 78
+  },
+  "deepborne": {
+   "canon": "Aquis",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "echoes": {
+   "canon": "Geara",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "chronarchs": {
+   "canon": "Azhul",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "gutterkin": {
+   "canon": "Ferox",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "glassborn": {
+   "canon": "Petra",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "rotweavers": {
+   "canon": "Sanguis",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "ashen_choir": {
+   "canon": "Igni",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "nullborn": {
+   "canon": "Nyx",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "hollowed": {
+   "canon": "Etherea",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 80
+  },
+  "riftspawn": {
+   "canon": "Ferros",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 79
+  },
+  "sunspun": {
+   "canon": "Glyphe",
+   "base_m": true,
+   "base_f": true,
+   "frame_variants": 79
+  }
+ }
+}
