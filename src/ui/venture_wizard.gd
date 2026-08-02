@@ -20,6 +20,7 @@ var _roster_row: HBoxContainer
 var _roster_scroll: ScrollContainer
 var _preview_viewport: SubViewportContainer
 var _preview_subviewport: SubViewport
+var _art: TextureRect  # generated race/frame/mod sprite over the 3D preview
 var _preview_instance: Node3D
 var _portrait: ColorRect  # fallback when viewport isn't ready
 var _portrait_label: Label
@@ -75,6 +76,17 @@ func _build_ui() -> void:
 	_preview_subviewport.msaa_3d = Viewport.MSAA_2X
 	_preview_subviewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	_preview_viewport.add_child(_preview_subviewport)
+
+	# Generated identity art layered over the 3D preview. When a sprite exists
+	# for the current race/frame/mod it fills this; otherwise it hides and the
+	# procedural PeriHuman preview shows through.
+	_art = TextureRect.new()
+	_art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_art.visible = false
+	_preview_viewport.add_child(_art)
 
 	# Character preview scene as fallback-ready 3D model display.
 	var preview_scene := load("res://scenes/character/character_preview.tscn")
@@ -250,15 +262,15 @@ func _update_portrait() -> void:
 
 	# Update the 3D preview with the currently selected race/frame.
 	var step: String = STEPS[_step]
+	var cur_race := _picked.get("race", "")
+	var cur_frame := _picked.get("frame", "")
+	var cur_mod := _picked.get("mod", "")
 	match step:
-		"race":
-			_preview_instance.preview(str(e.id), _picked.get("frame", ""), _picked.get("mod", ""))
-		"frame":
-			_preview_instance.preview(_picked.get("race", ""), str(e.id), _picked.get("mod", ""))
-		"mod":
-			_preview_instance.preview(_picked.get("race", ""), _picked.get("frame", ""), str(e.id))
-		_:
-			_preview_instance.preview(_picked.get("race", ""), _picked.get("frame", ""), _picked.get("mod", ""))
+		"race": cur_race = str(e.id)
+		"frame": cur_frame = str(e.id)
+		"mod": cur_mod = str(e.id)
+	_preview_instance.preview(cur_race, cur_frame, cur_mod)
+	_show_identity_art(str(cur_race), str(cur_frame), str(cur_mod))
 
 func _render_final_preview() -> void:
 	var stats := CharacterCreatorLogic.build_starting_stats(_picked.race, "Factionless", _picked.frame)
@@ -350,3 +362,13 @@ func _do_transition_to_liminal() -> void:
 	var err := LayerManager.transition_to("liminal", true)
 	if not err:
 		push_error("VentureWizard: transition_to(liminal) failed")
+
+## Shows the generated identity sprite for this build over the 3D preview,
+## or hides it so the procedural preview shows through. Sex is unspecified in
+## this wizard, so IdentityArt falls back male -> base on its own.
+func _show_identity_art(race_id: String, frame_id: String, mod_id: String) -> void:
+	if _art == null:
+		return
+	var tex := IdentityArt.portrait(race_id, "", frame_id, mod_id)
+	_art.texture = tex
+	_art.visible = tex != null
