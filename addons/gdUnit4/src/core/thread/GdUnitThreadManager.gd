@@ -3,7 +3,7 @@ class_name GdUnitThreadManager
 extends Object
 
 ## { <thread_id> = <GdUnitThreadContext> }
-var _thread_context_by_id := {}
+var _thread_context_by_id: Dictionary[int, GdUnitThreadContext] = {}
 ## holds the current thread id
 var _current_thread_id :int = -1
 
@@ -25,6 +25,11 @@ static func run(name :String, cb :Callable) -> Variant:
 	return await instance()._run(name, cb)
 
 
+static func interrupt() -> void:
+	for thread_context: GdUnitThreadContext in instance()._thread_context_by_id.values():
+		thread_context.terminate()
+
+
 ## Returns the current valid thread context
 static func get_current_context() -> GdUnitThreadContext:
 	return instance()._get_current_context()
@@ -36,6 +41,7 @@ func _run(name :String, cb :Callable) -> Variant:
 	var save_current_thread_id := _current_thread_id
 	var thread := Thread.new()
 	thread.set_meta("name", name)
+	@warning_ignore("return_value_discarded")
 	thread.start(cb)
 	_current_thread_id = thread.get_id() as int
 	_register_thread(thread, _current_thread_id)
@@ -52,8 +58,9 @@ func _register_thread(thread :Thread, thread_id :int) -> void:
 
 
 func _unregister_thread(thread_id :int) -> void:
-	var context := _thread_context_by_id.get(thread_id) as GdUnitThreadContext
+	var context: GdUnitThreadContext = _thread_context_by_id.get(thread_id)
 	if context:
+		@warning_ignore("return_value_discarded")
 		_thread_context_by_id.erase(thread_id)
 		context.dispose()
 
