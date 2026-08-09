@@ -7,6 +7,13 @@ var _editor_visible: bool = false # Track editor visibility
 
 
 func _enter_tree() -> void:
+	# Only register when a debugger session is actually attached. Registering
+	# unconditionally (e.g. in headless/CI boots or plain runs) makes the engine
+	# attempt a matching unregister at exit for a capture it never tore down,
+	# logging "Capture not registered: 'beehave'.". gdUnit4 guards this the
+	# same way via EngineDebugger.is_active().
+	if not EngineDebugger.is_active():
+		return
 	EngineDebugger.register_message_capture("beehave", _on_debug_message)
 
 
