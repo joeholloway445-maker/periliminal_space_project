@@ -746,6 +746,7 @@ func _on_cast(sk: Dictionary) -> void:
 	var Hope = AutoloadGate.get_node("Hope")
 	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
 	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _player == null or not is_instance_valid(_player):
 		return
 	# Online: broadcast cast so remotes can flash the same telegraph/VFX.

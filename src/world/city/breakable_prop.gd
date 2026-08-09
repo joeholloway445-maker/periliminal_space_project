@@ -87,6 +87,8 @@ func take_hit(amount: int) -> void:
 		_demolish()
 
 func _demolish() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	broken = true
 	_visual.visible = false
 	_rubble.visible = true
@@ -97,6 +99,8 @@ func _demolish() -> void:
 	demolished.emit(self)
 
 func try_rebuild() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not broken:
 		return
 	if not await EconomyManager.spend_currency("fragments", REBUILD_COST, "rebuild_prop"):

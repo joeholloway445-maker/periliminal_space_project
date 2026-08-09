@@ -45,6 +45,7 @@ func propose_trade(
 	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	var counterparty := to_player.strip_edges()
 	if counterparty == "" or counterparty == PlayerProfile.username:
 		NotificationUI.notify_error("Pick another player to trade with.")
@@ -107,6 +108,7 @@ func accept_trade(trade_id: String) -> bool:
 	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	var offer: Dictionary = _offers.get(trade_id, {})
 	if offer.is_empty() or str(offer.get("status", "")) != "open":
 		return false

@@ -14,6 +14,8 @@ var _ult_bar: ProgressBar
 var _bar_label: Label
 
 func _ready() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var root := HBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	root.position.y -= 90
@@ -58,6 +60,7 @@ func _ready() -> void:
 	_refresh()
 
 func _unhandled_input(event: InputEvent) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_1: _cast_slot(0)
@@ -69,12 +72,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_TAB: SkillManager.swap_bar()
 
 func _cast_slot(i: int) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var sid: String = SkillManager.current_bar().actives[i]
 	if sid == "":
 		return
 	if _cooldowns.get(sid, 0.0) > 0.0:
 		return
-	var sk := SkillManager.resolved(sid)
+	var sk = SkillManager.resolved(sid)
 	if sk.is_empty():
 		return
 	if not SkillManager.try_pay_flux(float(sk.get("cost", 20))):
@@ -85,10 +90,12 @@ func _cast_slot(i: int) -> void:
 	cast_requested.emit(sk)
 
 func _cast_ultimate() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var sid: String = SkillManager.current_bar().ultimate
 	if sid == "":
 		return
-	var sk := SkillManager.resolved(sid)
+	var sk = SkillManager.resolved(sid)
 	if not SkillManager.try_pay_ultimate(float(sk.get("ult_cost", 100))):
 		NotificationUI.notify_info("Ultimate still charging.")
 		return
@@ -96,21 +103,24 @@ func _cast_ultimate() -> void:
 	cast_requested.emit(sk)
 
 func _process(delta: float) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	for sid in _cooldowns.keys():
 		_cooldowns[sid] = maxf(_cooldowns[sid] - delta, 0.0)
 	_flux_bar.max_value = SkillManager.flux_max
 	_flux_bar.value = SkillManager.flux
-	var ult := SkillManager.resolved(SkillManager.current_bar().ultimate)
+	var ult = SkillManager.resolved(SkillManager.current_bar().ultimate)
 	_ult_bar.max_value = float(ult.get("ult_cost", 100))
 	_ult_bar.value = minf(SkillManager.ultimate_charge, _ult_bar.max_value)
 	_refresh_labels()
 
 func _refresh() -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	_bar_label.text = ["I", "II"][SkillManager.active_bar] + (" ⇄" if SkillManager.can_swap() else "")
 	_refresh_labels()
 
 func _refresh_labels() -> void:
-	var bar := SkillManager.current_bar()
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var bar = SkillManager.current_bar()
 	for i in range(5):
 		var sid: String = bar.actives[i]
 		var b := _slots[i]
@@ -119,7 +129,7 @@ func _refresh_labels() -> void:
 			b.disabled = true
 			continue
 		b.disabled = false
-		var sk := SkillManager.resolved(sid)
+		var sk = SkillManager.resolved(sid)
 		var cd: float = _cooldowns.get(sid, 0.0)
 		b.text = "%d\n%s%s" % [i + 1, str(sk.get("name", "?")).left(10), ("\n%.0fs" % cd) if cd > 0.0 else ""]
 	var usid: String = bar.ultimate

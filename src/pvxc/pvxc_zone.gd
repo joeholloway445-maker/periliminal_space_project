@@ -33,6 +33,9 @@ var _peer_hp: Dictionary = {}
 var _presence_wired := false
 
 func _ready() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	if not PvxcManager.in_run:
 		# No stake, no entry — bounce to the gate UI.
 		get_tree().change_scene_to_file.call_deferred("res://scenes/pvxc/pvxc_gate.tscn")
@@ -100,6 +103,7 @@ func _set_creatures_active(active: bool) -> void:
 			c.global_position.y = 0.0
 
 func _ensure_presence() -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
 	if _presence_wired:
 		return
 	_presence_wired = true
@@ -110,6 +114,7 @@ func _ensure_presence() -> void:
 	PresenceManager.join_layer("pvxc")
 
 func _on_peer_joined(pid: String, prof: Dictionary) -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if _peers.has(pid):
 		return
 	var rp := RemotePlayer.new()
@@ -123,6 +128,7 @@ func _on_peer_joined(pid: String, prof: Dictionary) -> void:
 	_peer_hp[pid] = 80 + randi() % 60
 
 func _on_peer_updated(pid: String, pos: Vector3) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
 	if not _peers.has(pid):
 		_on_peer_joined(pid, PresenceManager.peer_profile(pid))
 	if _peers.has(pid) and is_instance_valid(_peers[pid]):
@@ -138,6 +144,8 @@ func _on_peer_left(pid: String) -> void:
 	_peer_hp.erase(pid)
 
 func _on_bot_cast(pid: String, skill: Dictionary) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if not PvxcManager.is_pvp_phase():
 		return
 	if not _peers.has(pid) or not is_instance_valid(_peers[pid]):
@@ -159,6 +167,7 @@ func _on_bot_cast(pid: String, skill: Dictionary) -> void:
 
 
 func _build_arena() -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	# Environment: windowless casino-basement dark, red bleed from the core.
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
@@ -268,6 +277,8 @@ func _build_arena() -> void:
 		_spawn_gate(Vector3(cos(a) * (RIM - 3.0), 0, sin(a) * (RIM - 3.0)))
 
 func _spawn_harvest_node(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	var node := Area3D.new()
 	var mi := MeshInstance3D.new()
 	var prism := PrismMesh.new()
@@ -298,6 +309,8 @@ func _spawn_harvest_node(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	add_child(node)
 
 func _spawn_creature(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	var roster := CompanionRegistry.get_all()
 	if roster.is_empty():
 		return
@@ -314,6 +327,8 @@ func _spawn_creature(pos: Vector3, rng: RandomNumberGenerator) -> void:
 		NotificationUI.notify_win("🗡️ %s down (+%d bounty)" % [creature.entity.get("name", "?"), creature.bounty]))
 
 func _spawn_gate(pos: Vector3) -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	var gate := Area3D.new()
 	var mi := MeshInstance3D.new()
 	var box := BoxMesh.new()
@@ -343,6 +358,10 @@ func _spawn_gate(pos: Vector3) -> void:
 
 ## Skill effect resolution — the hotbar emits, the zone applies.
 func _on_cast(sk: Dictionary) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
 	if not PvxcManager.in_run:
 		return
 	var kind: String = sk.get("kind", "damage")
@@ -352,7 +371,7 @@ func _on_cast(sk: Dictionary) -> void:
 	var dmg := int(_attack_damage * power)
 	# VFX: every cast flashes in your sensorium's light — unless the player
 	# forged a blueprint for this skill, in which case THEIR design plays.
-	var cast_bp := BlueprintManager.equipped_for("skill", str(sk.get("id", "")))
+	var cast_bp = BlueprintManager.equipped_for("skill", str(sk.get("id", "")))
 	if not cast_bp.is_empty():
 		SkillVFX.blueprint_cast(self, _player.global_position, cast_bp)
 	else:
@@ -439,6 +458,7 @@ func _targets_for(shape: String, radius: float) -> Array[PvxcCreature]:
 	return out
 
 func _hit_peers(shape: String, radius: float, dmg: int) -> int:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	var hit := 0
 	var origin := _player.global_position
 	var fwd := -_player.global_transform.basis.z
@@ -471,6 +491,8 @@ func _hit_peers(shape: String, radius: float, dmg: int) -> int:
 	return hit
 
 func _on_player_bitten(damage: int) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if PvxcManager.is_pvp_phase():
 		return # wildlife sleeps during PvP
 	SkillManager.gain_ultimate(3.0) # taking hits charges the ultimate too
@@ -492,6 +514,8 @@ func _on_player_bitten(damage: int) -> void:
 		_on_player_bitten_fatal(killer)
 
 func _on_player_bitten_fatal(killer: String) -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	PvxcManager.record_death(killer)
 	MusicManager.exit_racing()
 	get_tree().change_scene_to_file("res://scenes/pvxc/pvxc_gate.tscn")
@@ -500,9 +524,12 @@ func _on_player_bitten_fatal(killer: String) -> void:
 const CROWN_BUFF := 1.5 # Mandate of Stone: Crown structures last longer, hit harder
 
 func _faction_mult() -> float:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	return CROWN_BUFF if PlayerProfile.faction == "SovereignCrown" else 1.0
 
 func _spawn_wall(at: Vector3, power: float) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var wall := StaticBody3D.new()
 	var mi := MeshInstance3D.new()
 	var box := BoxMesh.new()
@@ -564,6 +591,8 @@ func _spawn_sentry(at: Vector3, power: float) -> void:
 		if is_instance_valid(sentry): sentry.queue_free())
 
 func _spawn_summon(at: Vector3, power: float) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	# A made creature: chases the nearest hostile and bites it.
 	var ally := Node3D.new()
 	var mi := MeshInstance3D.new()
@@ -601,7 +630,9 @@ func _spawn_summon(at: Vector3, power: float) -> void:
 		if is_instance_valid(ally): ally.queue_free())
 
 func _apply_transform(power: float, is_ult: bool) -> void:
-	var wa := PlayerProfile.faction == "WildlandsAscendant"
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var wa = PlayerProfile.faction == "WildlandsAscendant"
 	var dur := (12.0 if is_ult else 8.0) * (1.3 if wa else 1.0) # Green Memory
 	var mult := 1.0 + 0.3 * power
 	_attack_damage = int(_attack_damage * mult)
@@ -613,6 +644,7 @@ func _apply_transform(power: float, is_ult: bool) -> void:
 		if is_instance_valid(_player): _player.scale = Vector3.ONE)
 
 func _build_hud() -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	_hud_mult = Label.new()
@@ -633,17 +665,19 @@ func _build_hud() -> void:
 	var target := Label.new()
 	target.position = Vector2(10, 84)
 	target.modulate = Color(1, 0.4, 0.4)
-	var t := PvxcManager.my_target()
+	var t = PvxcManager.my_target()
 	target.text = "⚔️ Revenge target inside: %s" % t if t != "" else ""
 	layer.add_child(target)
 
 func _process(_delta: float) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if _player == null or not is_instance_valid(_player):
 		return
 	if _presence_wired:
 		PresenceManager.report_position(_player.global_position)
-	var m := PvxcManager.mult_at(_player.global_position)
-	var red := PvxcManager.in_red_core(_player.global_position)
+	var m = PvxcManager.mult_at(_player.global_position)
+	var red = PvxcManager.in_red_core(_player.global_position)
 	_hud_mult.text = "🔴 RED CORE — x12" if red else "PVXC — x%d" % int(m)
 	_hud_mult.modulate = Color(1, 0.15, 0.2) if red else Color(1, 0.8, 0.3)
 	var secs := int(PvxcManager.phase_seconds_left())

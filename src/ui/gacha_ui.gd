@@ -33,6 +33,8 @@ func _ready() -> void:
 	UINav.add_back_button(self)
 
 func _summon(count: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var factions := ["", "SovereignCrown", "WildlandsAscendant", "VeiledCurrent", "Factionless"]
 	var faction: String = factions[faction_option.selected] if faction_option else ""
 	if single_btn:
@@ -54,6 +56,8 @@ func _summon(count: int) -> void:
 	)
 
 func _show_results(companions: Array) -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	for child in result_container.get_children():
 		child.queue_free()
 

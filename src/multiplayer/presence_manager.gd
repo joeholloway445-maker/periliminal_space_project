@@ -49,8 +49,8 @@ var _online_peers: Dictionary = {} # peer_id -> profile
 var _current_layer := ""
 
 func _ready() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	LayerManager.layer_changed.connect(func(_f, to):
-		var LayerManager = AutoloadGate.get_node("LayerManager")
 		join_layer(to))
 
 func join_layer(layer_id: String) -> void:

@@ -29,6 +29,7 @@ func set_visual_mode(mode: String) -> void:
 	_rebuild_body()
 
 func _rebuild_body() -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var seen: Dictionary = IdentityLens.perceive_being(profile, Color(0.7, 0.6, 0.5))
 	var race_id := str(profile.get("race_id", ""))
 	# Seeded RNG so remotes get upright variant pools, not the broken ship slots.

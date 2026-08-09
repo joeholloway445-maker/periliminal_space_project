@@ -42,12 +42,14 @@ var flux_max := 100.0
 var flux_regen := 8.0
 
 func _ready() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	_load()
 	_recompute_pools()
 	PlayerProfile.profile_updated.connect(_recompute_pools)
 	_auto_slot_starters()
 
 func _recompute_pools() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var stats := CharacterCreatorLogic.build_starting_stats(
 		PlayerProfile.selected_race_id, PlayerProfile.faction,
 		PlayerProfile.selected_frame, PlayerProfile.selected_mod)
@@ -63,6 +65,7 @@ func _process(delta: float) -> void:
 ## First-time starter kit so combat works out of the box: frame line's
 ## first two actives + liminal Doorframe + frame ultimate on bar A.
 func _auto_slot_starters() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if bars[0].actives[0] != "":
 		return
 	var line := SkillData.frame_line(PlayerProfile.selected_frame)
@@ -80,6 +83,7 @@ func _auto_slot_starters() -> void:
 
 ## ── Lines & lookup ────────────────────────────────────────────────────────
 func known_lines() -> Array[Dictionary]:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	return SkillData.lines_for(
 		PlayerProfile.selected_race_id, PlayerProfile.selected_frame,
 		PlayerProfile.ascended_frame, PlayerProfile.faction)
@@ -97,6 +101,7 @@ func find_skill(skill_id: String) -> Dictionary:
 
 ## ── Points, ranks, morphs ─────────────────────────────────────────────────
 func grant_points(n: int, why: String = "") -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	skill_points += n
 	NotificationUI.notify_info("✴️ +%d skill point%s%s" % [n, "s" if n > 1 else "", (" — " + why) if why else ""])
 	_save()
@@ -105,6 +110,7 @@ func is_unlocked(skill_id: String) -> bool:
 	return _unlocked.get(skill_id, false)
 
 func unlock(skill_id: String) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if is_unlocked(skill_id):
 		return true
 	# Prestige lines spend 🌟 Prestige, not skill points.
@@ -145,6 +151,9 @@ func prestige_unlock_cost(skill_id: String) -> int:
 ## Spend Prestige to unlock a social/wagering node. Influence level is
 ## unchanged (lifetime prestige still counts) — this is the designed sink.
 func unlock_with_prestige(skill_id: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	if is_unlocked(skill_id):
 		return true
 	if not is_prestige_skill(skill_id):
@@ -178,6 +187,7 @@ func morph_of(skill_id: String) -> String:
 	return _ranks.get(skill_id, {}).get("morph", "")
 
 func add_skill_xp(skill_id: String, xp: int = CAST_XP) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _ranks.has(skill_id):
 		return
 	var r: Dictionary = _ranks[skill_id]
@@ -205,6 +215,7 @@ func choose_morph(skill_id: String, morph_id: String) -> bool:
 ## Effective numbers for a skill including rank scaling (+8%/rank) & morph.
 ## Attune a whole line to one of the six entity forces (or "" to clear).
 func attune_line(line_id: String, element_id: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if element_id != "" and not SkillData.ELEMENTS.has(element_id):
 		return
 	_attunements[line_id] = element_id
@@ -248,6 +259,8 @@ func resolved(skill_id: String) -> Dictionary:
 
 ## ── Bars ──────────────────────────────────────────────────────────────────
 func slot_skill(bar: int, slot: int, skill_id: String, free: bool = false) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if bar == 1 and PlayerProfile.ascended_frame == "":
 		NotificationUI.notify_error("Bar II unlocks with your ascended frame.")
 		return false
@@ -271,9 +284,11 @@ func slot_ultimate(bar: int, skill_id: String, free: bool = false) -> bool:
 	return true
 
 func can_swap() -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	return PlayerProfile.ascended_frame != ""
 
 func swap_bar() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not can_swap():
 		NotificationUI.notify_info("A second bar needs a second frame — ascend at level 50.")
 		return

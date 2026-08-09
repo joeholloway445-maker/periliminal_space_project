@@ -19,7 +19,11 @@ var _wave := 0
 var _hud: Label
 
 func _ready() -> void:
-	var rules := AscensionTrial.round_rules()
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var AscensionTrial = AutoloadGate.get_node("AscensionTrial")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
+	var rules = AscensionTrial.round_rules()
 	if rules.is_empty():
 		get_tree().change_scene_to_file.call_deferred("res://scenes/ui/ascension.tscn")
 		return
@@ -52,6 +56,7 @@ func _ready() -> void:
 		_spawn_shadow(rules.shadow_frame)
 
 func _build_arena() -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.04, 0.03, 0.08)
@@ -90,6 +95,8 @@ func _build_arena() -> void:
 	add_child(lamp)
 
 func _next_wave() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var AscensionTrial = AutoloadGate.get_node("AscensionTrial")
 	_wave += 1
 	if _wave > WAVES:
 		AscensionTrial.win_round()
@@ -111,6 +118,10 @@ func _next_wave() -> void:
 
 ## The shadow: Knoll in your silhouette, biased by Hope's read on you.
 func _spawn_shadow(shadow_frame: String) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
+	var AscensionTrial = AutoloadGate.get_node("AscensionTrial")
 	var stats := CharacterCreatorLogic.build_starting_stats(
 		PlayerProfile.selected_race_id, PlayerProfile.faction,
 		shadow_frame, PlayerProfile.selected_mod)
@@ -133,6 +144,8 @@ func _spawn_shadow(shadow_frame: String) -> void:
 	NotificationUI.notify_info("👤 Knoll steps out of your shadow. It has been taking notes.")
 
 func _on_bitten(damage: int) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var AscensionTrial = AutoloadGate.get_node("AscensionTrial")
 	SkillManager.gain_ultimate(3.0)
 	if _shield > 0:
 		var ab := mini(_shield, damage)
@@ -143,6 +156,7 @@ func _on_bitten(damage: int) -> void:
 		AscensionTrial.lose(AscensionTrial.current_round)
 
 func _on_cast(sk: Dictionary) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	SkillVFX.cast_flash(self, _player.global_position)
 	var radius: float = maxf(float(sk.get("radius", 3.0)), 4.0)
 	var power: float = float(sk.get("power", 1.0))
@@ -162,6 +176,7 @@ func _on_cast(sk: Dictionary) -> void:
 					SkillManager.gain_ultimate(6.0)
 
 func _process(_d: float) -> void:
+	var AscensionTrial = AutoloadGate.get_node("AscensionTrial")
 	if _hud == null:
 		return
 	var line := "ROUND %d   HP %d" % [AscensionTrial.current_round, maxi(_player_hp, 0)]

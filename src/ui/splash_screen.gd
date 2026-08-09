@@ -80,6 +80,7 @@ func _build_ui() -> void:
 	vbox.add_child(_status_label)
 
 func _start_loading() -> void:
+	var GameManager = AutoloadGate.get_node("GameManager")
 	# Kick core systems while the cosmetic bar advances so login lands in
 	# GameState.LOGIN and restored sessions can skip straight to title.
 	if GameManager and GameManager.game_state == GameManager.GameState.LOADING:

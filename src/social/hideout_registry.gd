@@ -85,6 +85,9 @@ func can_claim(site_id: String, guild: String) -> Dictionary:
 	return {ok = true, reason = ""}
 
 func claim(site_id: String, guild: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var ExtraliminalManager = AutoloadGate.get_node("ExtraliminalManager")
 	var check := can_claim(site_id, guild)
 	if not check.ok:
 		NotificationUI.notify_error(str(check.reason))
@@ -124,6 +127,7 @@ func claim(site_id: String, guild: String) -> bool:
 ## room_data comes from RoomNetwork.get_room(): {room_id, seed, pos:[x,z], author_rfm:{...}, ...}
 ## Uses the existing claim system: exclusion radius, token cost, Extraliminal shadow.
 func claim_room_as_guild_hall(room_data: Dictionary, guild_name: String = "") -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var room_id := str(room_data.get("room_id", ""))
 	if room_id.is_empty():
 		NotificationUI.notify_error("No room data to claim.")
@@ -156,6 +160,8 @@ func claim_room_as_guild_hall(room_data: Dictionary, guild_name: String = "") ->
 ## ── Defenders: leave an entity, lose the entity (until it's back) ──────
 
 func assign_defender(site_id: String, companion_id: String) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _sites.has(site_id):
 		return false
 	if companion_id not in PlayerProfile.active_companion_ids:
@@ -171,6 +177,8 @@ func assign_defender(site_id: String, companion_id: String) -> bool:
 	return true
 
 func recall_defenders(site_id: String) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _sites.has(site_id):
 		return
 	var back: Array = _sites[site_id]["defenders"]
@@ -221,6 +229,9 @@ func _get_player_guild() -> String:
 
 ## Transfer ownership after a live siege clears the garrison. No dice.
 func resolve_contest_win(site_id: String, attacker_guild: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var ExtraliminalManager = AutoloadGate.get_node("ExtraliminalManager")
 	var holder := owner_of(site_id)
 	if holder == "" or holder == attacker_guild:
 		return false
@@ -259,10 +270,13 @@ func resolve_contest_win(site_id: String, attacker_guild: String) -> bool:
 
 ## Soft fallback — used when a live siege cannot start. Prefer resolve_contest_win.
 func contest(site_id: String, attacker_guild: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var holder := owner_of(site_id)
 	if holder == "" or holder == attacker_guild:
 		return false
-	var attack := PlayerProfile.level * 6 + randi() % 45
+	var attack = PlayerProfile.level * 6 + randi() % 45
 	for cid in PlayerProfile.active_companion_ids:
 		attack += 8 + _rarity_power(CompanionRegistry.get_by_id(str(cid))) / 2
 	var defense := defense_power(site_id) + randi() % 45

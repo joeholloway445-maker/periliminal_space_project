@@ -21,9 +21,11 @@ const SOFT_SUCCESS_RPCS := [
 ]
 
 func _get_client():
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	return AccountManager.get_nakama_client() if AccountManager else null
 
 func _get_session():
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	return AccountManager.get_nakama_session() if AccountManager else null
 
 func _resolve_rpc_id(rpc_id: String) -> String:
@@ -139,6 +141,7 @@ func _normalize_response(rpc_id: String, data: Dictionary) -> Dictionary:
 	return out
 
 func is_connected_to_server() -> bool:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	return AccountManager.is_authenticated if AccountManager else false
 
 func get_session():

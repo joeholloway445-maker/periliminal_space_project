@@ -45,6 +45,8 @@ var _phone_toggle: Button
 
 # ── Init ───────────────────────────────────────────────────────────────────
 func _ready() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var ExtraliminalManager = AutoloadGate.get_node("ExtraliminalManager")
 	LayerManager.current_layer_id = "extraliminal"
 	layer = 10
 
@@ -114,6 +116,7 @@ func _build_map_background() -> void:
 	_map_root.add_child(title)
 
 func _build_landmark_markers() -> void:
+	var ExtraliminalManager = AutoloadGate.get_node("ExtraliminalManager")
 	## Pulse-icon marker for each landmark, clickable.
 	for lm_data in ExtraliminalManager.LANDMARKS:
 		var lm: Dictionary = lm_data
@@ -368,6 +371,7 @@ func _animate_pulses() -> void:
 		ring.modulate = Color(0.8, 0.5, 1.0, pulse)
 
 func _check_proximity() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	## Auto-hint when player is near a landmark.
 	if _info_panel.visible or _encounter_active:
 		return
@@ -379,6 +383,7 @@ func _check_proximity() -> void:
 
 # ── Landmark interaction ───────────────────────────────────────────────────
 func _on_landmark_tap(event: InputEvent, lid: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	if _encounter_active:
@@ -394,13 +399,15 @@ func _on_landmark_tap(event: InputEvent, lid: String) -> void:
 	_show_landmark_info(lid)
 
 func _show_landmark_info(lid: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var ExtraliminalManager = AutoloadGate.get_node("ExtraliminalManager")
 	## Slide up the info panel with encounter / claim options.
 	var lname: String = LANDMARK_NAMES.get(lid, lid)
-	var owner := ExtraliminalManager.landmark_owner(lid)
+	var owner = ExtraliminalManager.landmark_owner(lid)
 	var guild := _my_guild()
 
 	# Spawn a roaming entity for this landmark
-	var entity := ExtraliminalManager.spawn_wild_entity(lid)
+	var entity = ExtraliminalManager.spawn_wild_entity(lid)
 	if entity.is_empty():
 		NotificationUI.notify_info("Nothing stirs at %s right now." % lname)
 		return
@@ -450,6 +457,9 @@ func _category_string(entity: Dictionary) -> String:
 		_: return "Wild Entity"
 
 func _on_claim_landmark() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var ExtraliminalManager = AutoloadGate.get_node("ExtraliminalManager")
 	## Claim the current landmark for the player's guild.
 	if _current_lid.is_empty():
 		return
@@ -490,6 +500,7 @@ func _on_fight() -> void:
 	_show_encounter_screen()
 
 func _show_encounter_screen() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	## Build (or show) the battle overlay.
 	if _encounter_root == null:
 		_build_encounter_ui()
@@ -675,6 +686,7 @@ var _encounter_stage := 1
 var _encounter_doing_animation := false
 
 func _on_encounter_attack() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	## Player taps ATTACK — deal damage, then entity retaliates.
 	if _encounter_doing_animation:
 		return
@@ -711,6 +723,7 @@ func _on_encounter_attack() -> void:
 	_encounter_doing_animation = false
 
 func _on_encounter_flee() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	## Player flees the encounter.
 	_encounter_doing_animation = true
 	_set_status_text("You fled the encounter!")
@@ -721,6 +734,8 @@ func _on_encounter_flee() -> void:
 	_end_encounter()
 
 func _on_encounter_won() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_set_status_text("✦ Defeated! Attempting bond...")
 	_flash_overlay(Color(0.9, 0.8, 0.3, 0.35))
 	await get_tree().create_timer(1.0).timeout
@@ -758,6 +773,9 @@ func _on_encounter_won() -> void:
 	_end_encounter()
 
 func _on_encounter_lost() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_set_status_text("💀 You collapsed! Returning to the map...")
 	_flash_overlay(Color(0.8, 0.05, 0.05, 0.4))
 	PlayerProfile.health = maxi(PlayerProfile.health - 15, 0)
@@ -850,14 +868,19 @@ func _on_war_resolved(lid: String, _winner: String) -> void:
 		war_icon.modulate = Color(1.0, 0.2, 0.2, 0.0)
 
 func _my_guild() -> String:
+	var GuildManager = AutoloadGate.get_node("GuildManager")
 	if not GuildManager.in_guild():
 		return ""
 	return str(GuildManager.guild.get("name", ""))
 
 func _exit_to_liminal() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	LayerManager.transition_to("liminal")
 
 func _on_descend_pressed() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var PartyManager = AutoloadGate.get_node("PartyManager")
 	var members: Array[String] = []
 	if PartyManager != null:
 		members = PartyManager.members()
@@ -869,10 +892,11 @@ func _on_descend_pressed() -> void:
 		LayerManager.transition_to("periliminal", true)
 
 func _refresh_descend_button(_members: Array) -> void:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
 	var btn := _map_root.get_node_or_null("DescendBtn") as Button
 	if btn == null:
 		return
-	var party_size := PartyManager.size() if PartyManager != null else 1
+	var party_size = PartyManager.size() if PartyManager != null else 1
 	btn.text = "🔴 Descend (%s)" % ("party" if party_size > 1 else "solo")
 
 # ── Encounter overlay for mobile ──────────────────────────────────────────

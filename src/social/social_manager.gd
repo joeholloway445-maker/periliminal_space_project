@@ -30,6 +30,7 @@ func _ready() -> void:
 	pass
 
 func initialize() -> void:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	if AccountManager and AccountManager.is_authenticated:
 		_nakama_client = AccountManager.get_nakama_client()
 		_session       = AccountManager.get_nakama_session()

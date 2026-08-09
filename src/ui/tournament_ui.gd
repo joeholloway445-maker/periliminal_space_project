@@ -63,6 +63,7 @@ func _render(tournaments: Array) -> void:
 	_render_local_cups()
 
 func _render_local_cups() -> void:
+	var TournamentManager = AutoloadGate.get_node("TournamentManager")
 	var header := Label.new()
 	header.text = "🏁 LOCAL RACING CUPS"
 	header.add_theme_font_size_override("font_size", 18)

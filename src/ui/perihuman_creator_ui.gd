@@ -41,6 +41,7 @@ var _cam_dist := 2.6
 var _cam_focus := Vector3(0, 1.0, 0)
 
 func _ready() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	_dna = HumanPresets.get_preset(0)
 	if PlayerProfile and not PlayerProfile.perihuman_dna.is_empty():
 		_dna = HumanDNA.from_dict(PlayerProfile.perihuman_dna)
@@ -183,6 +184,7 @@ func _build_stage() -> void:
 ## sensorium frame, mod) via HumanIdentity, instead of hand-sculpting.
 ## This is what a citizen wearing your race/frame/mod actually looks like.
 func _build_identity_tab(tabs: TabContainer) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var vbox := _scroll_vbox(tabs, "Identity")
 	_section(vbox, "GENERATE FROM RACE / FRAME / MOD")
 	var note := Label.new()
@@ -241,6 +243,7 @@ func _select_by_id(option: OptionButton, table: Array, id: String, index_offset:
 			return
 
 func _on_generate_identity() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var race_id := ""
 	if _race_option.selected >= 0:
 		race_id = str(RaceDataCharacter.RACES[_race_option.selected].id)
@@ -250,7 +253,7 @@ func _on_generate_identity() -> void:
 	var mod_id := ""
 	if _mod_option.selected >= 1:
 		mod_id = str(FrameModData.MODS[_mod_option.selected - 1].id)
-	var seed_value := (PlayerProfile.username.hash() if PlayerProfile else 0) ^ race_id.hash()
+	var seed_value = (PlayerProfile.username.hash() if PlayerProfile else 0) ^ race_id.hash()
 	_load_dna(HumanIdentity.build(race_id, frame_id, mod_id, seed_value))
 
 func _build_presets_tab(tabs: TabContainer) -> void:
@@ -501,11 +504,13 @@ func _on_delete_selected() -> void:
 	_refresh_saved_list()
 
 func _on_use() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if PlayerProfile:
 		PlayerProfile.set_perihuman_dna(_dna.to_dict())
 	_notify("%s is now your human." % _dna.display_name)
 
 func _notify(msg: String, is_error := false) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if NotificationUI != null:
 		if is_error:
 			NotificationUI.notify_error(msg)

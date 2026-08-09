@@ -11,6 +11,8 @@ var _guest_btn: Button
 var _status_label: Label
 
 func _ready() -> void:
+	var GameManager = AutoloadGate.get_node("GameManager")
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	_email_field = $CenterContainer/VBox/EmailField
 	_password_field = $CenterContainer/VBox/PasswordField
 	_login_btn = $CenterContainer/VBox/LoginButton
@@ -39,6 +41,7 @@ func _ensure_guest_button() -> void:
 		vbox.move_child(_guest_btn, status_idx)
 
 func _on_login_pressed() -> void:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	var email := _email_field.text.strip_edges()
 	var password := _password_field.text
 	if email.is_empty() or password.is_empty():
@@ -51,6 +54,7 @@ func _on_login_pressed() -> void:
 		_set_busy(false)
 
 func _on_register_pressed() -> void:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	var email := _email_field.text.strip_edges()
 	var password := _password_field.text
 	if email.is_empty() or password.is_empty():
@@ -66,6 +70,7 @@ func _on_register_pressed() -> void:
 		_set_busy(false)
 
 func _on_guest_pressed() -> void:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	_set_busy(true)
 	_set_status("Entering offline…")
 	await AccountManager.auth_guest()

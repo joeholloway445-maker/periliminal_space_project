@@ -113,6 +113,7 @@ func _ready() -> void:
 	_load()
 
 func has_apartment_access() -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	# Expeditions own a Subliminal berth; Continue Expedition must work at L1.
 	if PlayerProfile.has_expedition:
 		return true
@@ -341,6 +342,7 @@ func remove_saved_room(room_id: String) -> bool:
 func enter_saved_room(room_id: String) -> void:
 	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var IdentityLens = AutoloadGate.get_node("IdentityLens")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var path := "user://rooms/%s.tscn" % room_id
 	if FileAccess.file_exists(path):
 		get_tree().change_scene_to_file(path)

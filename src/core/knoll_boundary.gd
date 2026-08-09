@@ -130,6 +130,7 @@ func validate_node_heartbeat(node_id: String, pillar: String, sys_load: float) -
 
 ## Report a potential node hallucination or anomalous behavior.
 func report_anomaly(node_id: String, anomaly_type: String, data: Dictionary) -> void:
+	var APEX = AutoloadGate.get_node("APEX")
 	print_rich("[color=red]KNOLL ANOMALY[/color]: [%s] %s — %s" % [node_id, anomaly_type, JSON.stringify(data)])
 	# Escalate to APEX for handling
 	if APEX:

@@ -113,6 +113,7 @@ func _select_faction(faction_id: String) -> void:
 	_confirm_btn.text = "JOIN %s" % faction_id.to_upper()
 
 func _on_confirm() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if _selected_faction.is_empty(): return
 	if PlayerProfile:
 		PlayerProfile.set_faction(_selected_faction)

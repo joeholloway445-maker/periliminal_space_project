@@ -33,6 +33,8 @@ var _last_greeted: Dictionary = {}  # npc_id -> msec tick
 var _dialogue_ui: Control = null
 
 func _ready() -> void:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
+	var NPCManager = AutoloadGate.get_node("NPCManager")
 	if WorldLoader.districts.is_empty():
 		await WorldLoader.world_loaded
 	if player:
@@ -40,13 +42,15 @@ func _ready() -> void:
 	_spawn_npcs()
 
 func _spawn_npcs() -> void:
+	var NPCManager = AutoloadGate.get_node("NPCManager")
 	var player_pos := player.global_position if player else Vector3.ZERO
-	var npc_list := NPCManager.get_npcs_in_district(district_id, player_pos)
-	var to_spawn := npc_list.slice(0, mini(max_npcs_in_district, npc_list.size()))
+	var npc_list = NPCManager.get_npcs_in_district(district_id, player_pos)
+	var to_spawn = npc_list.slice(0, mini(max_npcs_in_district, npc_list.size()))
 	for npc_data in to_spawn:
 		_create_npc(npc_data)
 
 func _create_npc(data: Dictionary) -> void:
+	var NPCManager = AutoloadGate.get_node("NPCManager")
 	var npc_id: String = str(data.get("id", "npc"))
 	if _spawned_npcs.has(npc_id):
 		return
@@ -96,6 +100,7 @@ func _create_npc(data: Dictionary) -> void:
 	NPCManager.register_instance(npc_id, body)
 
 func _on_player_reached(npc_id: String, root: AmbientNpc) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var now := Time.get_ticks_msec()
 	var last: int = _last_greeted.get(npc_id, -1000000)
 	if now - last < int(REGREET_COOLDOWN_S * 1000.0):
@@ -125,6 +130,7 @@ func _open_dialogue(npc_id: String) -> void:
 
 ## Dialogue JSON actions like open_game:blackjack → real table scenes.
 func _on_dialogue_game_opened(game_id: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var scene := _scene_for_game_id(game_id)
 	if scene != "" and ResourceLoader.exists(scene):
 		get_tree().change_scene_to_file(scene)
@@ -149,6 +155,7 @@ static func _scene_for_game_id(game_id: String) -> String:
 			return ""
 
 func _exit_tree() -> void:
+	var NPCManager = AutoloadGate.get_node("NPCManager")
 	for npc_id in _spawned_npcs.keys():
 		NPCManager.unregister_instance(str(npc_id))
 	_spawned_npcs.clear()

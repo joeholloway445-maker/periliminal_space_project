@@ -15,6 +15,7 @@ var buy_chips_button: Button
 var cashout_chips_button: Button
 
 func _ready() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	_ensure_ui()
 	title_label.text = "PAWS VEGAS — Game Lobby"
 	if not close_button.pressed.is_connected(_on_close_pressed):
@@ -127,6 +128,7 @@ func refresh() -> void:
 	_refresh_battlepass()
 
 func _refresh_chips() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if chips_label == null:
 		return
 	var chips := 0
@@ -139,6 +141,8 @@ func _refresh_chips() -> void:
 	chips_label.text = "Chips: %d  ·  Coins: %d  ·  Ex-Coins: %d" % [chips, coins, ex]
 
 func _on_buy_chips() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	# Local cage exchange — house-favorable rate (never 1:1).
 	if EconomyManager == null:
 		return
@@ -151,6 +155,8 @@ func _on_buy_chips() -> void:
 	_refresh_chips()
 
 func _on_cashout_chips() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	# Compliance: chips → Ex-Coins only (never back into purchasable Coins).
 	# Side drops: small random fragments / tokens / charges.
 	if EconomyManager == null:
@@ -172,6 +178,7 @@ func _on_cashout_chips() -> void:
 	_refresh_chips()
 
 func _populate_games() -> void:
+	var GameFactory = AutoloadGate.get_node("GameFactory")
 	if game_grid == null:
 		return
 	for child in game_grid.get_children():
@@ -225,6 +232,7 @@ func _make_game_card(entry: Dictionary) -> PanelContainer:
 	return card
 
 func _populate_events() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	if events_container == null:
 		return
 	for child in events_container.get_children():
@@ -263,6 +271,7 @@ func _populate_events() -> void:
 		events_container.add_child(row)
 
 func _refresh_battlepass() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	if bp_xp_bar == null or bp_label == null or LiveOpsManager == null:
 		return
 	var bp: Dictionary = {}
@@ -282,6 +291,8 @@ func _refresh_battlepass() -> void:
 	bp_label.text = "Battlepass Tier %d — %d / %d XP" % [tier, current, max_xp]
 
 func _make_pvxc_card() -> PanelContainer:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if PvxcManager == null:
 		return null
 	var card := PanelContainer.new()
@@ -320,6 +331,8 @@ func _make_pvxc_card() -> PanelContainer:
 	return card
 
 func _on_game_card_pressed(game_type: int, variant_id: int, scene_path: String = "") -> void:
+	var GameManager = AutoloadGate.get_node("GameManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if scene_path != "" and ResourceLoader.exists(scene_path):
 		get_tree().change_scene_to_file(scene_path)
 		return
