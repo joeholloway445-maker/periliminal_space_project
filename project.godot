@@ -133,7 +133,7 @@ project/assembly_name="Periliminal"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/beehave/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/gdUnit4/plugin.cfg", "res://addons/gloot/plugin.cfg", "res://addons/maaacks_menus_template/plugin.cfg", "res://addons/panku_console/plugin.cfg", "res://addons/phantom_camera/plugin.cfg")
+enabled=PackedStringArray("res://addons/beehave/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/gdUnit4/plugin.cfg", "res://addons/gloot/plugin.cfg", "res://addons/panku_console/plugin.cfg", "res://addons/phantom_camera/plugin.cfg")
 
 [input]
 
@@ -237,13 +237,6 @@ crouch={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://addons/maaacks_menus_template/base/translations/menus_translations.en.translation", "res://addons/maaacks_menus_template/base/translations/menus_translations.fr.translation")
-
-[maaacks_menus_template]
-
-disable_install_audio_busses=true
-disable_update_check=false
-disable_install_wizard=true
 
 [physics]
 

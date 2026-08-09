@@ -158,11 +158,13 @@ func _refresh_missions() -> void:
 		take.disabled = short
 		if short:
 			take.tooltip_text = "Needs a party of %d — you are %d." % [party_needed, party_have]
-		take.pressed.connect(func():
-			var res: Dictionary = PvpMissions.accept(id)
-			if not bool(res.ok) and NotificationUI:
-				NotificationUI.notify_error(str(res.reason)))
+		take.pressed.connect(_accept_mission.bind(id))
 		row2.add_child(take)
+
+func _accept_mission(id: String) -> void:
+	var res: Dictionary = await PvpMissions.accept(id)
+	if not bool(res.ok) and NotificationUI:
+		NotificationUI.notify_error(str(res.reason))
 
 func _refresh_party() -> void:
 	if _party_list == null:
