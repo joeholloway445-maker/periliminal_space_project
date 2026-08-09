@@ -65,18 +65,21 @@ func _on_spin_pressed() -> void:
 	spin(_bet)
 
 func _on_spin_ui_result(segment_name: String, multiplier: float, payout: int) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _result_label:
 		_result_label.text = "%s (x%.1f) — +%d chips" % [segment_name, multiplier, payout]
 	if payout > 0 and NotificationUI:
 		NotificationUI.notify_win("Fortune: +%d" % payout)
 
 func _on_spin_ui_error(message: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _result_label:
 		_result_label.text = message
 	if NotificationUI:
 		NotificationUI.notify_error(message)
 
 func spin(bet: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _spinning:
 		error_occurred.emit("Wheel is spinning")
 		return

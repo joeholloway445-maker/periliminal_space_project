@@ -285,4 +285,5 @@ func _load() -> void:
 ## Using call_deferred avoids Godot 4.7 limitations with lambdas in
 ## deferred calls. Do not call directly; use call_deferred("_transition_to", ...).
 func _transition_to(layer_id: String, pulled: bool = false) -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	LayerManager.transition_to(layer_id, pulled)

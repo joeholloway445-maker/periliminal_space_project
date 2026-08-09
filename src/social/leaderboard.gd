@@ -4,6 +4,7 @@ extends Node
 signal loaded(entries: Array[Dictionary])
 
 func fetch(board_id: String = "global_wins", limit: int = 20) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	NetworkManager.call_rpc("get_leaderboard", {board_id=board_id, limit=limit},
 		func(result: Dictionary):
 			var records: Array[Dictionary] = []
@@ -18,4 +19,5 @@ func fetch(board_id: String = "global_wins", limit: int = 20) -> void:
 	)
 
 func submit_score(board_id: String, score: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	NetworkManager.call_rpc("submit_score", {board_id=board_id, score=score}, func(_r): pass)

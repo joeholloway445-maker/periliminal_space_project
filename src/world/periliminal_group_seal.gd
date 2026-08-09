@@ -92,13 +92,15 @@ func _build_ring() -> void:
 	body_exited.connect(_on_body_exited)
 
 func _update_plate() -> void:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
 	if _plate == null:
 		return
-	var party_size := PartyManager.size() if PartyManager != null else 1
+	var party_size = PartyManager.size() if PartyManager != null else 1
 	var label := "GROUP SEAL" if party_size > 1 else "SOLO SEAL"
 	_plate.text = "PERILIMINAL\n%s\n[Press E]" % label
 
 func _on_body_entered(body: Node3D) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if body != player:
 		return
 	_armed = true
@@ -119,6 +121,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	_enter()
 
 func _enter() -> void:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	var members: Array[String] = []
 	if PartyManager != null:
 		members = PartyManager.members()

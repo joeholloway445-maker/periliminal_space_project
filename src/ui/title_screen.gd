@@ -6,10 +6,12 @@ class_name TitleScreen
 var _content_ref: Control = null
 
 func _ready() -> void:
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	MusicManager.play_context("theme")
 	_build_phone_ui()
 
 func _build_phone_ui() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var b := PhoneUI.boost()
 	var is_phone := PhoneUI.is_phone()
 
@@ -166,6 +168,7 @@ func _build_news_ticker() -> Control:
 	return panel
 
 func _news_lines() -> Array[String]:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	var lines: Array[String] = [
 		"Welcome to Periliminal.Space — the Catsino is just one layer.",
 	]
@@ -183,6 +186,7 @@ func _news_lines() -> Array[String]:
 	return lines
 
 func _continue_expedition() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if not LayerManager.transition_to("subliminal"):
 		get_tree().change_scene_to_file("res://scenes/layers/subliminal.tscn")
 
@@ -223,6 +227,8 @@ func _open_guild() -> void:
 	add_child(panel)
 
 func _build_guild_panel() -> Control:
+	var GuildManager = AutoloadGate.get_node("GuildManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.custom_minimum_size = Vector2(360, 400)
@@ -296,7 +302,7 @@ func _build_guild_panel() -> Control:
 		create_btn.text = "Create"
 		create_btn.pressed.connect(func():
 			if GuildManager != null and GuildManager.has_method("create_guild"):
-				var ok := await GuildManager.create_guild(name_input.text.strip_edges(), tag_input.text.strip_edges())
+				var ok = await GuildManager.create_guild(name_input.text.strip_edges(), tag_input.text.strip_edges())
 				if ok:
 					NotificationUI.notify_win("Guild chartered!")
 					panel.queue_free()
@@ -315,6 +321,8 @@ func _build_guild_panel() -> Control:
 	return panel
 
 func _open_hope() -> void:
+	var Hope = AutoloadGate.get_node("Hope")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if Hope == null:
 		NotificationUI.notify_error("Hope is not awake.")
 		return
@@ -345,7 +353,7 @@ func _open_hope() -> void:
 	top.add_child(close)
 	vbox.add_child(top)
 
-	var stage := Hope.stage()
+	var stage = Hope.stage()
 	var stage_lbl := Label.new()
 	stage_lbl.text = "%s (bond %d)" % [stage.get("name", "Flicker"), Hope.bond]
 	stage_lbl.add_theme_font_size_override("font_size", 16)
@@ -388,6 +396,7 @@ func _open_hope() -> void:
 	add_child(panel)
 
 func _open_calendar() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.custom_minimum_size = Vector2(360, 420)
@@ -459,6 +468,9 @@ func _open_calendar() -> void:
 	add_child(panel)
 
 func _start_prototype_spine() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	LayerManager.enable_prototype_mode(true)
 	if not PlayerProfile.has_expedition:
 		PlayerProfile.set_race(PlayerProfile.selected_race_id)
@@ -478,4 +490,5 @@ func _toggle_omni_dex() -> void:
 	add_child(dex)
 
 func _show_info() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	NotificationUI.notify_info("Periliminal.Space — a psychology XRMMORPG across six reality layers. The Catsino is one of them, not the main game. City streets: © OpenStreetMap contributors (ODbL).")

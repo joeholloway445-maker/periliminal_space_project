@@ -457,7 +457,7 @@ func _on_claim_landmark() -> void:
 	if guild.is_empty():
 		NotificationUI.notify_error("You need a guild to claim a landmark.")
 		return
-	var ok := ExtraliminalManager.claim_landmark(_current_lid, guild)
+	var ok = ExtraliminalManager.claim_landmark(_current_lid, guild)
 	if ok:
 		NotificationUI.notify_win("🏴 %s claimed for %s!" % [LANDMARK_NAMES.get(_current_lid, _current_lid), guild])
 		# Reward: prestige + tokens for the claim (territory PvP resource)

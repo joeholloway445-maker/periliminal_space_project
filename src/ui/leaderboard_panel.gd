@@ -21,6 +21,7 @@ func _ready() -> void:
 	_refresh()
 
 func _refresh() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	var board_keys := BOARDS.keys()
 	var board_id: String = board_keys[board_option.selected]
 	NetworkManager.call_rpc("get_leaderboard", {board_id=board_id, limit=20},

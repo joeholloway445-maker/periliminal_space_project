@@ -34,6 +34,7 @@ var _hotbar: CanvasLayer
 var _attack_damage := 16
 
 func setup(p_mode: String, p_player: Node3D) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	mode_id = p_mode
 	player = p_player
 	_build_hud()
@@ -101,6 +102,7 @@ func _process(delta: float) -> void:
 			_tick_moba(delta)
 
 func _tick_hero_combat(_delta: float) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	# Light auto-attack between skill casts — skills are the real damage.
 	if _attack_cd <= 0.0:
 		var target := _nearest_feral(3.4)
@@ -129,9 +131,12 @@ func register_foe(n: Node) -> void:
 
 ## Hotbar cast resolution — same shape/kind contract as layer_world / PVXC.
 func _on_cast(sk: Dictionary) -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _running or player == null or not is_instance_valid(player):
 		return
-	var cast_bp := BlueprintManager.equipped_for("skill", str(sk.get("id", "")))
+	var cast_bp = BlueprintManager.equipped_for("skill", str(sk.get("id", "")))
 	if not cast_bp.is_empty():
 		SkillVFX.blueprint_cast(self, player.global_position, cast_bp)
 	else:
@@ -228,6 +233,7 @@ func _on_bit(amount: int) -> void:
 
 # ── Survival ───────────────────────────────────────────────────────────────
 func _setup_survival() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_zone_visual = MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
 	cyl.top_radius = _zone_radius
@@ -271,6 +277,7 @@ func _tick_survival(delta: float) -> void:
 
 # ── Zombies ────────────────────────────────────────────────────────────────
 func _setup_zombies() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_wave = 0
 	_hero_max_hp = 140
 	_hero_hp = 140
@@ -291,6 +298,7 @@ func _tick_zombies(delta: float) -> void:
 			_next_wave()
 
 func _next_wave() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_wave += 1
 	var count := 3 + _wave * 2
 	var stage := mini(3, 1 + int((_wave - 1) / 2))
@@ -299,6 +307,7 @@ func _next_wave() -> void:
 
 # ── CTF ────────────────────────────────────────────────────────────────────
 func _setup_ctf() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_yarn = _make_pickup(Vector3(18, 1, 0), Color(1.0, 0.85, 0.2), "YarnBall")
 	_goal = _make_pickup(Vector3(-18, 1, 0), Color(0.3, 1.0, 0.45), "Goal")
 	_yarn.body_entered.connect(_on_yarn_entered)
@@ -308,6 +317,7 @@ func _setup_ctf() -> void:
 	NotificationUI.notify_info("Yarn Rush — deliver 3 before foes score 3. 120s clock.")
 
 func _tick_ctf(delta: float) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_prune_dead()
 	_drive_allies(delta)
 	# Distance-based pickup/deliver — works even if Area3D layers miss the player.
@@ -334,6 +344,7 @@ func _tick_ctf(delta: float) -> void:
 		_finish(false)
 
 func _on_yarn_entered(body: Node) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if body == player or (body is Node and body.is_in_group("player")):
 		_yarn_held = true
 		if _yarn:
@@ -341,6 +352,7 @@ func _on_yarn_entered(body: Node) -> void:
 		NotificationUI.notify_info("Yarn secured — run it home.")
 
 func _on_goal_entered(body: Node) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _yarn_held:
 		return
 	if body == player or (body is Node and body.is_in_group("player")):
@@ -353,6 +365,7 @@ func _on_goal_entered(body: Node) -> void:
 
 # ── Duel ───────────────────────────────────────────────────────────────────
 func _setup_duel() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var foes := 1 if mode_id == "duel" else 2
 	_spawn_ferals(foes, 2)
 	if mode_id == "duel_2v2":
@@ -369,6 +382,7 @@ func _tick_duel(delta: float) -> void:
 
 # ── Conflict (faction war warm-up) ─────────────────────────────────────────
 func _setup_conflict() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_hero_max_hp = 160
 	_hero_hp = 160
 	# 4 allies vs 8 enemies — scaled warm-up for team_size 12
@@ -590,6 +604,10 @@ func _make_pickup(pos: Vector3, color: Color, node_name: String) -> Area3D:
 	return area
 
 func _finish(won: bool) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if not _running:
 		return
 	_running = false
@@ -608,6 +626,8 @@ func _finish(won: bool) -> void:
 	_sync_online_result(won)
 
 func _sync_online_result(won: bool) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	## When queued via find_match, push a leaderboard score so online play is recorded.
 	if not Engine.has_meta("arena_online_match_id"):
 		return

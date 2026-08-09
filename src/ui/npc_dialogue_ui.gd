@@ -25,13 +25,15 @@ var _opening_line: String = ""
 var _typewriter_tween: Tween = null
 
 func open_for_npc(npc_id: String) -> void:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
+	var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
 	_npc = WorldLoader.get_npc(npc_id)
 	if _npc.is_empty():
 		push_warning("[NPCDialogueUI] NPC not found: " + npc_id)
 		return
 	_npc_id = npc_id
 	_dialogue_id = _npc.get("dialogue_id", "")
-	var dlg := WorldLoader.get_dialogue(_dialogue_id)
+	var dlg = WorldLoader.get_dialogue(_dialogue_id)
 	_start_node = str(dlg.get("start_node", "greeting"))
 	portrait_label.text = str(_npc.get("emoji", "?"))
 	npc_name_label.text = str(_npc.get("name", "NPC"))
@@ -43,10 +45,11 @@ func open_for_npc(npc_id: String) -> void:
 	show()
 
 func _show_node(node_id: String) -> void:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
 	if node_id == "END":
 		_close()
 		return
-	var node := WorldLoader.get_dialogue_node(_dialogue_id, node_id)
+	var node = WorldLoader.get_dialogue_node(_dialogue_id, node_id)
 	if node.is_empty():
 		_close()
 		return
@@ -81,6 +84,7 @@ func _choose_option(opt: Dictionary) -> void:
 ## WordOfMouth, so the treatment comes back to you across the whole world,
 ## gradually, as gossip spreads.
 func _add_social_options() -> void:
+	var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
 	_social_btn("😊 Be kind", "nice",
 		"They soften. \"...Thank you. Not many bother.\"")
 	_social_btn("😠 Insult them", "mean",
@@ -97,6 +101,7 @@ func _social_btn(label: String, tone: String, reaction: String) -> void:
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.modulate = Color(1, 1, 1, 0.75)
 	btn.pressed.connect(func():
+		var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
 		WordOfMouth.record_interaction(_npc_id, tone)
 		_update_disposition_row()
 		_set_dialogue_text("[i]%s[/i]" % reaction)
@@ -104,6 +109,9 @@ func _social_btn(label: String, tone: String, reaction: String) -> void:
 	options_container.add_child(btn)
 
 func _handle_action(action: String) -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if action == "nothing" or action == "":
 		return
 	if action.begins_with("quest_accept:"):
@@ -165,6 +173,7 @@ func _on_typewriter_toggled(enabled: bool) -> void:
 		dialogue_text.visible_characters = -1
 
 func _record_choice_interaction(opt: Dictionary) -> void:
+	var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
 	var tone := str(opt.get("tone", ""))
 	var effect = opt.get("effect", {})
 	if not _is_word_of_mouth_tone(tone) and effect is Dictionary:
@@ -188,9 +197,11 @@ func _tone_from_choice(opt: Dictionary) -> String:
 	return ""
 
 func _is_word_of_mouth_tone(tone: String) -> bool:
+	var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
 	return tone in WordOfMouth.TONES
 
 func _current_disposition() -> int:
+	var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
 	var score := 0
 	if WordOfMouth.has_met(_npc_id):
 		score += WordOfMouth.times(_npc_id, "nice") * 15
@@ -211,6 +222,8 @@ func _current_disposition() -> int:
 	return clampi(score, -100, 100)
 
 func _faction_disposition_modifier() -> int:
+	var FactionSystem = AutoloadGate.get_node("FactionSystem")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var npc_faction := str(_npc.get("faction", "Factionless"))
 	if FactionSystem.has_method("get_faction_disposition_modifier"):
 		return int(FactionSystem.call("get_faction_disposition_modifier", npc_faction))
@@ -222,6 +235,7 @@ func _faction_disposition_modifier() -> int:
 	return 0
 
 func _update_disposition_row() -> void:
+	var FactionSystem = AutoloadGate.get_node("FactionSystem")
 	var npc_faction := str(_npc.get("faction", "Factionless"))
 	var faction_name := npc_faction
 	if FactionSystem.has_method("display_name"):

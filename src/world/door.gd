@@ -26,6 +26,7 @@ var _required_tier := 0
 
 
 func _ready() -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	if door_id == "":
 		door_id = "door_%d_%d" % [int(global_position.x), int(global_position.z)]
 	# ~40% of doors ask nothing; the rest sit behind tiers 1-3 of
@@ -86,6 +87,10 @@ func _open() -> void:
 		_resolve("opened_closed", null)
 
 func _walk_through() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
+	var RoomNetwork = AutoloadGate.get_node("RoomNetwork")
 	var hesitated := Time.get_ticks_msec() / 1000.0 - _watch_start
 	var approach := "rushed"
 	if _bearing_accum > PI:
@@ -113,13 +118,17 @@ func _walk_through() -> void:
 		"sensorium": IdentityLens.sensorium(),
 		"sound_profile": IdentityLens.sound_profile(),
 	}
-	var room_id := RoomNetwork.get_or_create(global_position, door_id, rfm)
-	var room_data := RoomNetwork.get_room(room_id)
-	var seed_val := room_data.get("seed", absi(hash(door_id)))
+	var room_id = RoomNetwork.get_or_create(global_position, door_id, rfm)
+	var room_data = RoomNetwork.get_room(room_id)
+	var seed_val = room_data.get("seed", absi(hash(door_id)))
 	var behind := {"kind": "room", "desc": "a room shaped by your presence", "room_id": room_id, "seed": seed_val}
 	_resolve(approach, behind)
 
 func _resolve(approach: String, behind) -> void:
+	var Hope = AutoloadGate.get_node("Hope")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	if _resolved:
 		return
 	_resolved = true

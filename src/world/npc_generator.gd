@@ -313,6 +313,7 @@ func _generate_greeting(_npc_name: String, archetype_id: String, disposition: Di
 ## are accepted for call-site compatibility and future faction/layer-
 ## aware filtering, not yet used to narrow the pool.
 func _generate_quest_ids(_archetype_id: String, _layer_name: String) -> Array:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	var result: Array = []
 	if _rng.randf() < 0.3:
 		var pool: Array[Dictionary] = QuestManager.all_quests()

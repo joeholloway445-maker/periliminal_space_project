@@ -42,6 +42,7 @@ func liminal_wander() -> float:
 	return _liminal_wander
 
 func _process(delta: float) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if current_layer_id != "liminal":
 		return
 	# Currentborn (Veiled Current passive): the between tolerates you longer.
@@ -52,6 +53,7 @@ func _process(delta: float) -> void:
 		transition_to("periliminal", true)
 
 func can_enter(layer_id: String) -> Dictionary:
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
 	var layer := RealityLayers.by_id(layer_id)
 	if layer.is_empty():
 		return {ok=false, reason="Unknown layer"}
@@ -67,6 +69,7 @@ func can_enter(layer_id: String) -> Dictionary:
 
 ## `pulled` bypasses entry rules (the Periliminal taking you is not a choice).
 func transition_to(layer_id: String, pulled: bool = false) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	print("[LayerManager] transition_to(", layer_id, ", pulled=", pulled, ")")
 	if not pulled:
 		var check := can_enter(layer_id)
@@ -95,6 +98,7 @@ func transition_to(layer_id: String, pulled: bool = false) -> bool:
 ## PvP rules resolve per-layer; supraliminal defers to TerritoryControl
 ## (PvE inside hub bounds, PvP everywhere else).
 func is_pvp_here(world_pos: Vector3 = Vector3.ZERO) -> bool:
+	var TerritoryControl = AutoloadGate.get_node("TerritoryControl")
 	match current_layer_id:
 		"liminal": return true
 		"supraliminal": return TerritoryControl.is_pvp_at(world_pos)

@@ -81,6 +81,8 @@ func add_score(leaderboard: String, player_id: String, score: int, guild: String
 	_transfer_crown(crown, top)
 
 func _transfer_crown(crown: Dictionary, new_holder: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	var prev: String = _holders.get(crown.id, "")
 	if prev != "":
 		crown_lost.emit(crown.id, prev)
@@ -121,6 +123,7 @@ func grant_claim_token(player_id: String, count: int = 1) -> void:
 
 # ── Champion → God ascension ──────────────────────────────────────────────────
 func start_champion_trial(player_id: String, level: int) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if level < CHAMPION_LEVEL_MIN:
 		NotificationUI.notify_error("Champion trials open at level %d." % CHAMPION_LEVEL_MIN)
 		return false
@@ -131,6 +134,7 @@ func start_champion_trial(player_id: String, level: int) -> bool:
 	return true
 
 func log_provisional_pvp(player_id: String, hours: float) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var p := _player(player_id)
 	if not p["provisional"]:
 		return
@@ -150,6 +154,7 @@ func add_champion_levels(player_id: String, levels: int) -> void:
 	p["champion_level"] = clampi(p["champion_level"] + levels, 0, CHAMPION_LEVEL_MAX)
 
 func attempt_god_ascension(player_id: String) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var p := _player(player_id)
 	if not has_triple_crown(player_id) or p["champion_level"] < GOD_TIER_CHAMPION_LEVEL:
 		return false

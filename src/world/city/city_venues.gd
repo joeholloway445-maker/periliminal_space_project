@@ -43,6 +43,7 @@ static func place_all(city_root: Node3D, accent: Color, base_y: float, player: N
 
 static func _venue(kind: String, label: String, icon: String, pos: Vector3,
 		accent: Color, player: Node3D) -> Node3D:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var root := Node3D.new()
 	root.name = "Venue_%s" % kind
 	root.position = pos

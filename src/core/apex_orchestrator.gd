@@ -211,6 +211,7 @@ func _execute_delegation(task: Dictionary) -> void:
 	_active_delegations.erase(task_id)
 
 func _delegate_to_hope(task: Dictionary) -> void:
+	var Hope = AutoloadGate.get_node("Hope")
 	var task_name: String = str(task.get("task", ""))
 	var params: Dictionary = task.get("params", {})
 	# HOPE receives memory storage or retrieval tasks
@@ -221,6 +222,7 @@ func _delegate_to_hope(task: Dictionary) -> void:
 		print_rich("  [color=aqua]APEX → HOPE[/color]: Retrieved combat profile: %s" % JSON.stringify(profile))
 
 func _delegate_to_dream(task: Dictionary) -> void:
+	var DREAM = AutoloadGate.get_node("DREAM")
 	var task_name: String = str(task.get("task", ""))
 	var params: Dictionary = task.get("params", {})
 	# DREAM receives analysis tasks
@@ -231,6 +233,7 @@ func _delegate_to_dream(task: Dictionary) -> void:
 			print_rich("  [color=aqua]APEX → DREAM[/color]: Entropy analysis for %s: %.3f" % [user_id, trajectory.get("current_entropy", 0.0)])
 
 func _delegate_to_vision(task: Dictionary) -> void:
+	var VISION = AutoloadGate.get_node("VISION")
 	var task_name: String = str(task.get("task", ""))
 	var params: Dictionary = task.get("params", {})
 	# VISION receives observation tasks
@@ -240,6 +243,7 @@ func _delegate_to_vision(task: Dictionary) -> void:
 			print_rich("  [color=aqua]APEX → VISION[/color]: Increasing observation resolution for %s" % user_id)
 
 func _delegate_to_knoll(task: Dictionary) -> void:
+	var KNOLL = AutoloadGate.get_node("KNOLL")
 	var task_name: String = str(task.get("task", ""))
 	var params: Dictionary = task.get("params", {})
 	# KNOLL receives security validation tasks

@@ -96,16 +96,20 @@ func _exit() -> void:
 ## chunk you fly over at 500m and one you walk through are the same
 ## record, not separate ones per vehicle type.
 func update_world_discovery() -> void:
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if driver == null:
 		return
-	var coord := DiscoveryManager.world_pos_to_chunk(owner_node.global_position)
+	var coord = DiscoveryManager.world_pos_to_chunk(owner_node.global_position)
 	if coord == _last_chunk:
 		return
 	_last_chunk = coord
 	chunk_changed.emit(coord)
 
-	var already_known := DiscoveryManager.has_chunk(coord)
-	var chunk := DiscoveryManager.get_or_generate_chunk(coord)
+	var already_known = DiscoveryManager.has_chunk(coord)
+	var chunk = DiscoveryManager.get_or_generate_chunk(coord)
 	if chunk.is_hub:
 		return
 

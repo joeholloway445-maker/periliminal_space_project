@@ -283,6 +283,11 @@ func _make_pillar_panel(pillar: String) -> Panel:
 	return panel
 
 func _update_pillar_nodes() -> void:
+	var Hope = AutoloadGate.get_node("Hope")
+	var DREAM = AutoloadGate.get_node("DREAM")
+	var VISION = AutoloadGate.get_node("VISION")
+	var APEX = AutoloadGate.get_node("APEX")
+	var KNOLL = AutoloadGate.get_node("KNOLL")
 	var now: float = Time.get_unix_time_from_system()
 
 	# HOPE metrics
@@ -425,6 +430,11 @@ func _build_detail_panel() -> void:
 	# Data fields will be populated dynamically in _update_detail_panel
 
 func _update_detail_panel() -> void:
+	var Hope = AutoloadGate.get_node("Hope")
+	var DREAM = AutoloadGate.get_node("DREAM")
+	var VISION = AutoloadGate.get_node("VISION")
+	var APEX = AutoloadGate.get_node("APEX")
+	var KNOLL = AutoloadGate.get_node("KNOLL")
 	var panel := get_node_or_null("DetailPanel")
 	if not panel: return
 	var content := panel.get_node_or_null("Layout/DetailContent") as VBoxContainer

@@ -30,6 +30,7 @@ const CAT_NPC := "npc_cat"
 ## the player created (race → frame → mod → sex → sliders).
 static func build_player(visual_mode: String = "identity", sex: String = "",
 		appearance: Dictionary = {}) -> Node3D:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if sex == "":
 		sex = str(PlayerProfile.sex) if PlayerProfile else "m"
 	if appearance.is_empty() and PlayerProfile != null:
@@ -302,6 +303,7 @@ static func _mesh_aabb_local(root: Node3D) -> AABB:
 	return merged
 
 static func _rig_from_profile(perceived: bool, sex: String = "", appearance: Dictionary = {}) -> Node3D:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var rig := CharacterRig.new()
 	rig.perceived = perceived
 	var race_id := "KETH"
@@ -429,6 +431,7 @@ static func _tune_surface_material(mat: Material, sname: String, skin_shader: Sh
 ## Returns one of: peri_human_race | peri_human_player | metahuman_race |
 ## metahuman_player | player_human | player_cat | procedural_rig
 static func resolve_tier(visual_mode: String = "identity") -> String:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if visual_mode == "cat" and AssetLibrary.has_asset("player_cat"):
 		return "player_cat"
 	var race_id := ""

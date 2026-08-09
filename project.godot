@@ -233,9 +233,6 @@ crouch={
 ]
 }
 
-[internationalization]
-
-
 [physics]
 
 3d/sleep_threshold_linear=0.2

@@ -10,6 +10,7 @@ var _equip_btn: Button
 var _unequip_btn: Button
 
 func _ready() -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	_build_ui()
 	_refresh_current_tab()
 	if InventoryManager:
@@ -106,6 +107,7 @@ func _switch_tab(tab: int) -> void:
 	_refresh_current_tab()
 
 func _refresh_current_tab() -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	for child in _item_list.get_children():
 		child.queue_free()
 
@@ -137,6 +139,7 @@ func _refresh_current_tab() -> void:
 		_item_list.add_child(row)
 
 func _build_item_row(item: Dictionary) -> Button:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	var btn = Button.new()
 	var rarity = item.get("rarity", 1)
 	var rarity_star = "★".repeat(rarity)
@@ -149,6 +152,7 @@ func _build_item_row(item: Dictionary) -> Button:
 	return btn
 
 func _select_item(item: Dictionary) -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	_selected_item = item
 	var name_lbl = _detail_panel.get_node_or_null("VBoxContainer/NameLabel")
 	var desc_lbl = _detail_panel.get_node_or_null("VBoxContainer/DescLabel")
@@ -178,14 +182,17 @@ func _clear_detail() -> void:
 	_unequip_btn.visible = false
 
 func _on_equip_pressed() -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	if _selected_item.is_empty(): return
 	InventoryManager.equip_item(_selected_item.get("id", ""))
 
 func _on_unequip_pressed() -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	if _selected_item.is_empty(): return
 	InventoryManager.unequip_item(_selected_item.get("id", ""))
 
 func _on_use_pressed() -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	if _selected_item.is_empty(): return
 	InventoryManager.use_item(_selected_item.get("id", ""))
 

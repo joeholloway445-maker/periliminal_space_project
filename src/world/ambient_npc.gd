@@ -70,6 +70,7 @@ func _pick_new_wander_target() -> void:
 	_is_idling = false
 
 func _should_react_to_player_presence() -> bool:
+	var GameModeManager = AutoloadGate.get_node("GameModeManager")
 	return GameModeManager.is_aware() or _has_been_interacted_with
 
 ## Called when a player directly engages this NPC (dialogue, emote, combat,
@@ -81,6 +82,8 @@ func interact(player_id: String, give_away_difference: bool = false) -> void:
 	_request_ai_reaction(player_id)
 
 func _request_ai_reaction(player_id: String) -> void:
+	var GameModeManager = AutoloadGate.get_node("GameModeManager")
+	var CasinoHTTPClient = AutoloadGate.get_node("CasinoHTTPClient")
 	if not _should_react_to_player_presence():
 		return
 	var task := {

@@ -25,6 +25,7 @@ var _visual: Node3D
 var _hp_bar: Label3D
 
 func setup(e: Dictionary, target: Node3D) -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	entity = e
 	_target = target
 	var rarity := int(e.get("rarity", 1))

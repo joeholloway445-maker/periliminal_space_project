@@ -48,6 +48,7 @@ var _sex_row: HBoxContainer
 var _sex_buttons: Array[Button] = []
 
 func _ready() -> void:
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	MusicManager.play_context("theme")
 	_build_ui()
 	_render_step()
@@ -510,6 +511,7 @@ func _render_final_preview() -> void:
 		_picked.get("mod", ""), str(_picked.get("sex", "m")), _appearance)
 
 func _confirm_step() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	print("[VentureWizard] _confirm_step called, step=", STEPS[_step])
 	var step: String = STEPS[_step]
 	if step == "name":
@@ -573,11 +575,12 @@ func _go_back() -> void:
 	_render_step()
 
 func _do_transition_to_liminal() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	## Transition to the Liminal layer. Called directly from _confirm_step;
 	## change_scene_to_file defers the actual scene swap to end-of-frame so
 	## the wizard's call stack finishes cleanly.
 	print("[VentureWizard] _do_transition_to_liminal BEGIN")
-	var err := LayerManager.transition_to("liminal", true)
+	var err = LayerManager.transition_to("liminal", true)
 	print("[VentureWizard] _do_transition_to_liminal returned err=", err)
 	if not err:
 		push_error("VentureWizard: transition_to(liminal) failed")

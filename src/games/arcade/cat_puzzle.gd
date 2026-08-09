@@ -53,9 +53,11 @@ func _on_move_ui(remaining: int) -> void:
 		_score_label.text = "Score: %d" % _score
 
 func _on_puzzle_complete_ui(score: int, payout: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _bet > 0:
 		NetworkManager.call_rpc("submit_puzzle_score", {bet = _bet, score = score},
 			func(result: Dictionary) -> void:
+				var NotificationUI = AutoloadGate.get_node("NotificationUI")
 				var paid := int(result.get("payout", payout))
 				if _score_label:
 					_score_label.text = "Done! Score %d — +%d chips" % [score, paid]

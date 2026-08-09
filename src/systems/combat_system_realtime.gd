@@ -479,6 +479,12 @@ func end_combat(combat_id: String) -> void:
 ## EconomyManager calls. Previously this whole path was a TODO with an
 ## empty loot array and nothing granted on any win.
 func _grant_victory_rewards(loot: Array, stats: Dictionary) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var XPManager = AutoloadGate.get_node("XPManager")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var coins := 20 + int(stats.get("player_damage", 0)) * 2
 	EconomyManager.add_coins(coins, "combat_victory")
 	for item in loot:

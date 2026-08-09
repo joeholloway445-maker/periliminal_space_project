@@ -66,6 +66,8 @@ func capacity() -> int:
 	return int(current_tier().capacity)
 
 func buy_tier(tid: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var t := tier_by_id(tid)
 	if t.id == _tier_id:
 		return false
@@ -81,6 +83,7 @@ func buy_tier(tid: String) -> bool:
 	return true
 
 func set_public(open: bool) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if open and not current_tier().can_public:
 		NotificationUI.notify_error("This tier can't open to the public — upgrade to a Gallery or larger.")
 		return
@@ -106,6 +109,7 @@ var ambient_npcs: Array = []
 var saved_rooms: Array = []
 
 func _ready() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	_load()
 
 func has_apartment_access() -> bool:
@@ -126,6 +130,7 @@ func invites_left() -> int:
 	return invite_cap() - _outstanding_invites.size()
 
 func send_invite() -> String:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if invites_left() <= 0:
 		NotificationUI.notify_error("No invites left (%d outstanding). Creator subscription raises the cap." % _outstanding_invites.size())
 		return ""
@@ -149,6 +154,9 @@ func mark_invited_by(inviter: String) -> void:
 	_save()
 
 func buy_creator_subscription() -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	if not await EconomyManager.spend_coins(CREATOR_SUB_COINS, "creator_subscription"):
 		return false
 	var now := int(Time.get_unix_time_from_system())
@@ -174,6 +182,9 @@ func storage_expansions_bought() -> int:
 	return _storage_expansions_bought
 
 func buy_storage_expansion() -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	if _storage_expansions_bought >= MAX_STORAGE_EXPANSIONS:
 		NotificationUI.notify_error("Storage expansion limit reached (%d)." % MAX_STORAGE_EXPANSIONS)
 		return false
@@ -187,6 +198,8 @@ func buy_storage_expansion() -> bool:
 	return true
 
 func store_item(item: Dictionary) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	if item.is_empty() or str(item.get("id", "")) == "":
 		return false
 	if storage_used() >= storage_capacity():
@@ -204,6 +217,7 @@ func store_item(item: Dictionary) -> bool:
 	return true
 
 func withdraw_item(item_id: String) -> Dictionary:
+	var Hope = AutoloadGate.get_node("Hope")
 	for i in range(storage_items.size()):
 		if str(storage_items[i].get("id", "")) == item_id:
 			var item: Dictionary = storage_items[i]
@@ -219,6 +233,8 @@ func withdraw_item(item_id: String) -> Dictionary:
 ## Place a single ambient figure in YOUR Subliminal. Hard pay-gate: active
 ## creator subscription required. The world never seeds these for free.
 func place_ambient_npc(archetype: String, display_name: String = "") -> Dictionary:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	if not is_creator():
 		NotificationUI.notify_error("Ambient figures in your Subliminal require a Creator subscription.")
 		return {}
@@ -246,6 +262,7 @@ func place_ambient_npc(archetype: String, display_name: String = "") -> Dictiona
 	return entry
 
 func remove_ambient_npc(npc_id: String) -> bool:
+	var Hope = AutoloadGate.get_node("Hope")
 	for i in range(ambient_npcs.size()):
 		if str(ambient_npcs[i].get("id", "")) == npc_id:
 			ambient_npcs.remove_at(i)
@@ -284,6 +301,7 @@ func clear_apartment_slot(grid_pos: Vector2i) -> void:
 ## room_data from RoomNetwork.get_room(): {room_id, seed, pos, author_rfm, ...}
 ## Returns the saved room's index in saved_rooms, or -1 on failure.
 func save_room_as_backdoor(room_data: Dictionary, label: String = "") -> int:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var room_id := str(room_data.get("room_id", ""))
 	if room_id.is_empty():
 		return -1
@@ -309,6 +327,7 @@ func save_room_as_backdoor(room_data: Dictionary, label: String = "") -> int:
 
 ## Remove a saved backdoor room.
 func remove_saved_room(room_id: String) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	for i in range(saved_rooms.size()):
 		if str(saved_rooms[i].get("room_id", "")) == room_id:
 			saved_rooms.remove_at(i)
@@ -320,6 +339,8 @@ func remove_saved_room(room_id: String) -> bool:
 
 ## Teleport to a saved room (called from apartment UI).
 func enter_saved_room(room_id: String) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var path := "user://rooms/%s.tscn" % room_id
 	if FileAccess.file_exists(path):
 		get_tree().change_scene_to_file(path)

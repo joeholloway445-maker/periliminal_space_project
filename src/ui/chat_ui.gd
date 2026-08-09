@@ -16,6 +16,7 @@ const CHANNEL_COLORS := {
 }
 
 func _ready() -> void:
+	var ChatManager = AutoloadGate.get_node("ChatManager")
 	_root = PanelContainer.new()
 	_root.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_root.position += Vector2(8, -220)
@@ -62,9 +63,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			_root.visible = not _root.visible
 
 func _current_channel() -> String:
+	var ChatManager = AutoloadGate.get_node("ChatManager")
 	return ChatManager.CHANNELS[_tabs.current_tab]
 
 func _on_submit(text: String) -> void:
+	var ChatManager = AutoloadGate.get_node("ChatManager")
 	_input.clear()
 	text = text.strip_edges()
 	if text == "":

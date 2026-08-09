@@ -104,6 +104,7 @@ func _apply_glow(m: StandardMaterial3D, glow: float) -> void:
 		m.emission_energy_multiplier = 0.0
 
 func build_from_loadout(race: Dictionary, frame: Dictionary, mod: Dictionary = {}) -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	clear()
 	if race.is_empty() or frame.is_empty():
 		return

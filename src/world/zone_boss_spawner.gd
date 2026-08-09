@@ -5,6 +5,7 @@ class_name ZoneBossSpawner
 
 static func place_for_hub(city_root: Node3D, hub_id: String, base_y: float,
 		player: Node3D) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if player == null:
 		return
 	var landmarks: Array = LandmarkBuilder.CITY_LANDMARKS.get(hub_id, [])
@@ -45,6 +46,10 @@ static func place_for_hub(city_root: Node3D, hub_id: String, base_y: float,
 			NotificationUI.notify_info("⚠ Zone warden near %s — Stage 3." % str(lm.id).replace("_", " "))
 
 static func _on_boss_died(ent: WorldEntity, hub_id: String) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var WorldBossScheduler = AutoloadGate.get_node("WorldBossScheduler")
 	var bounty := ent.bounty() * 3
 	EconomyManager.earn_currency_local("fragments", bounty, "zone_boss_kill")
 	EconomyManager.earn_prestige_local(15, "zone_boss_kill")

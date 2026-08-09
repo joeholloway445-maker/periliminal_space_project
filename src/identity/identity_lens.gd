@@ -23,10 +23,12 @@ const ASCENSION_MULT := 20             # second frame
 const FACTION_MULT := 3                # the three factions
 
 func _ready() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	PlayerProfile.profile_updated.connect(func(): lens_changed.emit())
 
 # ── Build signature & rarity ──────────────────────────────────────────────────
 func signature() -> Dictionary:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	return {
 		"race": PlayerProfile.selected_race_id,
 		"frame": PlayerProfile.selected_frame,
@@ -47,6 +49,7 @@ func identity_seed() -> int:
 ## factioned; every earned title doubles it (quest-reward titles are the
 ## late-game multiplier).
 func rarity_denominator() -> int:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var n := BASE_BUILDS
 	if PlayerProfile.ascended_frame != "":
 		n *= ASCENSION_MULT
@@ -73,6 +76,7 @@ func _grouped(n: int) -> String:
 ## surface physics (roughness/metalness/emission via texture_type) and pulls
 ## the hue toward their primary_color. Strength: how far reality bends.
 func world_material(base_color: Color, strength: float = 0.35) -> StandardMaterial3D:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var race := RaceDataCharacter.get_race(PlayerProfile.selected_race_id)
 	var lens_color: Color = race.get("primary_color", Color.WHITE)
 	var mat := TextureMaterials.build_material(
@@ -92,6 +96,7 @@ func perceive_being(their_profile: Dictionary, their_color: Color) -> Dictionary
 
 # ── The frame sensorium: how reality is lit and sounds ────────────────────────
 func sensorium() -> Dictionary:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	return FrameSensorium.blend(PlayerProfile.selected_frame, PlayerProfile.ascended_frame)
 
 ## Apply the frame's light signature to a DayNightSky (call after creating

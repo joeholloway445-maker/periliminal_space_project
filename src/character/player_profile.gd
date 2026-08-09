@@ -135,6 +135,7 @@ func save() -> void:
 	f.close()
 
 func add_xp(amount: int) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	xp += amount
 	var threshold := xp_for_level(level + 1)
 	while xp >= threshold:
@@ -178,6 +179,7 @@ func set_frame(frame_id: String) -> void:
 ## Ascension frame: only choosable once Champion (level 50+); multiplies
 ## the build space x20 and blends the frame sensorium into a duet.
 func set_ascended_frame(frame_id: String) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if level < 50:
 		NotificationUI.notify_error("A second frame is chosen at Champion ascension (level 50).")
 		return false

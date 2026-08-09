@@ -61,7 +61,12 @@ func _on_body(body: Node) -> void:
 	_enter()
 
 func _enter() -> void:
-	var seed := DungeonRuns.begin(dungeon_id)
+	var DungeonRuns = AutoloadGate.get_node("DungeonRuns")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var seed = DungeonRuns.begin(dungeon_id)
 	var fee := mini(10, EconomyManager.get_balance("fragments"))
 	if fee > 0:
 		EconomyManager.spend_currency("fragments", fee, "dungeon_entry")

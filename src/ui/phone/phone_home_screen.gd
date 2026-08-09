@@ -104,6 +104,8 @@ func _build_news_widget() -> Control:
 	return panel
 
 func _populate_news_feed(feed: VBoxContainer) -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	for c in feed.get_children():
 		c.queue_free()
 
@@ -137,11 +139,13 @@ func _populate_news_feed(feed: VBoxContainer) -> void:
 		feed.add_child(row)
 
 func _crowd_count() -> int:
+	var DistrictManager = AutoloadGate.get_node("DistrictManager")
 	if DistrictManager != null and DistrictManager.has_method("get_player_count"):
 		return int(DistrictManager.get_player_count(DistrictManager.District.PAW_VEGAS))
 	return 0
 
 func _hope_stage_name() -> String:
+	var Hope = AutoloadGate.get_node("Hope")
 	if Hope == null:
 		return "Flicker"
 	return str(Hope.stage().get("name", "Flicker"))
@@ -178,6 +182,7 @@ func _build_party_widget() -> Control:
 	var create_btn := Button.new()
 	create_btn.text = "Create"
 	create_btn.pressed.connect(func():
+		var PartyManager = AutoloadGate.get_node("PartyManager")
 		if PartyManager != null:
 			PartyManager.create()
 			_refresh_party_list(list))
@@ -191,6 +196,8 @@ func _build_party_widget() -> Control:
 	var invite_btn := Button.new()
 	invite_btn.text = "Invite"
 	invite_btn.pressed.connect(func():
+		var PartyManager = AutoloadGate.get_node("PartyManager")
+		var NotificationUI = AutoloadGate.get_node("NotificationUI")
 		var target := invite_input.text.strip_edges()
 		if target == "" or PartyManager == null:
 			return
@@ -207,6 +214,7 @@ func _build_party_widget() -> Control:
 	var leave_btn := Button.new()
 	leave_btn.text = "Leave"
 	leave_btn.pressed.connect(func():
+		var PartyManager = AutoloadGate.get_node("PartyManager")
 		if PartyManager != null:
 			PartyManager.leave()
 			_refresh_party_list(list))
@@ -215,6 +223,7 @@ func _build_party_widget() -> Control:
 	return panel
 
 func _refresh_party_list(list: VBoxContainer) -> void:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
 	for c in list.get_children():
 		c.queue_free()
 	var members: Array[String] = []
@@ -393,6 +402,7 @@ func _open_map() -> void:
 	_close_active_app()
 
 func _open_contacts() -> void:
+	var SocialManager = AutoloadGate.get_node("SocialManager")
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 8)
 
@@ -437,6 +447,8 @@ func _open_contacts() -> void:
 	var add_btn := Button.new()
 	add_btn.text = "Add"
 	add_btn.pressed.connect(func():
+		var AccountManager = AutoloadGate.get_node("AccountManager")
+		var NotificationUI = AutoloadGate.get_node("NotificationUI")
 		var name := add_input.text.strip_edges()
 		if name.is_empty():
 			return
@@ -468,6 +480,7 @@ func _open_chat() -> void:
 	_add_canvas_layer_app(chat)
 
 func _open_hope() -> void:
+	var Hope = AutoloadGate.get_node("Hope")
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 8)
 
@@ -483,7 +496,7 @@ func _open_hope() -> void:
 		_open_app_panel("Hope", root)
 		return
 
-	var stage := Hope.stage()
+	var stage = Hope.stage()
 	var stage_lbl := Label.new()
 	stage_lbl.text = "%s (bond %d)" % [stage.get("name", "Flicker"), Hope.bond]
 	stage_lbl.add_theme_font_size_override("font_size", 16)
@@ -518,6 +531,7 @@ func _open_hope() -> void:
 		var drive: String = str(care.drive)
 		var delta: int = int(care.delta)
 		btn.pressed.connect(func():
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			Hope.gain_bond(5, "care_%s" % drive)
 			var current: float = float(Hope.profile.get(drive, 0.0))
 			Hope.profile[drive] = clampf(current + delta * 0.05, 0.0, 1.0)
@@ -542,11 +556,15 @@ func _open_casino() -> void:
 	_open_app_panel("Paws Vegas", lobby)
 
 func _open_subliminal() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	_close_active_app()
 	if LayerManager != null:
 		LayerManager.transition_to("subliminal")
 
 func _open_periliminal() -> void:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	_close_active_app()
 	var members: Array[String] = []
 	if PartyManager != null:
@@ -559,12 +577,14 @@ func _open_periliminal() -> void:
 		LayerManager.transition_to("periliminal", true)
 
 func _open_settings() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if ResourceLoader.exists("res://scenes/ui/settings.tscn"):
 		get_tree().change_scene_to_file("res://scenes/ui/settings.tscn")
 	else:
 		NotificationUI.notify_error("Settings app is not installed.")
 
 func _open_guild() -> void:
+	var GuildManager = AutoloadGate.get_node("GuildManager")
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 8)
 
@@ -606,6 +626,7 @@ func _open_guild() -> void:
 		var leave_btn := Button.new()
 		leave_btn.text = "Leave Guild"
 		leave_btn.pressed.connect(func():
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			if GuildManager != null and GuildManager.has_method("disband"):
 				GuildManager.disband()
 				NotificationUI.notify_info("You left the guild.")
@@ -625,8 +646,9 @@ func _open_guild() -> void:
 		var create_btn := Button.new()
 		create_btn.text = "Create"
 		create_btn.pressed.connect(func():
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			if GuildManager != null and GuildManager.has_method("create_guild"):
-				var ok := await GuildManager.create_guild(name_input.text.strip_edges(), tag_input.text.strip_edges())
+				var ok = await GuildManager.create_guild(name_input.text.strip_edges(), tag_input.text.strip_edges())
 				if ok:
 					NotificationUI.notify_win("Guild chartered!")
 					_close_active_app()
@@ -646,6 +668,7 @@ func _open_guild() -> void:
 		var join_btn := Button.new()
 		join_btn.text = "Join"
 		join_btn.pressed.connect(func():
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			# Local guild invites are handled through SubliminalManager invite codes or direct officer invites.
 			NotificationUI.notify_info("Invite codes are shared by guild officers. Create your own guild if you do not have one."))
 		join_row.add_child(join_btn)
@@ -662,6 +685,7 @@ func _load_scene_instance(path: String) -> Node:
 	return packed.instantiate()
 
 func _open_leaderboard() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var lb := _load_scene_instance("res://scenes/ui/leaderboard.tscn") as Control
 	if lb == null:
 		NotificationUI.notify_error("Leaderboard unavailable.")
@@ -669,6 +693,7 @@ func _open_leaderboard() -> void:
 	_open_app_panel("Leaderboard", lb)
 
 func _open_quests() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var qu := _load_scene_instance("res://scenes/ui/quest.tscn") as Control
 	if qu == null:
 		NotificationUI.notify_error("Quest log unavailable.")
@@ -684,6 +709,7 @@ func _open_daily() -> void:
 	app_opened.emit("daily")
 
 func _open_calendar() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 8)
 
@@ -736,6 +762,7 @@ func _open_calendar() -> void:
 	_open_app_panel("Calendar", root)
 
 func _open_battlepass() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var bp := _load_scene_instance("res://scenes/ui/battlepass.tscn") as Control
 	if bp == null:
 		NotificationUI.notify_error("Battle Pass unavailable.")

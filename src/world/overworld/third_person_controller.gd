@@ -226,6 +226,8 @@ func _update_camera_rotation() -> void:
 	_spring.rotation = Vector3(_cam_pitch, _cam_yaw, 0.0)
 
 func _physics_process(delta: float) -> void:
+	var Proprioception = AutoloadGate.get_node("Proprioception")
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
 	_apply_touch_look()
 	velocity.y -= _gravity * delta
 
@@ -276,7 +278,7 @@ func _physics_process(delta: float) -> void:
 		input_2d.y > 0.5, input_2d.y < -0.5,
 		_crouched, is_on_floor())
 
-	var coord := DiscoveryManager.world_pos_to_chunk(global_position)
+	var coord = DiscoveryManager.world_pos_to_chunk(global_position)
 	if coord != _last_chunk:
 		_last_chunk = coord
 		chunk_changed.emit(coord)
