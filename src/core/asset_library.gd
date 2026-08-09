@@ -116,12 +116,18 @@ static func instance_or(slot: String, fallback: Callable, lens_color: Color = Co
 static func _apply_lens(node: Node, color: Color, strength: float) -> void:
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
-		var mat := IdentityLens.world_material(color, strength)
-		# Keep the imported albedo texture; only pull physics/hue.
-		var existing := mi.get_active_material(0)
-		if existing is StandardMaterial3D and existing.albedo_texture:
-			mat.albedo_texture = existing.albedo_texture
-		mi.material_override = mat
+		# Resolve the race lens at runtime via AutoloadGate + dynamic call.
+		# Never bare-reference the IdentityLens autoload: autoload identifiers
+		# don't resolve during headless -s / first-pass compile (gate5/gate6 CI),
+		# and AutoloadGate is a class_name so it always does.
+		var lens: Node = AutoloadGate.get_node("IdentityLens")
+		if lens != null:
+			var mat: StandardMaterial3D = lens.call("world_material", color, strength) as StandardMaterial3D
+			# Keep the imported albedo texture; only pull physics/hue.
+			var existing := mi.get_active_material(0)
+			if existing is StandardMaterial3D and existing.albedo_texture:
+				mat.albedo_texture = existing.albedo_texture
+			mi.material_override = mat
 	for child in node.get_children():
 		_apply_lens(child, color, strength)
 
@@ -233,7 +239,9 @@ static func has_sound(slot: String) -> bool:
 ## client. This is the "interchangeable textures on all hard mesh" contract.
 static func material(slot: String, base_color: Color, lens_strength: float = 0.25,
 		metallic: float = 0.0, roughness: float = 0.8) -> StandardMaterial3D:
-	var mat := IdentityLens.world_material(base_color, lens_strength) if IdentityLens else StandardMaterial3D.new()
+	# Same AutoloadGate rule as _apply_lens: bare IdentityLens fails -s compile.
+	var lens: Node = AutoloadGate.get_node("IdentityLens")
+	var mat: StandardMaterial3D = lens.call("world_material", base_color, lens_strength) as StandardMaterial3D if lens != null else StandardMaterial3D.new()
 	mat.metallic = metallic
 	mat.roughness = roughness
 	var maps := _texture_maps(slot)
