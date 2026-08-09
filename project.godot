@@ -133,7 +133,7 @@ project/assembly_name="Periliminal"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/beehave/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/gloot/plugin.cfg", "res://addons/maaacks_menus_template/plugin.cfg", "res://addons/panku_console/plugin.cfg", "res://addons/phantom_camera/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
+enabled=PackedStringArray("res://addons/beehave/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/gloot/plugin.cfg", "res://addons/maaacks_menus_template/plugin.cfg", "res://addons/panku_console/plugin.cfg", "res://addons/phantom_camera/plugin.cfg")
 
 [input]
 
