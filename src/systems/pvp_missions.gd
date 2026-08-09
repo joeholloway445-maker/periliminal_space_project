@@ -175,7 +175,7 @@ func accept(mission_id: String) -> Dictionary:
 
 	var stake: Dictionary = m.get("stake", {})
 	for cur in stake:
-		if not _charge(str(cur), int(stake[cur])):
+		if not await _charge(str(cur), int(stake[cur])):
 			return {"ok": false, "reason": "Stake requires %d %s." % [int(stake[cur]), cur]}
 
 	_active[mission_id] = {
@@ -249,7 +249,7 @@ func _charge(currency: String, amount: int) -> bool:
 	if not EconomyManager:
 		return true
 	if EconomyManager.has_method("spend_currency"):
-		return bool(EconomyManager.spend_currency(currency, amount, "pvp_mission_stake"))
+		return bool(await EconomyManager.spend_currency(currency, amount, "pvp_mission_stake"))
 	return true
 
 func _self_id() -> String:

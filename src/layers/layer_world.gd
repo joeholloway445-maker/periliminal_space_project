@@ -16,6 +16,17 @@ func _ready() -> void:
 	add_child(_terrain)
 	await _terrain.ensure_built(layer_id)
 
+	# Liminal uses a procedural hallway maze instead of open terrain.
+	# The terrain is still built underneath for height references / chunk
+	# streaming, but the maze is what the player walks through.
+	if layer_id == "liminal":
+		var hallway_seed := randi()
+		var hallway_maze := LiminalHallwayBuilder.build(
+			hallway_seed, 24, 4.0, 3.5,
+			OS.get_name() == "Web" or OS.get_name() == "Android"
+		)
+		add_child(hallway_maze)
+
 	_sky = DayNightSky.new()
 	match layer_id:
 		"liminal":
@@ -39,12 +50,16 @@ func _ready() -> void:
 
 	var spawn := _spawn_point()
 	_terrain.stream_around(DiscoveryManager.world_pos_to_chunk(spawn))
-	spawn.y = _terrain.height_at(spawn.x, spawn.z) + 2.0
+	if layer_id == "liminal":
+		spawn.y = 0.5  # maze floor is at Y=0
+	else:
+		spawn.y = _terrain.height_at(spawn.x, spawn.z) + 2.0
 	_player.global_position = spawn
 	_player.chunk_changed.connect(_on_chunk_changed)
 	add_child(SensoriumAmbience.new()) # your build's own hum, under the music
-	var vehicles := VehicleWorldWiring.spawn_hub_vehicles(self, _terrain, spawn)
-	VehicleWorldWiring.wire_streaming_bump(vehicles, _terrain, _sky)
+	if layer_id != "liminal":
+		var vehicles := VehicleWorldWiring.spawn_hub_vehicles(self, _terrain, spawn)
+		VehicleWorldWiring.wire_streaming_bump(vehicles, _terrain, _sky)
 	add_child(RealityBendOverlay.new(_reality_bend_baseline()))
 	var hotbar := HotbarUI.new()
 	hotbar.cast_requested.connect(_on_cast)
@@ -81,7 +96,8 @@ func _ready() -> void:
 				Color(0.75, 0.35, 0.95), _player, pos)
 			hideout.position = pos
 			add_child(hideout)
-	_populate_layer_npcs(spawn)
+	if layer_id != "liminal":
+		_populate_layer_npcs(spawn)
 	if layer_id == "liminal" and LayerManager.is_prototype_mode():
 		_spawn_prototype_spine_exits(spawn)
 
@@ -92,12 +108,12 @@ func _spawn_prototype_spine_exits(near: Vector3) -> void:
 	var metro := LayerExitDoor.new()
 	metro.target_layer = "supraliminal"
 	metro.position = near + Vector3(6, 0, 4)
-	metro.position.y = _terrain.height_at(metro.position.x, metro.position.z)
+	metro.position.y = 0.5 if layer_id == "liminal" else _terrain.height_at(metro.position.x, metro.position.z)
 	add_child(metro)
 	var catsino := LayerExitDoor.new()
 	catsino.target_layer = "hyperliminal"
 	catsino.position = near + Vector3(-6, 0, 4)
-	catsino.position.y = _terrain.height_at(catsino.position.x, catsino.position.z)
+	catsino.position.y = 0.5 if layer_id == "liminal" else _terrain.height_at(catsino.position.x, catsino.position.z)
 	add_child(catsino)
 
 var _peers: Dictionary = {} # peer_id -> RemotePlayer
@@ -478,8 +494,7 @@ func _liminal_enter(coord: Vector2i) -> void:
 	var door := LiminalDoor.new()
 	door.layer = "liminal"
 	var size := float(HubRegionData.CHUNK_SIZE)
-	door.position = Vector3(coord.x * size + size * 0.3, 0, coord.y * size + size * 0.6)
-	door.position.y = _terrain.height_at(door.position.x, door.position.z)
+	door.position = Vector3(coord.x * size + size * 0.3, 0.5, coord.y * size + size * 0.6)
 	add_child(door)
 	# The obvious exits: most liminal chunks also carry a clearly-marked
 	# archway out. Weighted so the Hyperliminal (the Catsino) is the easy
@@ -498,8 +513,7 @@ func _liminal_enter(coord: Vector2i) -> void:
 			target = "extraliminal" # guild-war grounds
 		var exit_door := LayerExitDoor.new()
 		exit_door.target_layer = target
-		exit_door.position = Vector3(coord.x * size + size * 0.7, 0, coord.y * size + size * 0.25)
-		exit_door.position.y = _terrain.height_at(exit_door.position.x, exit_door.position.z)
+		exit_door.position = Vector3(coord.x * size + size * 0.7, 0.5, coord.y * size + size * 0.25)
 		add_child(exit_door)
 	_maybe_spawn_entity(coord)
 
@@ -524,7 +538,7 @@ func _register_world_entity(ent: WorldEntity) -> void:
 func _maybe_spawn_entity(coord: Vector2i) -> void:
 	# Periliminal / dungeon runs use PeriliminalGenerator floors
 	# (`_apply_periliminal_floor`) — do not fall back to denser dens.
-	if layer_id == "periliminal":
+	if layer_id in ["periliminal", "liminal"]:
 		return
 	if DungeonRuns != null and DungeonRuns.active:
 		return
@@ -577,6 +591,7 @@ func _on_entity_died(ent: WorldEntity) -> void:
 var _hud_hp_bar: ProgressBar
 var _hud_shield_bar: ProgressBar
 var _hud_hp_label: Label
+var _hud_coins_label: Label
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
@@ -590,6 +605,34 @@ func _build_hud() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		LayerManager.transition_to("hyperliminal"))
 	layer.add_child(back)
+
+	# Coins always visible in-world — the primary currency. Live-updates via
+	# EconomyManager.balance_changed.
+	_hud_coins_label = Label.new()
+	_hud_coins_label.text = "🪙 %d" % EconomyManager.get_coins()
+	_hud_coins_label.position = Vector2(0, 10)
+	_hud_coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_hud_coins_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_hud_coins_label.offset_left = -300.0
+	_hud_coins_label.offset_right = -70.0
+	_hud_coins_label.add_theme_font_size_override("font_size", 20)
+	layer.add_child(_hud_coins_label)
+	
+	var pause_btn := Button.new()
+	pause_btn.text = "⏸"
+	pause_btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	pause_btn.offset_left = -50.0
+	pause_btn.offset_top = 10.0
+	pause_btn.offset_right = -10.0
+	pause_btn.add_theme_font_size_override("font_size", 20)
+	pause_btn.pressed.connect(func():
+		var pm = get_node_or_null("/root/PauseManager")
+		if pm and pm.has_method("toggle_pause"):
+			pm.toggle_pause()
+	)
+	layer.add_child(pause_btn)
+	if EconomyManager != null and EconomyManager.has_signal("balance_changed"):
+		EconomyManager.balance_changed.connect(_on_hud_balance_changed)
 
 	var quest_btn := Button.new()
 	quest_btn.text = "Quests (J)"
@@ -631,6 +674,10 @@ func _refresh_hud_vitals() -> void:
 	_hud_hp_bar.value = _player_hp
 	_hud_shield_bar.value = _shield
 	_hud_hp_label.text = "HP %d/100   Shield %d" % [_player_hp, _shield]
+
+func _on_hud_balance_changed(currency: String, _old_balance: int, new_balance: int) -> void:
+	if currency == EconomyManager.CURRENCY_COINS and is_instance_valid(_hud_coins_label):
+		_hud_coins_label.text = "🪙 %d" % new_balance
 
 func _open_quest_log() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

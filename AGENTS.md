@@ -311,30 +311,6 @@ this section is the most recent concrete read against it. Update this
 section (with today's date) whenever you re-verify a gate — don't let it
 go stale the way the other two did.
 
-- **REALISTIC HUMANS SHIPPED (2026-07-17) — the human-mesh gap is
-  closed.** Six parametric MakeHuman bodies (CC0) were generated INSIDE
-  this environment via `pip install bpy` (Blender 5.0.1 as a Python
-  module) + MPFB v2.0.16 (extensions.blender.org, sha256-verified):
-  macro-varied gender/age/muscle/weight/height, helper cage stripped
-  (13,380 verts each), real heights 1.64–1.84 m asserted in the exported
-  glTF accessors, materials named `Skin`/`Outfit` to key NpcBody's tint
-  rules (per-NPC natural skin tones + archetype-colored outfits). Files:
-  `npc_human.glb` (all NPCs), `metahuman_player.glb` (player — no longer
-  the robot), `variants/npc_human/*.glb` (pool, picked per NPC id).
-  Regeneration is scriptable — the whole pipeline is headless Python;
-  MPFB's HumanService/TargetService do the work. GOTCHA that cost an
-  hour: MakeHuman macros are SHAPE KEYS — bake the evaluated mesh
-  (`bpy.data.meshes.new_from_object(obj.evaluated_get(depsgraph))`)
-  before editing vertices, and validate glTF extents across ALL
-  primitives (a 2-material mesh = 2 primitives; primitive[0] is just
-  the head).
-- **OpenStreetMap real-world cities: PRESENT and wired.** All four hubs
-  have real downtown geometry in `world_data/osm/` (180 streets + 220
-  buildings each, © OpenStreetMap contributors, ODbL) — real Dallas /
-  Fort Worth / Denton / Arlington, scaled to the 280 m hub span.
-  `MegaCityBuilder` prefers `OsmCityLayout` automatically when the JSON
-  exists. Refresh/expand with `python3 scripts/fetch_osm_cities.py`
-  (Overpass API).
 - **CI GREEN (2026-07-16, run 29468572375 at b8fcbba).** First successful
   CI validation since 2026-07-10: headless import + Web export completed
   in ~12.5 min and uploaded a real `builds/html5` artifact. Getting here
@@ -572,3 +548,14 @@ remains the default mood; HDRI is available for look-dev upgrades.
   MOBILE IS THE FIRST-CLASS TEST TARGET — verify any new HUD/UI element
   at phone aspect ratios (portrait 9:16 and landscape 16:9) and respect
   safe-area insets before shipping.
+
+<!-- fennara-agents-start -->
+# Fennara MCP Guidelines
+
+This project uses Fennara MCP for Godot-aware inspection, editing, runtime error capture, diagnostics, scene validation, screenshots, and project settings.
+
+When working on Godot-specific files or behavior, always read `addons/fennara/ai/guidelines.md` first. This includes work involving `.tscn`, `.tres`, `.res`, `.gd`, `.cs`, `.gdshader`, `project.godot`, scenes, nodes, resources, shaders, project settings, gameplay, UI, animation, rendering, Fennara addon behavior, or Fennara MCP behavior.
+
+The Fennara guidelines file explains which MCP tools to use, when to inspect before editing, how validation works, and which tool calls are mandatory before considering Godot work complete.
+<!-- fennara-agents-end -->
+

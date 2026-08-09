@@ -3,7 +3,7 @@ extends Control
 
 signal companion_obtained(companion_id: String, rarity: String)
 
-@onready var result_container: VBoxContainer = $Panel/VBox/ResultContainer
+@onready var result_container: VBoxContainer = $Panel/VBox/ScrollContainer/ResultContainer
 @onready var single_btn: Button = $Panel/VBox/Controls/SingleBtn
 @onready var multi_btn: Button = $Panel/VBox/Controls/MultiBtn
 @onready var faction_option: OptionButton = $Panel/VBox/Controls/FactionOption
@@ -34,7 +34,7 @@ func _ready() -> void:
 
 func _summon(count: int) -> void:
 	var factions := ["", "SovereignCrown", "WildlandsAscendant", "VeiledCurrent", "Factionless"]
-	var faction := factions[faction_option.selected] if faction_option else ""
+	var faction: String = factions[faction_option.selected] if faction_option else ""
 	if single_btn:
 		single_btn.disabled = true
 	if multi_btn:

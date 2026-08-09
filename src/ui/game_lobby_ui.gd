@@ -181,6 +181,11 @@ func _populate_games() -> void:
 	for entry in catalog:
 		game_grid.add_child(_make_game_card(entry))
 
+	# The PVXC pit — staked survival under the casino floor.
+	var pvxc := _make_pvxc_card()
+	if pvxc != null:
+		game_grid.add_child(pvxc)
+
 func _make_game_card(entry: Dictionary) -> PanelContainer:
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 72)
@@ -275,6 +280,44 @@ func _refresh_battlepass() -> void:
 	bp_xp_bar.max_value = max(max_xp, 1)
 	bp_xp_bar.value = current
 	bp_label.text = "Battlepass Tier %d — %d / %d XP" % [tier, current, max_xp]
+
+func _make_pvxc_card() -> PanelContainer:
+	if PvxcManager == null:
+		return null
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 72)
+	var hbox := HBoxContainer.new()
+	card.add_child(hbox)
+
+	var vbox := VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(vbox)
+
+	var name_label := Label.new()
+	name_label.text = "🔴 The PVXC"
+	name_label.add_theme_font_size_override("font_size", 16)
+	vbox.add_child(name_label)
+
+	var type_label := Label.new()
+	type_label.text = "Staked Survival Pit"
+	type_label.modulate = Color(0.8, 0.8, 0.8)
+	vbox.add_child(type_label)
+
+	var bet_label := Label.new()
+	bet_label.text = "Min Stake: %d Chips" % PvxcManager.MIN_STAKE
+	bet_label.modulate = Color(1.0, 0.45, 0.4)
+	vbox.add_child(bet_label)
+
+	var play_btn := Button.new()
+	play_btn.text = "ENTER"
+	play_btn.custom_minimum_size = Vector2(80, 0)
+	play_btn.pressed.connect(func() -> void:
+		if ResourceLoader.exists("res://scenes/pvxc/pvxc_gate.tscn"):
+			get_tree().change_scene_to_file("res://scenes/pvxc/pvxc_gate.tscn")
+		else:
+			NotificationUI.notify_error("The PVXC gate is sealed right now."))
+	hbox.add_child(play_btn)
+	return card
 
 func _on_game_card_pressed(game_type: int, variant_id: int, scene_path: String = "") -> void:
 	if scene_path != "" and ResourceLoader.exists(scene_path):

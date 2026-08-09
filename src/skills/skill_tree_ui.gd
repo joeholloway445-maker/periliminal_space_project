@@ -82,9 +82,11 @@ func _build_line(list: VBoxContainer, line: Dictionary) -> void:
 			get_tree().reload_current_scene())
 		att_row.add_child(eb)
 
-	for a in line.actives:
+	for a in line.get("actives", []):
 		_build_skill(list, a, false)
-	_build_skill(list, line.ultimate, true)
+	var ult: Dictionary = line.get("ultimate", {})
+	if not ult.is_empty():
+		_build_skill(list, ult, true)
 
 	for p in line.get("passives", []):
 		if str(line.get("source", "")) == "prestige":

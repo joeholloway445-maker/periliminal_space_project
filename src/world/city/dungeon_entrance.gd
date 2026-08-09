@@ -1,4 +1,4 @@
-class_name DungeonEntrance
+class_name PeriliminalDungeonDoor
 extends Node3D
 ## A sealed Periliminal door inside an ordinary Metroplex building.
 ##
@@ -175,6 +175,8 @@ func attempt_entry() -> void:
 		DungeonManager.begin_dungeon(dungeon_id)
 	if PeriliminalRuns:
 		PeriliminalRuns.begin_run(_party_ids(party))
+	if LayerManager:
+		LayerManager.transition_to("periliminal", true)
 
 ## Party membership: PartyManager when one is formed, an explicit override
 ## for a party-finder UI, solo otherwise. The gate decides whether the group

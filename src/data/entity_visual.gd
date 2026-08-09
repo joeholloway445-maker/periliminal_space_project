@@ -202,6 +202,25 @@ static func _crown(root: Node3D, mat: Material, rng: RandomNumberGenerator, stag
 
 static var _icon_cache: Dictionary = {}
 
+## Real authored art slot: res://assets/entities/<id>[_s<stage>].jpg.
+## Stage 0 reads <id>.jpg, stages 1-2 read <id>_s<stage>.jpg. Returns null
+## when the file is missing, so the procedural painter stays the fallback.
+static func _real_art_icon(entity_id: String, stage: int, size: int) -> ImageTexture:
+	var base := str(entity_id).to_lower()
+	var suffix := "" if stage <= 0 else "_s%d" % stage
+	var path := "res://assets/entities/%s%s.jpg" % [base, suffix]
+	if not ResourceLoader.exists(path):
+		return null
+	var tex: Texture2D = load(path)
+	if tex == null:
+		return null
+	var img := tex.get_image()
+	if img == null:
+		return null
+	if img.get_width() != size or img.get_height() != size:
+		img.resize(size, size, Image.INTERPOLATE_LANCZOS)
+	return ImageTexture.create_from_image(img)
+
 ## A 2D dex icon for the entity — the same faction palette and category
 ## shape language, painted radially so it reads at list size. Cached per
 ## entity+stage because the dex draws hundreds at once.
@@ -209,6 +228,13 @@ static func icon(entity_id: String, entity: Dictionary, stage: int = 0, size: in
 	var key := "%s_%d_%d" % [entity_id, stage, size]
 	if _icon_cache.has(key):
 		return _icon_cache[key]
+
+	# Authored art wins: res://assets/entities/<id>[_s<stage>].jpg (e.g. the
+	# dex line SC-EN1 maps to sc-en1.jpg, stage 2 to sc-en1_s2.jpg).
+	var real := _real_art_icon(entity_id, stage, size)
+	if real != null:
+		_icon_cache[key] = real
+		return real
 
 	var pal: Array = FACTION_PALETTE.get(str(entity.get("faction", "")),
 		FACTION_PALETTE["Factionless"])

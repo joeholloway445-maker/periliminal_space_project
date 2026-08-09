@@ -47,3 +47,7 @@ periliminal-space-mvp/
 
 # Temp junk
 %PROJ%
+# Local log/cache junk (added by Ziva investigation cleanup)
+import_errors.log
+*.unwrap_cache
+*.bak

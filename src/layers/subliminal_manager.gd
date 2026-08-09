@@ -102,6 +102,9 @@ var _storage_expansions_bought: int = 0
 ## {id, archetype, display_name, placed_at}
 var ambient_npcs: Array = []
 
+## Rooms saved as backdoors. Each entry: {room_id, seed, rfm:{...}, saved_at, label}
+var saved_rooms: Array = []
+
 func _ready() -> void:
 	_load()
 
@@ -277,6 +280,71 @@ func clear_apartment_slot(grid_pos: Vector2i) -> void:
 	_save()
 	apartment_updated.emit()
 
+## Save a room as a backdoor in the Subliminal. Creates a portal slot.
+## room_data from RoomNetwork.get_room(): {room_id, seed, pos, author_rfm, ...}
+## Returns the saved room's index in saved_rooms, or -1 on failure.
+func save_room_as_backdoor(room_data: Dictionary, label: String = "") -> int:
+	var room_id := str(room_data.get("room_id", ""))
+	if room_id.is_empty():
+		return -1
+
+	# Prevent duplicates
+	for entry in saved_rooms:
+		if str(entry.get("room_id", "")) == room_id:
+			NotificationUI.notify_info("That room is already saved in your Subliminal.")
+			return saved_rooms.find(entry)
+
+	var entry := {
+		"room_id": room_id,
+		"seed": room_data.get("seed", 0),
+		"rfm": room_data.get("author_rfm", {}),
+		"saved_at": Time.get_datetime_string_from_system(),
+		"label": label if not label.is_empty() else "Room %s" % room_id,
+	}
+	saved_rooms.append(entry)
+	_save()
+	apartment_updated.emit()
+	NotificationUI.notify_info("🏠 '%s' saved as a backdoor in your Subliminal." % entry.label)
+	return saved_rooms.size() - 1
+
+## Remove a saved backdoor room.
+func remove_saved_room(room_id: String) -> bool:
+	for i in range(saved_rooms.size()):
+		if str(saved_rooms[i].get("room_id", "")) == room_id:
+			saved_rooms.remove_at(i)
+			_save()
+			apartment_updated.emit()
+			NotificationUI.notify_info("Backdoor to room %s removed." % room_id)
+			return true
+	return false
+
+## Teleport to a saved room (called from apartment UI).
+func enter_saved_room(room_id: String) -> void:
+	var path := "user://rooms/%s.tscn" % room_id
+	if FileAccess.file_exists(path):
+		get_tree().change_scene_to_file(path)
+		return
+	# Room scene missing — regenerate from RoomNetwork
+	var network := get_node_or_null("/root/RoomNetwork") as Node
+	if network != null and network.has_method("get_room"):
+		var room_data: Dictionary = network.call("get_room", room_id)
+		if not room_data.is_empty():
+			var rfm: Dictionary = room_data.get("author_rfm", {})
+			var rfm_full := {
+				"race": rfm.get("race", PlayerProfile.selected_race_id),
+				"frame": rfm.get("frame", PlayerProfile.selected_frame),
+				"mod": rfm.get("mod", PlayerProfile.selected_mod),
+				"faction": rfm.get("faction", PlayerProfile.faction),
+				"identity_seed": IdentityLens.identity_seed(),
+				"sensorium": IdentityLens.sensorium(),
+				"sound_profile": IdentityLens.sound_profile(),
+			}
+			var scene: PackedScene = RoomGenerator.generate(room_id, int(room_data.get("seed", 0)), rfm_full)
+			ResourceSaver.save(scene, path)
+			get_tree().change_scene_to_file(path)
+			return
+	NotificationUI.notify_error("That room no longer exists.")
+
 func _save() -> void:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -291,6 +359,7 @@ func _save() -> void:
 			"storage": storage_items,
 			"storage_expansions": _storage_expansions_bought,
 			"ambient": ambient_npcs,
+			"saved_rooms": saved_rooms,
 		}))
 
 func _load() -> void:
@@ -315,6 +384,9 @@ func _load() -> void:
 	ambient_npcs = d.get("ambient", [])
 	if not ambient_npcs is Array:
 		ambient_npcs = []
+	saved_rooms = d.get("saved_rooms", [])
+	if not saved_rooms is Array:
+		saved_rooms = []
 	# Expired creator sub → strip ambient figures (pay gate reasserts).
 	if not is_creator() and not ambient_npcs.is_empty():
 		ambient_npcs.clear()

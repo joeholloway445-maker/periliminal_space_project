@@ -1,73 +1,86 @@
-[gd_scene load_steps=3 format=3 uid="uid://slot_machine"]
+[gd_scene format=3 uid="uid://cdynw34u7a8ph"]
 
-[ext_resource type="Script" path="res://src/games/slots/slot_machine_ui.gd" id="1"]
-[ext_resource type="Script" path="res://src/games/slots/slot_reel.gd" id="2"]
+[ext_resource type="Script" uid="uid://ddo8md8uragyo" path="res://src/games/slots/slot_machine_ui.gd" id="1"]
+[ext_resource type="Script" uid="uid://cjldnunw7kawb" path="res://src/games/slots/slot_reel.gd" id="2"]
 
-[node name="SlotMachine" type="Control"]
+[node name="SlotMachine" type="Control" unique_id=1763197336]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=987293759]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.08, 0.02, 0.12, 1)
 mouse_filter = 2
+color = Color(0.08, 0.02, 0.12, 1)
 
-[node name="ReelContainer" type="HBoxContainer" parent="."]
+[node name="ReelContainer" type="HBoxContainer" parent="." unique_id=380528276]
+layout_mode = 0
 anchor_left = 0.1
-anchor_right = 0.9
 anchor_top = 0.2
+anchor_right = 0.9
 anchor_bottom = 0.55
 alignment = 1
 
-[node name="Reel1" type="Control" parent="ReelContainer"]
-size_flags_horizontal = 3
+[node name="Reel1" type="Control" parent="ReelContainer" unique_id=1267039556]
 custom_minimum_size = Vector2(80, 120)
+layout_mode = 2
+size_flags_horizontal = 3
 script = ExtResource("2")
 
-[node name="Reel2" type="Control" parent="ReelContainer"]
-size_flags_horizontal = 3
+[node name="Reel2" type="Control" parent="ReelContainer" unique_id=1237773435]
 custom_minimum_size = Vector2(80, 120)
+layout_mode = 2
+size_flags_horizontal = 3
 script = ExtResource("2")
 
-[node name="Reel3" type="Control" parent="ReelContainer"]
-size_flags_horizontal = 3
+[node name="Reel3" type="Control" parent="ReelContainer" unique_id=682100724]
 custom_minimum_size = Vector2(80, 120)
+layout_mode = 2
+size_flags_horizontal = 3
 script = ExtResource("2")
 
-[node name="BetLabel" type="Label" parent="."]
+[node name="BetLabel" type="Label" parent="." unique_id=359011368]
+layout_mode = 0
 anchor_left = 0.1
-anchor_right = 0.9
 anchor_top = 0.6
+anchor_right = 0.9
 anchor_bottom = 0.68
-horizontal_alignment = 1
 text = "Bet: 50 🪙"
+horizontal_alignment = 1
 
-[node name="BetRow" type="HBoxContainer" parent="."]
+[node name="BetRow" type="HBoxContainer" parent="." unique_id=78046979]
+layout_mode = 0
 anchor_left = 0.3
-anchor_right = 0.7
 anchor_top = 0.68
+anchor_right = 0.7
 anchor_bottom = 0.76
 alignment = 1
 
-[node name="BetDown" type="Button" parent="BetRow"]
+[node name="BetDown" type="Button" parent="BetRow" unique_id=1216667305]
+layout_mode = 2
 text = "−"
 
-[node name="BetUp" type="Button" parent="BetRow"]
+[node name="BetUp" type="Button" parent="BetRow" unique_id=1412291703]
+layout_mode = 2
 text = "+"
 
-[node name="SpinButton" type="Button" parent="."]
+[node name="SpinButton" type="Button" parent="." unique_id=1839583612]
+layout_mode = 0
 anchor_left = 0.3
-anchor_right = 0.7
 anchor_top = 0.78
+anchor_right = 0.7
 anchor_bottom = 0.88
 text = "SPIN 🎰"
 
-[node name="ResultLabel" type="Label" parent="."]
+[node name="ResultLabel" type="Label" parent="." unique_id=672169345]
+layout_mode = 0
 anchor_left = 0.1
-anchor_right = 0.9
 anchor_top = 0.9
+anchor_right = 0.9
 anchor_bottom = 0.98
-horizontal_alignment = 1
 text = "Good luck!"
+horizontal_alignment = 1

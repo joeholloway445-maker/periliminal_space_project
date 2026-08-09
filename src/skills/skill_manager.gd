@@ -68,10 +68,14 @@ func _auto_slot_starters() -> void:
 	var line := SkillData.frame_line(PlayerProfile.selected_frame)
 	if line.is_empty():
 		return
-	slot_skill(0, 0, line.actives[0].id, true)
-	slot_skill(0, 1, line.actives[1].id, true)
+	var acts: Array = line.get("actives", [])
+	if acts.size() >= 2:
+		slot_skill(0, 0, acts[0].id, true)
+		slot_skill(0, 1, acts[1].id, true)
 	slot_skill(0, 2, "lim_a0", true)
-	slot_ultimate(0, line.ultimate.id, true)
+	var ult: Dictionary = line.get("ultimate", {})
+	if not ult.is_empty():
+		slot_ultimate(0, ult.id, true)
 	_save()
 
 ## ── Lines & lookup ────────────────────────────────────────────────────────
@@ -82,11 +86,13 @@ func known_lines() -> Array[Dictionary]:
 
 func find_skill(skill_id: String) -> Dictionary:
 	for line in known_lines():
-		for a in line.actives:
+		var actives: Array = line.get("actives", [])
+		for a in actives:
 			if a.id == skill_id:
 				return a
-		if line.ultimate.id == skill_id:
-			return line.ultimate
+		var ult: Dictionary = line.get("ultimate", {})
+		if not ult.is_empty() and ult.get("id", "") == skill_id:
+			return ult
 	return {}
 
 ## ── Points, ranks, morphs ─────────────────────────────────────────────────

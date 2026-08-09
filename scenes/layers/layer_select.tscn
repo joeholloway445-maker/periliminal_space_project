@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://layer_select"]
+[gd_scene format=3 uid="uid://cevxhhevb2b0n"]
 
-[ext_resource type="Script" path="res://src/layers/layer_select_ui.gd" id="1"]
+[ext_resource type="Script" uid="uid://lvvvm4v32mmr" path="res://src/layers/layer_select_ui.gd" id="1"]
 
-[node name="LayerSelect" type="Control"]
+[node name="LayerSelect" type="Control" unique_id=1934173665]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1")

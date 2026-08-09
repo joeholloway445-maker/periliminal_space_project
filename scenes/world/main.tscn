@@ -1,27 +1,31 @@
-[gd_scene load_steps=2 format=3 uid="uid://main_world"]
+[gd_scene format=3 uid="uid://ut0bn6lvyudw"]
 
-[ext_resource type="Script" path="res://src/world/paw_vegas_scene.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://cbdbysu0a4311" path="res://src/world/paw_vegas_scene.gd" id="1_main"]
 
-[node name="MainWorld" type="Node3D"]
+[node name="MainWorld" type="Node3D" unique_id=533137293]
 script = ExtResource("1_main")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2073824571]
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=92146439]
 transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 10, 0)
 light_color = Color(1, 0.95, 0.8, 1)
 light_energy = 1.5
 shadow_enabled = true
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1884318546]
 transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 5, 10)
 
-[node name="NPCContainer" type="Node3D" parent="."]
+[node name="NPCContainer" type="Node3D" parent="." unique_id=1262140580]
 
-[node name="DistrictTransitionZones" type="Node3D" parent="."]
+[node name="DistrictTransitionZones" type="Node3D" parent="." unique_id=2121981238]
 
-[node name="UILayer" type="CanvasLayer" parent="."]
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=612266403]
 
-[node name="HUD" type="Control" parent="UILayer"]
+[node name="HUD" type="Control" parent="UILayer" unique_id=752866104]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

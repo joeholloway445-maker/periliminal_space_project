@@ -16,6 +16,9 @@ const DEFAULT_VIEW_RADIUS := 2 # chunks in every direction, on foot
 ## same on-foot cadence — see set_view_radius(), called from
 ## layer_world.gd/overworld.gd on vehicle enter/exit.
 var _view_radius := DEFAULT_VIEW_RADIUS
+## Set by TerrainBridge.ensure_built() so chunk content spawners know
+## which layer they're building for. Empty string = no gating.
+var layer_id: String = ""
 const QUADS_PER_CHUNK := 16
 const HEIGHT_SCALE := 8.0
 
@@ -150,9 +153,10 @@ func _build_chunk(coord: Vector2i) -> Node3D:
 	if str(chunk.biome.get("biome", "")) == "coastal":
 		root.add_child(_build_water_surface(size))
 
-	_scatter_props(root, chunk, size)
-	ChunkContentSpawner.spawn(root, chunk, coord, size, _terrain_bridge())
-	EntityCombatSpawner.spawn(root, chunk, coord, size, _terrain_bridge())
+	if layer_id != "liminal":
+		_scatter_props(root, chunk, size)
+		ChunkContentSpawner.spawn(root, chunk, coord, size, _terrain_bridge())
+		EntityCombatSpawner.spawn(root, chunk, coord, size, _terrain_bridge())
 	return root
 
 ## ChunkContentSpawner needs TerrainBridge's public height_at() for

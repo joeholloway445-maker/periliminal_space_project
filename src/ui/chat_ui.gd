@@ -44,6 +44,13 @@ func _ready() -> void:
 	_input.text_submitted.connect(_on_submit)
 	box.add_child(_input)
 
+	# A Contacts app can open this chat pointed at one player: prefill a whisper.
+	var target: String = str(get_meta("target_user", ""))
+	if not target.is_empty():
+		_tabs.current_tab = ChatManager.CHANNELS.find("whisper")
+		_input.text = "/w %s " % target
+		_input.grab_focus()
+
 	for c in ChatManager.CHANNELS:
 		_logs[c] = []
 	ChatManager.message_received.connect(_on_message)

@@ -61,8 +61,7 @@ func travel_to(district_id: String) -> void:
 	transition_started.emit(from, district_id)
 
 	# Fade out, load scene, fade in
-	if HUD:
-		HUD.show_event_banner("Traveling to %s..." % get_district_name(district_id), 2.0)
+	# HUD is an in-world scene, not an autoload — skip banner for now.
 
 	await get_tree().create_timer(0.5).timeout
 
@@ -72,8 +71,7 @@ func travel_to(district_id: String) -> void:
 	_transitioning = false
 	transition_finished.emit(district_id)
 
-	if HUD:
-		HUD.set_district(get_district_name(district_id))
+	# HUD is an in-world scene, not an autoload — skip district label update.
 
 	if AchievementManager:
 		AchievementManager.check("visit_district", 1)

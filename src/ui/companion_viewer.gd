@@ -165,7 +165,7 @@ func _get_all_companions() -> Array[Dictionary]:
 	# Merge all roster sources
 	if CompanionRoster:
 		all.append_array(CompanionRoster.get_sovereign_crown_roster())
-		all.append_array(CompanionRoster.get_wildlands_roster())
+		all.append_array(CompanionRoster.get_wildlands_ascendant_roster())
 		all.append_array(CompanionRoster.get_veiled_current_roster())
 		all.append_array(CompanionRoster.get_factionless_roster())
 	return all

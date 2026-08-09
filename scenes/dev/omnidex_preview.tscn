@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3k8q2w1x7y0z"]
+
+[ext_resource type="Script" uid="uid://duu7g6h6w8j3" path="res://src/ui/omni_dex_ui.gd" id="1_x8y0z"]
+
+[node name="Test" type="Node"]
+
+[node name="OmniDex" type="CanvasLayer" parent="."]
+script = ExtResource("1_x8y0z")

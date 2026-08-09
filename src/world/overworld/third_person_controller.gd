@@ -25,13 +25,28 @@ var _last_chunk := Vector2i(2147483647, 2147483647)
 
 var _spring: SpringArm3D
 var _camera: Camera3D
-var _body_mesh: MeshInstance3D
 ## Default to identity (humanoid / MetaHuman). Cat mode is the optional
 ## Catsino house skin when player_cat.glb is present.
 var visual_mode := "identity"
 var _visual_root: Node3D
 var _collision: CollisionShape3D
 var _crouched := false
+
+# ── Procedural body animation state ──────────────────────────────────────
+var _anim_time := 0.0
+var _body_rot_target := 0.0
+var _body_rot_current := 0.0
+var _body_lean := Vector3.ZERO
+var _was_moving := false
+
+# Animation tuning
+const BOB_FREQ := 10.0
+const BOB_AMP := 0.04
+const SPRINT_BOB_AMP := 0.07
+const LEAN_ANGLE := 0.12
+const BODY_ROT_SPEED := 8.0
+const IDLE_BREATHE_AMP := 0.006
+const IDLE_BREATHE_FREQ := 2.0
 
 ## actor_id used for combat-system lookups; target_id is set by whatever
 ## puts this controller into an encounter (lock-on, trigger volume).
@@ -107,7 +122,6 @@ func _clear_visual() -> void:
 	if _visual_root != null and is_instance_valid(_visual_root):
 		_visual_root.queue_free()
 	_visual_root = null
-	_body_mesh = null
 	# Drop leftover ear/mesh children from older builds (keep camera + collider).
 	for c in get_children():
 		if c == _spring or c == _collision:
@@ -215,7 +229,7 @@ func _physics_process(delta: float) -> void:
 	_apply_touch_look()
 	velocity.y -= _gravity * delta
 
-	var input_2d := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	var input_2d := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	# Touch devices: the virtual joystick overrides/merges with keys.
 	if TouchControls.move_vector.length() > 0.05:
 		input_2d = TouchControls.move_vector
@@ -223,15 +237,14 @@ func _physics_process(delta: float) -> void:
 	var dir := (cam_basis * Vector3(input_2d.x, 0.0, input_2d.y)).normalized()
 
 	# Crouch: hold Ctrl/C (or the touch posture button). Slower, lower.
-	var want_crouch := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_C) \
-		or TouchControls.crouch_held
+	var want_crouch := Input.is_action_pressed("crouch") or TouchControls.crouch_held
 	if want_crouch != _crouched:
 		_crouched = want_crouch
 		if is_instance_valid(_visual_root):
 			var tw := create_tween()
 			tw.tween_property(_visual_root, "scale:y", 0.55 if _crouched else 1.0, 0.12)
 
-	var sprinting := Input.is_key_pressed(KEY_SHIFT) or TouchControls.sprint_held
+	var sprinting := Input.is_action_pressed("sprint") or TouchControls.sprint_held
 	var target_speed := SPRINT_SPEED if sprinting else MAX_SPEED
 	if _crouched:
 		target_speed = CROUCH_SPEED
@@ -245,19 +258,17 @@ func _physics_process(delta: float) -> void:
 	velocity.z = flat.z
 
 	if is_on_floor() and not _crouched \
-			and (Input.is_action_just_pressed("ui_accept") or TouchControls.consume_jump()):
+			and (Input.is_action_just_pressed("jump") or TouchControls.consume_jump()):
 		velocity.y = JUMP_VELOCITY
 	# Touch E replay moved to TouchControls._process() itself (always
 	# running regardless of whether this controller's _physics_process is
 	# enabled — it gets disabled while piloting a vehicle, which would
 	# otherwise silently break the touch exit-vehicle button).
 
-	if dir.length() > 0.1 and is_instance_valid(_body_mesh):
-		var target_yaw := atan2(dir.x, dir.z)
-		rotation.y = lerp_angle(rotation.y, target_yaw, 10.0 * delta)
-		_spring.rotation = Vector3(_cam_pitch, _cam_yaw - rotation.y, 0.0)
-
 	move_and_slide()
+	# Rotate the visual body to face movement direction with leans/bobs.
+	# Uses the actual velocity (not just input) so momentum slides still animate.
+	_apply_body_animation(delta, dir)
 
 	# Body memory: gait, turns and posture feed Proprioception every frame.
 	Proprioception.feed(delta, _cam_yaw,
@@ -274,3 +285,66 @@ func _physics_process(delta: float) -> void:
 	if global_position.y < -50.0:
 		global_position = Vector3(global_position.x, 30.0, global_position.z)
 		velocity = Vector3.ZERO
+
+# ── Procedural body animation ────────────────────────────────────────────
+## Rotates the visual body to face the movement direction, adds lean, bob,
+## and sway so the character looks alive instead of gliding. Works with
+## any body type (GLB, CharacterRig, PeriHumanRig) and doesn't require
+## animation clips or a skeleton.
+func _apply_body_animation(delta: float, input_dir: Vector3) -> void:
+	if not is_instance_valid(_visual_root):
+		return
+
+	_anim_time += delta
+
+	var speed: float = Vector3(velocity.x, 0.0, velocity.z).length()
+	var moving: bool = speed > 0.15
+	var airborne: bool = not is_on_floor()
+	var is_sprinting: bool = speed > MAX_SPEED * 0.85 and moving
+
+	# ── Body rotation: smoothly face the movement direction ─────────
+	if moving:
+		var move_dir := Vector3(velocity.x, 0.0, velocity.z).normalized()
+		_body_rot_target = atan2(move_dir.x, move_dir.z)
+		_was_moving = true
+	elif _was_moving:
+		# Keep facing the last movement direction while decelerating
+		pass
+
+	_body_rot_current = lerp_angle(_body_rot_current, _body_rot_target, BODY_ROT_SPEED * delta)
+
+	# ── Body lean: tilt forward when moving, back when airborne ─────
+	var target_lean_x := 0.0
+	if airborne:
+		target_lean_x = LEAN_ANGLE * 0.4  # lean back slightly when airborne
+	elif moving and not _crouched:
+		target_lean_x = -LEAN_ANGLE * (speed / SPRINT_SPEED)  # lean forward
+
+	_body_lean.x = lerp(_body_lean.x, target_lean_x, BODY_ROT_SPEED * delta * 0.5)
+
+	# ── Vertical bob and side sway ──────────────────────────────────
+	var bob := 0.0
+	var sway := 0.0
+
+	if moving and not airborne and not _crouched:
+		var freq := BOB_FREQ * (1.5 if is_sprinting else 1.0)
+		var amp := SPRINT_BOB_AMP if is_sprinting else BOB_AMP
+		bob = sin(_anim_time * freq) * amp
+		sway = sin(_anim_time * freq * 0.5) * amp * 0.4
+	elif _crouched:
+		# Subtle crouch shift — lower center of mass
+		bob = 0.0
+		sway = 0.0
+	else:
+		# Idle breathing — subtle rise and fall
+		bob = sin(_anim_time * IDLE_BREATHE_FREQ) * IDLE_BREATHE_AMP
+		sway = 0.0
+
+	# ── Apply to visual root ────────────────────────────────────────
+	# Set position Y (bob) but don't override the downward offset from crouch
+	_visual_root.position.y = bob
+
+	# Apply rotation: yaw faces movement, pitch is lean, roll is sway
+	_visual_root.rotation.y = _body_rot_current
+	_visual_root.rotation.x = _body_lean.x
+	_visual_root.rotation.z = sway

@@ -188,7 +188,7 @@ static func _build_floor(
 	shape.shape = box_shape
 
 	static_body.add_child(shape)
-	shape.owner = root
+	shape.owner = static_body
 	root.add_child(static_body)
 	static_body.owner = root
 

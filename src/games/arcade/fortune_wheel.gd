@@ -42,7 +42,7 @@ func _ready() -> void:
 		_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_result_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 		_result_label.offset_top = -80
-		(root as Control).add_child(_result_label)
+		(root as Control).add_child.call_deferred(_result_label)
 	if not spin_result.is_connected(_on_spin_ui_result):
 		spin_result.connect(_on_spin_ui_result)
 	if not error_occurred.is_connected(_on_spin_ui_error):

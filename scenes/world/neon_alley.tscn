@@ -1,20 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://neon_alley"]
+[gd_scene format=3 uid="uid://egvcumys3jlg"]
 
-[ext_resource type="Script" path="res://src/world/neon_alley_scene.gd" id="1_alley"]
+[ext_resource type="Script" uid="uid://fdhorlviqs7a" path="res://src/world/neon_alley_scene.gd" id="1_alley"]
 
-[node name="NeonAlley" type="Node3D"]
+[node name="NeonAlley" type="Node3D" unique_id=1689821796]
 script = ExtResource("1_alley")
 
-[node name="RaceTrack" type="Node3D" parent="."]
+[node name="RaceTrack" type="Node3D" parent="." unique_id=898057822]
 
-[node name="StartLine" type="Node3D" parent="RaceTrack"]
+[node name="StartLine" type="Node3D" parent="RaceTrack" unique_id=792278074]
 
-[node name="FinishLine" type="Node3D" parent="RaceTrack"]
+[node name="FinishLine" type="Node3D" parent="RaceTrack" unique_id=1898661612]
 
-[node name="RacerSpawns" type="Node3D" parent="."]
+[node name="RacerSpawns" type="Node3D" parent="." unique_id=600445972]
 
-[node name="UILayer" type="CanvasLayer" parent="."]
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=461586085]
 
-[node name="RaceHUD" type="Control" parent="UILayer"]
+[node name="RaceHUD" type="Control" parent="UILayer" unique_id=318778115]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

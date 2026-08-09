@@ -62,8 +62,8 @@ func join_layer(layer_id: String) -> void:
 	_match_id = ""
 	_current_layer = layer_id
 
-	if layer_id in ["hyperliminal", "subliminal"]:
-		return # menus and your apartment stay yours
+	if layer_id in ["hyperliminal", "subliminal", "liminal"]:
+		return # menus and your apartment stay yours; liminal is the lonely between
 
 	if await _try_connect_socket():
 		var match_id := await _resolve_layer_match(layer_id)
@@ -108,11 +108,14 @@ func _try_connect_socket() -> bool:
 		var client = AccountManager.get_nakama_client()
 		if client == null or not client.has_method("create_socket"):
 			return false
+		var nakama_session = AccountManager.get_nakama_session()
+		if nakama_session == null:
+			return false
 		_socket = client.create_socket()
 		_socket.received_match_state.connect(_on_match_state)
 		if _socket.has_signal("received_match_presence_event"):
 			_socket.received_match_presence_event.connect(_on_match_presence)
-		var result = await _socket.connect_async(AccountManager.get_nakama_session())
+		var result = await _socket.connect_async(nakama_session)
 		if result != null and result.has_method("is_exception") and result.is_exception():
 			push_warning("PresenceManager: socket connect failed: %s" % result.get_exception().message)
 			_socket = null
@@ -280,8 +283,8 @@ func _on_match_presence(event) -> void:
 ## Offline stand-ins: named from the roster, profiled so perception works,
 ## tiered so the crowd feels alive without every bot being a threat.
 func _spawn_ghosts(layer_id: String) -> void:
-	if layer_id in ["hyperliminal", "subliminal"]:
-		return # menus and your apartment stay yours
+	if layer_id in ["hyperliminal", "subliminal", "liminal"]:
+		return # menus and your apartment stay yours; liminal is the lonely between
 	var knoll: Dictionary = Hope.combat_profile() if Hope else {}
 	for i in range(GHOST_COUNT):
 		var e := CompanionRegistry.get_random()

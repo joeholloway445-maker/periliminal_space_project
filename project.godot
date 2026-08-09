@@ -20,13 +20,13 @@ config/version="0.1.0"
 config/tags=PackedStringArray("mmo", "casino", "social", "cats")
 run/main_scene="res://scenes/ui/splash.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-boot_splash/bg_color=Coboot_splash/image="res://assets/ui/boot_splash.png"
-boot_splash/fullsize=true
-boot_splash/use_filter=true
-config/icon="res://assets/ui/icon.png"es://assets/ui/icon.png"
+boot_splash/bg_color=Color(0.02, 0, 0.05, 1)
+boot_splash/image="res://assets/ui/boot_splash.png"
+config/icon="res://assets/ui/icon.png"
 
 [autoload]
 
+PauseManager="*res://src/ui/pause_manager.gd"
 AutoloadInit="*res://src/core/autoload_init.gd"
 ExternalHandoff="*res://src/core/external_handoff.gd"
 WorldLoader="*res://src/world/world_loader.gd"
@@ -72,10 +72,11 @@ CrownManager="*res://src/core/crown_manager.gd"
 IdentityLens="*res://src/identity/identity_lens.gd"
 TerritoryControl="*res://src/layers/territory_control.gd"
 SubliminalManager="*res://src/layers/subliminal_manager.gd"
-LayerManager="*res://src/layers/layDungeonRuns="*res://src/layers/dungeon_runs.gd"
+LayerManager="*res://src/layers/layer_manager.gd"
+PeriliminalRuns="*res://src/layers/periliminal_runs.gd"
+DungeonRuns="*res://src/layers/dungeon_runs.gd"
 PartyManager="*res://src/social/party_manager.gd"
 PvpMissions="*res://src/systems/pvp_missions.gd"
-WorldBossScheduler="*res://src/world/world_boss_scheduler.gd"on_runs.gd"
 WorldBossScheduler="*res://src/world/world_boss_scheduler.gd"
 ExtraliminalManager="*res://src/layers/extraliminal_manager.gd"
 SkillManager="*res://src/skills/skill_manager.gd"
@@ -105,7 +106,6 @@ VISION="*res://src/core/vision_observer.gd"
 APEX="*res://src/core/apex_orchestrator.gd"
 KNOLL="*res://src/core/knoll_boundary.gd"
 RoomNetwork="*res://src/world/room_network.gd"
-_fennara_game_capture="*res://addons/fennara/runtime/game_capture_helper.gd"
 PhantomCameraManager="*uid://duq6jhf6unyis"
 ProjectMusicController="*uid://r5t485lr3p7t"
 ProjectUISoundController="*uid://cc37235kj4384"
@@ -113,6 +113,7 @@ Panku="*uid://cyftuo4syatlv"
 BeehaveGlobalMetrics="*uid://c3ktl6ontsdt7"
 BeehaveGlobalDebugger="*uid://bl3ma400hpvsh"
 DialogueManager="*uid://c3rodes2l3gxb"
+DungeonManager="*res://src/layers/dungeon_manager.gd"
 
 [debug]
 
@@ -123,8 +124,8 @@ gdscript/warnings/treat_warnings_as_errors=false
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/mode="3"
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
 
 [dotnet]
 

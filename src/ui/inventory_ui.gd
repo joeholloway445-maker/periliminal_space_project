@@ -39,8 +39,9 @@ func _build_ui() -> void:
 	for tab_name in ["Equipment", "Companions", "Consumables", "Cosmetics"]:
 		var btn = Button.new()
 		btn.text = tab_name
-		var idx = InventoryTab.get(tab_name.upper())
-		btn.pressed.connect(func(): _switch_tab(idx if idx != null else 0))
+		# Enum has no .get() — match by uppercase name.
+		var idx: int = InventoryTab[tab_name.to_upper()]
+		btn.pressed.connect(func(): _switch_tab(idx))
 		left.add_child(btn)
 
 	var scroll = ScrollContainer.new()
@@ -108,16 +109,21 @@ func _refresh_current_tab() -> void:
 	for child in _item_list.get_children():
 		child.queue_free()
 
-	var items: Array[Dictionary] = []
+	var all_items: Array[Dictionary] = InventoryManager.get_all_items()
+	var wanted: String = ""
 	match _current_tab:
 		InventoryTab.EQUIPMENT:
-			items = InventoryManager.get_items_by_type("equipment")
+			wanted = "equipment"
 		InventoryTab.COMPANIONS:
-			items = InventoryManager.get_items_by_type("companion")
+			wanted = "companion"
 		InventoryTab.CONSUMABLES:
-			items = InventoryManager.get_items_by_type("consumable")
+			wanted = "consumable"
 		InventoryTab.COSMETICS:
-			items = InventoryManager.get_items_by_type("cosmetic")
+			wanted = "cosmetic"
+	var items: Array[Dictionary] = []
+	for it in all_items:
+		if it.get("item_type", it.get("type", "")) == wanted:
+			items.append(it)
 
 	if items.is_empty():
 		var empty_lbl = Label.new()

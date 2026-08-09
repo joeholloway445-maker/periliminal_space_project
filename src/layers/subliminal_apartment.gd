@@ -187,7 +187,8 @@ func _build_panel() -> void:
 		var code := SubliminalManager.send_invite()
 		if code != "":
 			_panel_status.text = "Code %s — invites left: %d / %d" % [
-				code, SubliminalManager.invites_left(), SubliminalManager.invite_cap()])
+				code, SubliminalManager.invites_left(), SubliminalManager.invite_cap()]
+	)
 	box.add_child(invite)
 
 	if not SubliminalManager.is_creator():
@@ -196,8 +197,9 @@ func _build_panel() -> void:
 		sub.pressed.connect(func():
 			if await SubliminalManager.buy_creator_subscription():
 				_panel_status.text = "Creator active — invites left: %d / %d" % [
-					SubliminalManager.invites_left(), SubliminalManager.invite_cap()])
-				get_tree().reload_current_scene())
+					SubliminalManager.invites_left(), SubliminalManager.invite_cap()]
+				get_tree().reload_current_scene()
+		)
 		box.add_child(sub)
 
 	var storage := Label.new()
@@ -210,7 +212,8 @@ func _build_panel() -> void:
 	expand.pressed.connect(func():
 		if await SubliminalManager.buy_storage_expansion():
 			storage.text = "Locker: %d / %d" % [
-				SubliminalManager.storage_used(), SubliminalManager.storage_capacity()])
+				SubliminalManager.storage_used(), SubliminalManager.storage_capacity()]
+	)
 	box.add_child(expand)
 
 	# Ambient figures are creator-paywalled — nothing auto-spawns here.
@@ -296,7 +299,8 @@ func _build_mode_selector() -> void:
 		up.tooltip_text = str(t.desc)
 		up.pressed.connect(func():
 			if await SubliminalManager.buy_tier(str(t.id)):
-				get_tree().reload_current_scene())
+				get_tree().reload_current_scene()
+		)
 		box.add_child(up)
 	if cur.can_public:
 		var pub := CheckButton.new()

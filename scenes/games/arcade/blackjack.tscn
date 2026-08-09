@@ -1,61 +1,79 @@
-[gd_scene load_steps=2 format=3 uid="uid://blackjack_arcade"]
+[gd_scene format=3 uid="uid://dquq4y7prai61"]
 
-[ext_resource type="Script" path="res://src/games/arcade/blackjack.gd" id="1"]
+[ext_resource type="Script" uid="uid://kdnhyqeo3bid" path="res://src/games/arcade/blackjack.gd" id="1"]
 
-[node name="BlackjackScene" type="Control"]
+[node name="BlackjackScene" type="Control" unique_id=1887154411]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="." unique_id=816675345]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme_override_constants/separation = 12
 
-[node name="DealerArea" type="VBoxContainer" parent="VBox"]
+[node name="DealerArea" type="VBoxContainer" parent="VBox" unique_id=1598509586]
+layout_mode = 2
 
-[node name="DealerTitle" type="Label" parent="VBox/DealerArea"]
+[node name="DealerTitle" type="Label" parent="VBox/DealerArea" unique_id=1671397630]
+layout_mode = 2
 text = "Dealer"
 
-[node name="Hand" type="HBoxContainer" parent="VBox/DealerArea"]
+[node name="Hand" type="HBoxContainer" parent="VBox/DealerArea" unique_id=246283613]
+layout_mode = 2
 
-[node name="ValueLabel" type="Label" parent="VBox/DealerArea"]
+[node name="ValueLabel" type="Label" parent="VBox/DealerArea" unique_id=58292627]
+layout_mode = 2
 text = "Dealer: ?"
 
-[node name="PlayerArea" type="VBoxContainer" parent="VBox"]
+[node name="PlayerArea" type="VBoxContainer" parent="VBox" unique_id=1465400662]
+layout_mode = 2
 
-[node name="PlayerTitle" type="Label" parent="VBox/PlayerArea"]
+[node name="PlayerTitle" type="Label" parent="VBox/PlayerArea" unique_id=1705888901]
+layout_mode = 2
 text = "Your Hand"
 
-[node name="Hand" type="HBoxContainer" parent="VBox/PlayerArea"]
+[node name="Hand" type="HBoxContainer" parent="VBox/PlayerArea" unique_id=240135020]
+layout_mode = 2
 
-[node name="ValueLabel" type="Label" parent="VBox/PlayerArea"]
+[node name="ValueLabel" type="Label" parent="VBox/PlayerArea" unique_id=1722577977]
+layout_mode = 2
 text = "Value: ?"
 
-[node name="Controls" type="HBoxContainer" parent="VBox"]
+[node name="Controls" type="HBoxContainer" parent="VBox" unique_id=218448371]
+layout_mode = 2
 
-[node name="DealBtn" type="Button" parent="VBox/Controls"]
+[node name="DealBtn" type="Button" parent="VBox/Controls" unique_id=1374729261]
+layout_mode = 2
 size_flags_horizontal = 3
 text = "DEAL"
 
-[node name="HitBtn" type="Button" parent="VBox/Controls"]
+[node name="HitBtn" type="Button" parent="VBox/Controls" unique_id=1949922788]
+layout_mode = 2
 size_flags_horizontal = 3
 text = "HIT"
 
-[node name="StandBtn" type="Button" parent="VBox/Controls"]
+[node name="StandBtn" type="Button" parent="VBox/Controls" unique_id=1000703093]
+layout_mode = 2
 size_flags_horizontal = 3
 text = "STAND"
 
-[node name="DoubleBtn" type="Button" parent="VBox/Controls"]
+[node name="DoubleBtn" type="Button" parent="VBox/Controls" unique_id=367843075]
+layout_mode = 2
 size_flags_horizontal = 3
 text = "DOUBLE"
 
-[node name="BetSpin" type="SpinBox" parent="VBox/Controls"]
+[node name="BetSpin" type="SpinBox" parent="VBox/Controls" unique_id=1475512593]
+layout_mode = 2
 min_value = 10.0
 max_value = 10000.0
 step = 10.0
 value = 50.0
 
-[node name="ResultLabel" type="Label" parent="VBox"]
-horizontal_alignment = 1
+[node name="ResultLabel" type="Label" parent="VBox" unique_id=1565011534]
+layout_mode = 2
 text = "Place a bet and deal."
+horizontal_alignment = 1

@@ -36,8 +36,7 @@ func _build_ui() -> void:
 	add_child(center)
 
 	var vbox = VBoxContainer.new()
-	var b := PhoneUI.boost()
-	vbox.custom_minimum_size = Vector2(minf(520.0 * minf(b, 1.6), 720.0), minf(420.0 * minf(b, 1.4), 560.0))
+	vbox.custom_minimum_size = Vector2(520, 420)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	center.add_child(vbox)
 
@@ -46,30 +45,28 @@ func _build_ui() -> void:
 		logo.texture = load(LOGO_PATH)
 		logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		var logo_sz := minf(280.0 * minf(b, 1.7), 400.0)
-		logo.custom_minimum_size = Vector2(logo_sz, logo_sz)
+		logo.custom_minimum_size = Vector2(320, 320)
 		logo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		vbox.add_child(logo)
 	else:
 		var logo_label := Label.new()
 		logo_label.text = "PERILIMINAL.SPACE"
 		logo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		logo_label.add_theme_font_size_override("font_size", PhoneUI.font(36))
+		logo_label.add_theme_font_size_override("font_size", 48)
 		vbox.add_child(logo_label)
 
 	var tagline = Label.new()
 	tagline.text = "Six realities. One of you."
 	tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tagline.modulate = Color(0.6, 0.4, 0.9)
-	tagline.add_theme_font_size_override("font_size", PhoneUI.font(16))
 	vbox.add_child(tagline)
 
 	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 24.0 * minf(b, 1.5))
+	spacer.custom_minimum_size = Vector2(0, 30)
 	vbox.add_child(spacer)
 
 	_progress_bar = ProgressBar.new()
-	_progress_bar.custom_minimum_size = Vector2(minf(400.0 * minf(b, 1.5), 560.0), 12.0 * minf(b, 2.0))
+	_progress_bar.custom_minimum_size = Vector2(400, 12)
 	_progress_bar.value = 0
 	_progress_bar.max_value = 100
 	_progress_bar.show_percentage = false
@@ -78,7 +75,7 @@ func _build_ui() -> void:
 	_status_label = Label.new()
 	_status_label.text = "Loading..."
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_label.add_theme_font_size_override("font_size", PhoneUI.font(14))
+	_status_label.add_theme_font_size_override("font_size", 12)
 	_status_label.modulate = Color(0.6, 0.6, 0.6)
 	vbox.add_child(_status_label)
 

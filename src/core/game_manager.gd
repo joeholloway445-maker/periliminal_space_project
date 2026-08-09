@@ -30,6 +30,9 @@ func _ready() -> void:
 	_connect_manager_signals.call_deferred()
 
 func _connect_manager_signals() -> void:
+	# Ensure all 1920×1080 content is always fully visible — `expand` crops
+	# the bottom on screens narrower than 16:9 (common on laptops).
+	get_tree().root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP
 	if AccountManager:
 		AccountManager.authenticated.connect(_on_authenticated)
 		AccountManager.session_expired.connect(_on_session_expired)
@@ -143,9 +146,9 @@ func _on_authenticated(_session: Dictionary) -> void:
 	# that authenticate while initialize() is still running (or splash is up).
 	if game_state == GameState.LOGIN or game_state == GameState.LOADING:
 		_set_state(GameState.WORLD)
-		# The actual front door: title screen with Start New Venture /
-		# Continue Expedition. New ventures go to the Liminal (race/frame/
-		# mod selection first); continuing goes straight to the Subliminal.
+		# The front door is the phone-style title screen (home) — the player
+		# chooses Start New Venture, Continue Expedition, or browses the apps.
+		# Character creation is a CHOICE from there, never an auto-entry.
 		get_tree().change_scene_to_file("res://scenes/ui/title_screen.tscn")
 
 func _on_session_expired() -> void:

@@ -40,6 +40,8 @@ var _encounter_active := false
 var _current_entity: Dictionary = {}  # the roaming entity data for fight
 var _current_lid: String = ""
 var _just_won_at: String = ""  # landmark id where the player most recently won a fight
+var _phone: PhoneHomeScreen
+var _phone_toggle: Button
 
 # ── Init ───────────────────────────────────────────────────────────────────
 func _ready() -> void:
@@ -50,8 +52,8 @@ func _ready() -> void:
 	_build_landmark_markers()
 	_build_player_dot()
 	_build_info_panel()
-	_build_exit_button()
-	_build_status_bar()
+	_build_phone_home_screen()
+	_build_phone_toggle()
 
 	# Connect to ExtraliminalManager signals
 	ExtraliminalManager.landmark_claimed.connect(_on_landmark_claimed)
@@ -84,17 +86,18 @@ func _build_map_background() -> void:
 	_map_root.add_child(vignette)
 
 	# Grid lines every 80px (subtle neon)
-	for x in range(0, int(get_viewport_rect().size.x) + 80, 80):
+	var screen_size := get_viewport().get_visible_rect().size
+	for x in range(0, int(screen_size.x) + 80, 80):
 		var line := ColorRect.new()
 		line.color = Color(0.15, 0.12, 0.25, 0.25)
-		line.size = Vector2(1, get_viewport_rect().size.y)
+		line.size = Vector2(1, screen_size.y)
 		line.position = Vector2(x, 0)
 		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_map_root.add_child(line)
-	for y in range(0, int(get_viewport_rect().size.y) + 80, 80):
+	for y in range(0, int(screen_size.y) + 80, 80):
 		var line := ColorRect.new()
 		line.color = Color(0.15, 0.12, 0.25, 0.25)
-		line.size = Vector2(get_viewport_rect().size.x, 1)
+		line.size = Vector2(screen_size.x, 1)
 		line.position = Vector2(0, y)
 		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_map_root.add_child(line)
@@ -106,7 +109,7 @@ func _build_map_background() -> void:
 	title.add_theme_font_size_override("font_size", 22)
 	title.modulate = Color(0.75, 0.35, 0.95, 0.7)
 	title.position = Vector2(0, 10)
-	title.size = Vector2(get_viewport_rect().size.x, 30)
+	title.size = Vector2(screen_size.x, 30)
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_map_root.add_child(title)
 
@@ -212,8 +215,9 @@ func _build_info_panel() -> void:
 	## Bottom panel shown when a landmark is tapped.
 	_info_panel = Control.new()
 	_info_panel.name = "InfoPanel"
-	_info_panel.position = Vector2(0, get_viewport_rect().size.y)
-	_info_panel.size = Vector2(get_viewport_rect().size.x, 0)
+	var screen_size := get_viewport().get_visible_rect().size
+	_info_panel.position = Vector2(0, screen_size.y)
+	_info_panel.size = Vector2(screen_size.x, 0)
 	_info_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_info_panel.visible = false
 	_map_root.add_child(_info_panel)
@@ -280,59 +284,60 @@ func _build_info_panel() -> void:
 	close.pressed.connect(_close_info)
 	_info_panel.add_child(close)
 
-func _build_exit_button() -> void:
-	## Top-right: back to the Liminal.
-	var btn := Button.new()
-	btn.name = "ExitBtn"
-	btn.text = "⇠ BACK TO THE BETWEEN"
-	btn.custom_minimum_size = Vector2(180, 36)
-	btn.position = Vector2(get_viewport_rect().size.x - 196, 50)
-	btn.add_theme_font_size_override("font_size", 14)
-	btn.pressed.connect(_exit_to_liminal)
-	_map_root.add_child(btn)
+func _build_phone_home_screen() -> void:
+	## GTA-style phone overlay — this IS the Extraliminal UI.
+	_phone = PhoneHomeScreen.new()
+	_phone.name = "PhoneHomeScreen"
+	_phone.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_phone.app_opened.connect(_on_phone_app_opened)
+	add_child(_phone)
 
-func _build_status_bar() -> void:
-	## Top-left: player faction / level + economy.
-	var bar := Label.new()
-	bar.name = "StatusBar"
-	bar.text = "%s  •  LVL %d" % [PlayerProfile.faction, PlayerProfile.level]
-	bar.add_theme_font_size_override("font_size", 14)
-	bar.modulate = Color(0.5, 0.5, 0.6)
-	bar.position = Vector2(16, 54)
-	bar.size = Vector2(250, 24)
-	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_map_root.add_child(bar)
+func _build_phone_toggle() -> void:
+	## Floating button to bring the phone back up when hidden.
+	_phone_toggle = Button.new()
+	_phone_toggle.name = "PhoneToggle"
+	_phone_toggle.text = "📱"
+	_phone_toggle.custom_minimum_size = Vector2(48, 48)
+	_phone_toggle.position = Vector2(get_viewport().get_visible_rect().size.x - 64, 16)
+	_phone_toggle.add_theme_font_size_override("font_size", 22)
+	_phone_toggle.pressed.connect(_show_phone)
+	_map_root.add_child(_phone_toggle)
 
-	# Economy strip beneath
-	var econ := Label.new()
-	econ.name = "EconBar"
-	econ.add_theme_font_size_override("font_size", 12)
-	econ.modulate = Color(0.6, 0.6, 0.4)
-	econ.position = Vector2(16, 74)
-	econ.size = Vector2(350, 20)
-	econ.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_update_econ_text(econ)
-	_map_root.add_child(econ)
+func _show_phone() -> void:
+	_phone.visible = true
+	_phone_toggle.visible = false
+
+func _hide_phone() -> void:
+	_phone.visible = false
+	_phone_toggle.visible = true
+
+func _on_phone_app_opened(app_id: String) -> void:
+	if app_id == "map":
+		_hide_phone()
+	elif app_id == "periliminal":
+		# The phone already triggers the transition; just hide the UI.
+		_hide_phone()
 
 # ── Input — WASD moves the player dot on the map ──────────────────────────
 func _input(event: InputEvent) -> void:
 	if _encounter_active:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
+		var screen_size := get_viewport().get_visible_rect().size
 		match event.keycode:
 			KEY_W, KEY_UP:
 				_player_map_pos.y = maxf(_player_map_pos.y - 12, 20.0)
 			KEY_S, KEY_DOWN:
-				_player_map_pos.y = minf(_player_map_pos.y + 12, get_viewport_rect().size.y - 20)
+				_player_map_pos.y = minf(_player_map_pos.y + 12, screen_size.y - 20)
 			KEY_A, KEY_LEFT:
 				_player_map_pos.x = maxf(_player_map_pos.x - 12, 20.0)
 			KEY_D, KEY_RIGHT:
-				_player_map_pos.x = minf(_player_map_pos.x + 12, get_viewport_rect().size.x - 20)
+				_player_map_pos.x = minf(_player_map_pos.x + 12, screen_size.x - 20)
 		_update_player_dot()
 
 	# Touch-drag to move player (mobile style)
 	if event is InputEventScreenDrag:
-		var touch_pos := event.position
+		var touch_pos: Vector2 = event.position
 		_player_map_pos = touch_pos
 		_update_player_dot()
 
@@ -340,11 +345,6 @@ func _input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	_animate_pulses()
 	_check_proximity()
-	_econ_tick += 1
-	if _econ_tick % 30 == 0:
-		var econ := _map_root.get_node_or_null("EconBar") as Label
-		if econ != null:
-			_update_econ_text(econ)
 
 func _update_player_dot() -> void:
 	_player_dot.position = _player_map_pos - Vector2(7, 7)
@@ -355,28 +355,17 @@ func _update_player_dot() -> void:
 			break
 
 var _pulse_time := 0.0
-var _econ_tick := 0
 var _encounter_flash: ColorRect = null
 
 func _animate_pulses() -> void:
 	_pulse_time += 0.04
 	var pulse := 0.6 + sin(_pulse_time) * 0.25
 	for lid in _landmark_markers.keys():
-		var m := _landmark_markers[lid]
+		var m: Dictionary = _landmark_markers[lid]
 		var ring := m["ring"] as ColorRect
 		if ring == null:
 			continue
 		ring.modulate = Color(0.8, 0.5, 1.0, pulse)
-
-func _update_econ_text(label: Label) -> void:
-	if not is_inside_tree():
-		return
-	var coins := EconomyManager.get_balance("cat_coins")
-	var frags := EconomyManager.get_balance("fragments")
-	var tokens := EconomyManager.get_balance("tokens")
-	var charges := EconomyManager.get_balance("charges")
-	var prestige := EconomyManager.get_balance("prestige")
-	label.text = "🪙%d  🧩%d  ⚔️%d  ⚡%d  🌟%d" % [coins, frags, tokens, charges, prestige]
 
 func _check_proximity() -> void:
 	## Auto-hint when player is near a landmark.
@@ -419,8 +408,9 @@ func _show_landmark_info(lid: String) -> void:
 	_current_entity = entity
 
 	_info_panel.visible = true
-	_info_panel.size = Vector2(get_viewport_rect().size.x, 180)
-	_info_panel.position = Vector2(0, get_viewport_rect().size.y - 180)
+	var screen_size := get_viewport().get_visible_rect().size
+	_info_panel.size = Vector2(screen_size.x, 180)
+	_info_panel.position = Vector2(0, screen_size.y - 180)
 
 	var name_lbl := _info_panel.get_node("EntityName") as Label
 	var info_lbl := _info_panel.get_node("InfoText") as Label
@@ -433,7 +423,8 @@ func _show_landmark_info(lid: String) -> void:
 	var ent_name: String = str(entity.get("name", "???"))
 	var ent_rarity: int = int(entity.get("rarity", 1))
 	var stage: int = randi() % 2 + 1
-	var rarity_label := ["⬜", "🟩", "🟦", "🟪", "🟧"][clampi(ent_rarity - 1, 0, 4)]
+	var rarity_blocks: Array[String] = ["⬜", "🟩", "🟦", "🟪", "🟧"]
+	var rarity_label: String = rarity_blocks[clampi(ent_rarity - 1, 0, 4)]
 	var owner_str := " — [%s]" % owner if owner != "" else ""
 	name_lbl.text = "%s %s  —  %s%s" % [rarity_label, ent_name, lname, owner_str]
 	info_lbl.text = "Stage %d  •  %s" % [stage, _category_string(entity)]
@@ -479,8 +470,9 @@ func _on_claim_landmark() -> void:
 
 func _close_info() -> void:
 	_info_panel.visible = false
-	_info_panel.position = Vector2(0, get_viewport_rect().size.y)
-	_info_panel.size = Vector2(get_viewport_rect().size.x, 0)
+	var screen_size := get_viewport().get_visible_rect().size
+	_info_panel.position = Vector2(0, screen_size.y)
+	_info_panel.size = Vector2(screen_size.x, 0)
 	_current_entity = {}
 	_current_lid = ""
 
@@ -552,7 +544,7 @@ func _build_encounter_ui() -> void:
 	_encounter_root.visible = false
 	_map_root.add_child(_encounter_root)
 
-	var screen_size := get_viewport_rect().size
+	var screen_size := get_viewport().get_visible_rect().size
 
 	# Dark backdrop
 	var bg := ColorRect.new()
@@ -833,7 +825,7 @@ func _on_landmark_claimed(lid: String, guild: String) -> void:
 	## Update the marker badge.
 	if not _landmark_markers.has(lid):
 		return
-	var m := _landmark_markers[lid]
+	var m: Dictionary = _landmark_markers[lid]
 	var badge := m["badge"] as ColorRect
 	if badge != null:
 		badge.visible = true
@@ -843,7 +835,7 @@ func _on_war_started(lid: String, _attacker: String, _defender: String) -> void:
 	## Show war icon on the marker.
 	if not _landmark_markers.has(lid):
 		return
-	var m := _landmark_markers[lid]
+	var m: Dictionary = _landmark_markers[lid]
 	var war_icon := m["war_icon"] as Label
 	if war_icon != null:
 		war_icon.modulate = Color(1.0, 0.2, 0.2, 1.0)
@@ -852,7 +844,7 @@ func _on_war_resolved(lid: String, _winner: String) -> void:
 	## Hide war icon.
 	if not _landmark_markers.has(lid):
 		return
-	var m := _landmark_markers[lid]
+	var m: Dictionary = _landmark_markers[lid]
 	var war_icon := m["war_icon"] as Label
 	if war_icon != null:
 		war_icon.modulate = Color(1.0, 0.2, 0.2, 0.0)
@@ -864,6 +856,24 @@ func _my_guild() -> String:
 
 func _exit_to_liminal() -> void:
 	LayerManager.transition_to("liminal")
+
+func _on_descend_pressed() -> void:
+	var members: Array[String] = []
+	if PartyManager != null:
+		members = PartyManager.members()
+	else:
+		members = ["local_player"]
+	if PeriliminalRuns != null:
+		PeriliminalRuns.begin_run(members)
+	if LayerManager != null:
+		LayerManager.transition_to("periliminal", true)
+
+func _refresh_descend_button(_members: Array) -> void:
+	var btn := _map_root.get_node_or_null("DescendBtn") as Button
+	if btn == null:
+		return
+	var party_size := PartyManager.size() if PartyManager != null else 1
+	btn.text = "🔴 Descend (%s)" % ("party" if party_size > 1 else "solo")
 
 # ── Encounter overlay for mobile ──────────────────────────────────────────
 func _notification(what: int) -> void:

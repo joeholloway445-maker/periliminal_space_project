@@ -59,6 +59,19 @@ static func build(hub_id: String, origin: Vector3, sky: DayNightSky,
 	# Gate 6: Stage-3 zone bosses at landmarks + dungeon door + world-boss hook.
 	ZoneBossSpawner.place_for_hub(root, hub_id, city_base_y, player)
 	DungeonEntrance.place_for_hub(root, hub_id, city_base_y)
+	# Sealed Periliminal descent — group instance from the Metroplex.
+	if player != null:
+		var city_size := OsmCityLayout.size_of(hub_id) if used_osm else Vector2.ZERO
+		var seal := PeriliminalGroupSeal.new()
+		seal.name = "PeriliminalSeal_%s" % hub_id
+		seal.setup("periliminal_%s" % hub_id, player)
+		var seal_pos := Vector3(4.0 * CityData.CELL, city_base_y, 4.0 * CityData.CELL)
+		if used_osm and city_size.x > 0.0:
+			seal_pos = Vector3(
+				city_size.x * 0.72, city_base_y,
+				city_size.y * 0.72)
+		seal.position = seal_pos
+		root.add_child(seal)
 	if player != null:
 		CityVenues.place_all(root, accent, city_base_y, player, hub_id)
 		# SEVERAL claimable hideout sites per city (HideoutRegistry owns the

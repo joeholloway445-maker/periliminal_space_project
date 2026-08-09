@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://pvxc_zone"]
+[gd_scene format=3 uid="uid://dnb8jbjbauidn"]
 
-[ext_resource type="Script" path="res://src/pvxc/pvxc_zone.gd" id="1"]
+[ext_resource type="Script" uid="uid://b4k3g8dfkynje" path="res://src/pvxc/pvxc_zone.gd" id="1"]
 
-[node name="PvxcZone" type="Node3D"]
+[node name="PvxcZone" type="Node3D" unique_id=1160593381]
 script = ExtResource("1")

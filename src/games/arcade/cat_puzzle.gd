@@ -40,7 +40,7 @@ func _ready() -> void:
 		start_btn.text = "Start (15 chips)"
 		start_btn.position = Vector2(12, 12)
 		start_btn.pressed.connect(func() -> void: start_puzzle(15))
-		root.add_child(start_btn)
+		root.add_child.call_deferred(start_btn)
 	start_puzzle(0)  # free practice board; paid start spends via RPC on finish
 
 func _on_board_updated_ui(board: Array) -> void:

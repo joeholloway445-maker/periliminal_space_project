@@ -19,10 +19,16 @@ var _win_tween: Tween = null
 
 # Lifecycle
 func _ready() -> void:
+	# This script may be attached bare to a CanvasLayer (paw_vegas_hub) where
+	# its child nodes don't exist; guard everything so _ready never crashes.
+	if not is_instance_valid(win_popup):
+		return
 	# Hide popups initially
 	win_popup.modulate.a = 0.0
 	win_popup.visible = false
 
+	if not is_instance_valid(event_banner):
+		return
 	event_banner.visible = false
 
 	_connect_manager_signals()

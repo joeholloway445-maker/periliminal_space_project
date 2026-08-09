@@ -1,54 +1,74 @@
-[gd_scene load_steps=3 format=3 uid="uid://shop_scene"]
+[gd_scene format=3 uid="uid://ywdo2l0kefik"]
 
-[ext_resource type="Script" path="res://src/ui/shop_scene_controller.gd" id="1"]
-[ext_resource type="Script" path="res://src/core/shop_manager.gd" id="2"]
+[ext_resource type="Script" uid="uid://7knctkokcoea" path="res://src/ui/shop_scene_controller.gd" id="1"]
+[ext_resource type="Script" uid="uid://muaawbjq1erb" path="res://src/core/shop_manager.gd" id="2"]
 
-[node name="ShopScene" type="Control"]
+[node name="ShopScene" type="Control" unique_id=810002685]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=811713512]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.02, 0.0, 0.06, 1)
 mouse_filter = 2
+color = Color(0.02, 0, 0.06, 1)
 
-[node name="ShopManager" type="Node" parent="."]
+[node name="ShopManager" type="Node" parent="." unique_id=1240140472]
 script = ExtResource("2")
 
-[node name="Header" type="HBoxContainer" parent="."]
+[node name="Header" type="HBoxContainer" parent="." unique_id=550502168]
+layout_mode = 0
 anchor_left = 0.05
-anchor_right = 0.95
 anchor_top = 0.02
+anchor_right = 0.95
 anchor_bottom = 0.1
 
-[node name="ShopTitle" type="Label" parent="Header"]
-text = "🛒 SHOP"
-theme_override_font_sizes/font_size = 28
+[node name="ShopTitle" type="Label" parent="Header" unique_id=1786226080]
+layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "🛒 SHOP"
 
-[node name="WalletInfo" type="Label" parent="Header"]
+[node name="WalletInfo" type="Label" parent="Header" unique_id=607945572]
+layout_mode = 2
 text = "🪙 0  💎 0"
 horizontal_alignment = 2
 
-[node name="TabBar" type="TabContainer" parent="."]
+[node name="TabBar" type="TabContainer" parent="." unique_id=451203411]
+layout_mode = 0
 anchor_left = 0.05
-anchor_right = 0.95
 anchor_top = 0.12
+anchor_right = 0.95
 anchor_bottom = 0.92
+current_tab = 0
 
-[node name="Boosts" type="Control" parent="TabBar"]
+[node name="Boosts" type="Control" parent="TabBar" unique_id=1454246840]
+layout_mode = 2
+metadata/_tab_index = 0
 
-[node name="Equipment" type="Control" parent="TabBar"]
+[node name="Equipment" type="Control" parent="TabBar" unique_id=45158861]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
 
-[node name="Companions" type="Control" parent="TabBar"]
+[node name="Companions" type="Control" parent="TabBar" unique_id=585481844]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
 
-[node name="Consumables" type="Control" parent="TabBar"]
+[node name="Consumables" type="Control" parent="TabBar" unique_id=2147076963]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
 
-[node name="CloseButton" type="Button" parent="."]
+[node name="CloseButton" type="Button" parent="." unique_id=266251362]
+layout_mode = 0
 anchor_left = 0.4
-anchor_right = 0.6
 anchor_top = 0.93
+anchor_right = 0.6
 anchor_bottom = 0.99
 text = "Close"

@@ -1,11 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://hud_scene"]
+[gd_scene format=3 uid="uid://7yrk4m6736ly"]
 
-[ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
+[ext_resource type="Script" uid="uid://bw8u3a7a77lj0" path="res://src/ui/hud.gd" id="1_hud"]
 
-[node name="HUD" type="CanvasLayer"]
+[node name="HUD" type="CanvasLayer" unique_id=412460556]
 script = ExtResource("1_hud")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=365373603]
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 64.0
@@ -14,35 +14,33 @@ theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 8
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=25860535]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="CoinsLabel" type="Label" parent="MarginContainer/HBoxContainer"]
+[node name="CoinsLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1929719810]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Coins 0"
 
-[node name="PerceptionLabel" type="Label" parent="MarginContainer/HBoxContainer"]
+[node name="PerceptionLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=502850208]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Current Perception 1"
 
-[node name="XPBar" type="ProgressBar" parent="MarginContainer/HBoxContainer"]
+[node name="XPBar" type="ProgressBar" parent="MarginContainer/HBoxContainer" unique_id=1773683139]
 custom_minimum_size = Vector2(240, 24)
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 100.0
-value = 0.0
 show_percentage = false
 
-[node name="DistrictLabel" type="Label" parent="MarginContainer/HBoxContainer"]
+[node name="DistrictLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=368798129]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Paws Vegas"
 horizontal_alignment = 2
 
-[node name="WinPopup" type="PanelContainer" parent="."]
+[node name="WinPopup" type="PanelContainer" parent="." unique_id=278398245]
 visible = false
 anchors_preset = 8
 anchor_left = 0.5
@@ -56,26 +54,25 @@ offset_bottom = 70.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="WinPopup"]
+[node name="VBoxContainer" type="VBoxContainer" parent="WinPopup" unique_id=1779551000]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="AmountLabel" type="Label" parent="WinPopup/VBoxContainer"]
+[node name="AmountLabel" type="Label" parent="WinPopup/VBoxContainer" unique_id=1542099366]
 layout_mode = 2
 text = "+0 Coins"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MultiplierLabel" type="Label" parent="WinPopup/VBoxContainer"]
+[node name="MultiplierLabel" type="Label" parent="WinPopup/VBoxContainer" unique_id=1511975263]
 layout_mode = 2
 text = "1.0x Multiplier!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="EventBanner" type="PanelContainer" parent="."]
+[node name="EventBanner" type="PanelContainer" parent="." unique_id=277395786]
 visible = false
-anchors_preset = 3
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -86,7 +83,7 @@ offset_bottom = -18.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="EventNameLabel" type="Label" parent="EventBanner"]
+[node name="EventNameLabel" type="Label" parent="EventBanner" unique_id=1572159209]
 layout_mode = 2
 text = "Event"
 horizontal_alignment = 1

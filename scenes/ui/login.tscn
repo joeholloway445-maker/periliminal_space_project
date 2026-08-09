@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://login_scene"]
+[gd_scene format=3 uid="uid://cpnvyp1g6al1h"]
 
-[ext_resource type="Script" path="res://src/ui/login_screen.gd" id="1_login"]
+[ext_resource type="Script" uid="uid://dspcfpcl1vga3" path="res://src/ui/login_screen.gd" id="1_login"]
 
-[node name="LoginScreen" type="Control"]
+[node name="LoginScreen" type="Control" unique_id=94273206]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_login")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=501145873]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02, 0.01, 0.05, 1)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=177472910]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,55 +28,55 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
+[node name="VBox" type="VBoxContainer" parent="CenterContainer" unique_id=2106224263]
 custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
 
-[node name="Title" type="Label" parent="CenterContainer/VBox"]
+[node name="Title" type="Label" parent="CenterContainer/VBox" unique_id=1549199111]
 layout_mode = 2
 text = "PERILIMINAL.SPACE"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="CenterContainer/VBox"]
+[node name="Subtitle" type="Label" parent="CenterContainer/VBox" unique_id=1386692072]
 layout_mode = 2
 text = "Six realities. One of you."
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="CenterContainer/VBox"]
+[node name="Spacer" type="Control" parent="CenterContainer/VBox" unique_id=10806461]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 
-[node name="EmailField" type="LineEdit" parent="CenterContainer/VBox"]
+[node name="EmailField" type="LineEdit" parent="CenterContainer/VBox" unique_id=1218695622]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 placeholder_text = "Email"
 
-[node name="PasswordField" type="LineEdit" parent="CenterContainer/VBox"]
+[node name="PasswordField" type="LineEdit" parent="CenterContainer/VBox" unique_id=1602275961]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 placeholder_text = "Password"
 secret = true
 
-[node name="Spacer2" type="Control" parent="CenterContainer/VBox"]
+[node name="Spacer2" type="Control" parent="CenterContainer/VBox" unique_id=1392756786]
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 
-[node name="LoginButton" type="Button" parent="CenterContainer/VBox"]
+[node name="LoginButton" type="Button" parent="CenterContainer/VBox" unique_id=153505084]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "LOGIN"
 
-[node name="RegisterButton" type="Button" parent="CenterContainer/VBox"]
+[node name="RegisterButton" type="Button" parent="CenterContainer/VBox" unique_id=1049802875]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "REGISTER"
 
-[node name="GuestButton" type="Button" parent="CenterContainer/VBox"]
+[node name="GuestButton" type="Button" parent="CenterContainer/VBox" unique_id=1353782784]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "PLAY OFFLINE"
 
-[node name="StatusLabel" type="Label" parent="CenterContainer/VBox"]
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBox" unique_id=1633157918]
 layout_mode = 2
 horizontal_alignment = 1
 autowrap_mode = 3

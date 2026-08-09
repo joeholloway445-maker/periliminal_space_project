@@ -14,6 +14,7 @@ const BOARDS := {
 }
 
 func _ready() -> void:
+	UINav.add_back_button(self)
 	for key in BOARDS.keys():
 		board_option.add_item(BOARDS[key])
 	board_option.item_selected.connect(func(_i): _refresh())

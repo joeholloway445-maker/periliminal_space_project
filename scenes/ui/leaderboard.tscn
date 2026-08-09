@@ -17,7 +17,7 @@ theme_override_constants/separation = 12
 [node name="Title" type="Label" parent="Panel/VBox"]
 text = "🏆 LEADERBOARD"
 horizontal_alignment = 1
-add_theme_font_size_override("font_size", 24)
+theme_override_font_sizes/font_size = 24
 
 [node name="BoardOption" type="OptionButton" parent="Panel/VBox"]
 name = "BoardOption"

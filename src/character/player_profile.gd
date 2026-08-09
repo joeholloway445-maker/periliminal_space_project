@@ -16,6 +16,20 @@ var selected_frame: String = "veil"
 ## Second frame, chosen at Champion ascension (level 50+). Empty until then.
 var ascended_frame: String = ""
 var selected_mod: String = ""
+## Body sex: "m" or "f". Drives portrait selection, body proportions and
+## (when a female mesh slot exists) the 3D body itself.
+var sex: String = "m"
+## Appearance sliders from the character creator — body + color knobs.
+## height/build are multipliers; colors are HTML hex strings; glow is 0..1.
+var appearance: Dictionary = {
+	"height": 1.0,
+	"build": 1.0,
+	"skin": "#d9a066",
+	"hair": "#2b1d12",
+	"eye": "#6b4c2a",
+	"outfit": "#3a4a6a",
+	"glow": 0.0,
+}
 ## True once CharacterCreatorLogic.apply_creation has actually run — the
 ## title screen's "Continue Expedition" only lights up once this is true;
 ## a fresh install always starts at "Start New Venture" no matter what
@@ -25,6 +39,14 @@ var active_companion_ids: Array[String] = []
 var titles: Array[String] = []
 var active_title: String = ""
 var playtime_seconds: float = 0.0
+## Hidden testing flag — only settable via the secret god-mode login
+## sequence on the title screen. Enables infinite currency, no damage, etc.
+var is_testing: bool = false
+## Permission flags. `cat_skin_extraliminal` is only true if the player has
+## purchased or otherwise unlocked the right to wear the Hyperliminal cat-skin
+## in the surface-world (Extraliminal) layer.
+var cat_skin_extraliminal: bool = false
+
 ## Soft state for TitleEffects / dialogue gates (not all persisted yet).
 var _stat_modifiers: Dictionary = {}
 var _unlocked_abilities: Array[String] = []
@@ -52,22 +74,31 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	playtime_seconds += Time.get_unix_time_from_system() - _session_start
-	_save()
+	save()
 
 func _load() -> void:
 	if not FileAccess.file_exists(SAVE_PATH): return
-	var f = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
 	var data = JSON.parse_string(f.get_as_text())
 	f.close()
 	if not data is Dictionary: return
 	username = data.get("username", username)
 	level = data.get("level", 1)
 	xp = data.get("xp", 0)
+	is_testing = bool(data.get("is_testing", false))
 	faction = data.get("faction", "Factionless")
 	selected_race_id = data.get("selected_race_id", "tabby")
 	selected_frame = data.get("selected_frame", "veil")
 	ascended_frame = data.get("ascended_frame", "")
 	selected_mod = data.get("selected_mod", "")
+	sex = str(data.get("sex", "m"))
+	if sex != "m" and sex != "f":
+		sex = "m"
+	var saved_appearance: Variant = data.get("appearance", {})
+	if saved_appearance is Dictionary:
+		for k in appearance.keys():
+			if saved_appearance.has(k):
+				appearance[k] = saved_appearance[k]
 	active_companion_ids = Array(data.get("active_companions", []), TYPE_STRING, "", null)
 	titles = Array(data.get("titles", []), TYPE_STRING, "", null)
 	active_title = data.get("active_title", "")
@@ -78,9 +109,10 @@ func _load() -> void:
 	has_expedition = bool(data.get("has_expedition",
 		level > 1 or selected_frame != "veil" or selected_mod != "" or not active_companion_ids.is_empty()))
 	playtime_seconds = float(data.get("playtime_seconds", 0))
+	cat_skin_extraliminal = bool(data.get("cat_skin_extraliminal", false))
 
-func _save() -> void:
-	var f = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+func save() -> void:
+	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	f.store_string(JSON.stringify({
 		"username": username,
 		"level": level,
@@ -90,48 +122,57 @@ func _save() -> void:
 		"selected_frame": selected_frame,
 		"ascended_frame": ascended_frame,
 		"selected_mod": selected_mod,
+		"sex": sex,
+		"appearance": appearance,
 		"has_expedition": has_expedition,
 		"active_companions": active_companion_ids,
 		"titles": titles,
 		"active_title": active_title,
 		"playtime_seconds": playtime_seconds,
+		"is_testing": is_testing,
+		"cat_skin_extraliminal": cat_skin_extraliminal,
 	}))
 	f.close()
 
 func add_xp(amount: int) -> void:
 	xp += amount
-	var threshold = xp_for_level(level + 1)
+	var threshold := xp_for_level(level + 1)
 	while xp >= threshold:
 		level += 1
 		level_up.emit(level)
 		SkillManager.grant_points(1, "level %d" % level)
 		threshold = xp_for_level(level + 1)
-	_save()
+	save()
 	profile_updated.emit()
 
 func xp_for_level(lv: int) -> int:
 	return XP_PER_LEVEL_BASE * lv * lv
 
 func xp_progress() -> float:
-	var current_thresh = xp_for_level(level)
-	var next_thresh = xp_for_level(level + 1)
-	var span = next_thresh - current_thresh
+	var current_thresh := xp_for_level(level)
+	var next_thresh := xp_for_level(level + 1)
+	var span := next_thresh - current_thresh
 	if span <= 0: return 1.0
 	return clampf(float(xp - current_thresh) / float(span), 0.0, 1.0)
 
+## Returns true if the current player has the hidden testing flag.
+## Checked by EconomyManager, damage handlers, and other systems.
+func is_god_mode() -> bool:
+	return is_testing
+
 func set_faction(new_faction: String) -> void:
 	faction = new_faction
-	_save()
+	save()
 	profile_updated.emit()
 
 func set_race(race_id: String) -> void:
 	selected_race_id = race_id
-	_save()
+	save()
 	profile_updated.emit()
 
 func set_frame(frame_id: String) -> void:
 	selected_frame = frame_id
-	_save()
+	save()
 	profile_updated.emit()
 
 ## Ascension frame: only choosable once Champion (level 50+); multiplies
@@ -141,19 +182,30 @@ func set_ascended_frame(frame_id: String) -> bool:
 		NotificationUI.notify_error("A second frame is chosen at Champion ascension (level 50).")
 		return false
 	ascended_frame = frame_id
-	_save()
+	save()
 	profile_updated.emit()
 	return true
 
 func set_mod(mod_id: String) -> void:
 	selected_mod = mod_id
-	_save()
+	save()
+	profile_updated.emit()
+
+func set_sex(new_sex: String) -> void:
+	var s := new_sex.substr(0, 1).to_lower()
+	sex = "f" if s == "f" else "m"
+	save()
+	profile_updated.emit()
+
+func set_appearance(key: String, value: Variant) -> void:
+	appearance[key] = value
+	save()
 	profile_updated.emit()
 
 func add_title(title: String) -> void:
 	if title not in titles:
 		titles.append(title)
-		_save()
+		save()
 		# Apply TitleEffects immediately so identity/faction/ability shifts land.
 		TitleEffects.apply_title_effects({
 			"titles": titles,
@@ -163,7 +215,7 @@ func add_title(title: String) -> void:
 
 func set_active_title(title: String) -> void:
 	active_title = title
-	_save()
+	save()
 	TitleEffects.apply_title_effects({
 		"titles": titles,
 		"active_title": active_title,
@@ -172,7 +224,7 @@ func set_active_title(title: String) -> void:
 
 func set_active_companions(ids: Array[String]) -> void:
 	active_companion_ids = ids
-	_save()
+	save()
 	profile_updated.emit()
 
 func add_stat_modifier(stat: String, amount: float) -> void:
@@ -190,6 +242,16 @@ func unlock_ability(ability_id: String) -> void:
 
 func has_ability(ability_id: String) -> bool:
 	return ability_id in _unlocked_abilities
+
+func unlock_cat_skin_extraliminal() -> void:
+	if cat_skin_extraliminal:
+		return
+	cat_skin_extraliminal = true
+	save()
+	profile_updated.emit()
+
+func has_cat_skin_extraliminal() -> bool:
+	return cat_skin_extraliminal
 
 func get_display_name() -> String:
 	if active_title.is_empty():

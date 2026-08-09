@@ -90,6 +90,16 @@ func demote(player_id: String) -> bool:
 	_save()
 	return true
 
+## Founder leaves = guild dissolves. Client-side authority for now.
+func disband() -> bool:
+	if not in_guild():
+		return false
+	var gname: String = guild.get("name", "")
+	guild = {}
+	_save()
+	NotificationUI.notify_info("🏰 %s has been dissolved." % gname)
+	return true
+
 func rank_of(player_id: String) -> String:
 	if not in_guild() or not guild.members.has(player_id):
 		return ""

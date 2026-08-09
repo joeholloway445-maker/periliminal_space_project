@@ -1,29 +1,30 @@
-[gd_scene load_steps=3 format=3 uid="uid://combat_zone"]
+[gd_scene format=3 uid="uid://6nj1hq2ua6dp"]
 
-[ext_resource type="Script" path="res://src/world/cat_coliseum_scene.gd" id="1"]
-[ext_resource type="Script" path="res://src/combat/combat_ui.gd" id="2"]
+[ext_resource type="Script" uid="uid://cbme3swhavydl" path="res://src/world/cat_coliseum_scene.gd" id="1"]
+[ext_resource type="Script" uid="uid://cy2kj3ocshx37" path="res://src/combat/combat_ui.gd" id="2"]
 
-[node name="CombatZone" type="Node3D"]
+[node name="CombatZone" type="Node3D" unique_id=876394527]
 script = ExtResource("1")
 
-[node name="Arena" type="Node3D" parent="."]
+[node name="Arena" type="Node3D" parent="." unique_id=1956076852]
 
-[node name="BattleStage" type="Node3D" parent="Arena"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+[node name="BattleStage" type="Node3D" parent="Arena" unique_id=2131319621]
 
-[node name="SpectatorRing" type="Node3D" parent="Arena"]
+[node name="SpectatorRing" type="Node3D" parent="Arena" unique_id=761694904]
 
-[node name="DirectionalLight" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight" type="DirectionalLight3D" parent="." unique_id=1777475379]
 transform = Transform3D(1, 0, 0, 0, 0.5, -0.866, 0, 0.866, 0.5, 0, 20, 5)
 light_color = Color(1, 0.85, 0.7, 1)
 light_energy = 1.5
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1716441659]
 transform = Transform3D(1, 0, 0, 0, 0.6, 0.8, 0, -0.8, 0.6, 0, 12, 15)
 
-[node name="UILayer" type="CanvasLayer" parent="."]
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=1427635174]
 
-[node name="CombatUI" type="Control" parent="UILayer"]
+[node name="CombatUI" type="Control" parent="UILayer" unique_id=1152844395]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("2")

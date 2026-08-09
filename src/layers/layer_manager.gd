@@ -67,6 +67,7 @@ func can_enter(layer_id: String) -> Dictionary:
 
 ## `pulled` bypasses entry rules (the Periliminal taking you is not a choice).
 func transition_to(layer_id: String, pulled: bool = false) -> bool:
+	print("[LayerManager] transition_to(", layer_id, ", pulled=", pulled, ")")
 	if not pulled:
 		var check := can_enter(layer_id)
 		if not check.ok:
@@ -84,8 +85,11 @@ func transition_to(layer_id: String, pulled: bool = false) -> bool:
 			_pull_threshold = randf_range(WANDER_MIN_SECONDS, WANDER_MAX_SECONDS)
 	layer_changed.emit(from, layer_id)
 	var scene: String = str(RealityLayers.by_id(layer_id).get("scene", ""))
+	print("[LayerManager] scene=", scene, " exists=", ResourceLoader.exists(scene))
 	if scene != "" and ResourceLoader.exists(scene):
+		print("[LayerManager] calling change_scene_to_file(", scene, ")")
 		get_tree().change_scene_to_file(scene)
+		print("[LayerManager] change_scene_to_file returned")
 	return true
 
 ## PvP rules resolve per-layer; supraliminal defers to TerritoryControl

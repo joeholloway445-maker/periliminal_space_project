@@ -6,9 +6,8 @@ extends Node3D
 ## still cycles. Without an HDRI, falls back to the catsino-flavored
 ## ProceduralSkyMaterial palette.
 
-@export var day_length_seconds := 1800.0
+@export var day_length_seconds := 300.0
 @export var start_hour := 10.0 # 0-24
-## When true, time freezes (prototype / phone play — no surprise night).
 @export var freeze_cycle := false
 ## Set by IdentityLens: the player's frame(s) tint every light this sky casts.
 var frame_tint := Color(1, 1, 1)
@@ -115,7 +114,6 @@ func _try_bind_hdri(sky: Sky) -> bool:
 		_panorama = PanoramaSkyMaterial.new()
 		_panorama.panorama = tex
 		_panorama.energy_multiplier = 1.0
-		_sky_mat = _panorama
 		sky.sky_material = _panorama
 		return true
 	return false
@@ -140,7 +138,7 @@ func _apply(t: float) -> void:
 	var daylight := clampf(elevation * 2.0 + 0.5, 0.0, 1.0)
 	var duskness := clampf(1.0 - absf(elevation) * 4.0, 0.0, 1.0)
 
-	_sun.light_energy = maxf(daylight * (1.45 if _using_hdri else 1.3), 0.22) * frame_energy_mult
+	_sun.light_energy = maxf(daylight * (1.45 if _using_hdri else 1.3), 0.04) * frame_energy_mult
 	_sun.light_color = (Color(1.0, 0.97, 0.90).lerp(Color(1.0, 0.55, 0.35), duskness)) * frame_tint
 
 	var top := NIGHT_TOP.lerp(DAY_TOP, daylight).lerp(DUSK_TOP, duskness * 0.7)
@@ -149,21 +147,17 @@ func _apply(t: float) -> void:
 	if _using_hdri and _panorama != null:
 		# Dim the panorama at night so HDRI IBL doesn't blow out; keep a
 		# faint moonlit floor so reflections never go fully black.
-		_panorama.energy_multiplier = lerpf(0.18, 1.15, daylight) * lerpf(1.0, 0.85, duskness)
+		_panorama.energy_multiplier = lerpf(0.08, 1.15, daylight) * lerpf(1.0, 0.85, duskness)
 		if _env != null:
-			_env.environment.ambient_light_energy = lerpf(0.28, 0.9, daylight)
+			_env.environment.ambient_light_energy = lerpf(0.15, 0.9, daylight)
 			_env.environment.fog_light_color = horizon.lerp(Color(0.55, 0.62, 0.75), 0.4)
 	elif _proc_mat != null:
 		_proc_mat.sky_top_color = top * frame_tint
 		_proc_mat.sky_horizon_color = horizon.lerp(horizon * frame_tint, 0.5)
-		_proc_mat.ground_bottom_color = horizon.darkened(0.35)
+		_proc_mat.ground_bottom_color = horizon.darkened(0.6)
 		_proc_mat.ground_horizon_color = horizon
 		if _env != null:
-			# Web/phone builds often ship without HDRI — still keep a readable
-			# night floor so the world never drops to pitch black in 90s.
-			_env.environment.ambient_light_energy = lerpf(0.32, 0.95, daylight)
 			_env.environment.fog_light_color = horizon
-			_env.environment.fog_light_energy = lerpf(0.55, 1.0, daylight)
 
 func current_hour() -> float:
 	return _day_fraction() * 24.0

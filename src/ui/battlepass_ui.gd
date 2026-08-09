@@ -14,6 +14,7 @@ var _current_xp: int = 0
 var _xp_per_tier: int = 1000
 
 func _ready() -> void:
+	UINav.add_back_button(self)
 	_load_player_data()
 	_build_ui()
 	_populate_tiers()

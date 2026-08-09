@@ -140,6 +140,8 @@ func earn_ex_coins_local(amount: int, source: String = "chip_cashout_local") -> 
 
 # ── Generic currency API ──────────────────────────────────────────────────────
 func get_balance(currency: String) -> int:
+	if PlayerProfile.is_god_mode():
+		return 999999
 	return _balances.get(currency, 0)
 
 func earn_currency(currency: String, amount: int, source: String = "unknown") -> void:

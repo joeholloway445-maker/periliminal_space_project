@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://trial_arena"]
+[gd_scene format=3 uid="uid://dmj0cs23buhkm"]
 
-[ext_resource type="Script" path="res://src/ascension/trial_arena.gd" id="1"]
+[ext_resource type="Script" uid="uid://c0rcicnqx2n25" path="res://src/ascension/trial_arena.gd" id="1"]
 
-[node name="TrialArena" type="Node3D"]
+[node name="TrialArena" type="Node3D" unique_id=2071943030]
 script = ExtResource("1")

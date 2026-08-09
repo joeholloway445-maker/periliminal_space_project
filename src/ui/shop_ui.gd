@@ -31,6 +31,7 @@ var _previous_button: Button
 var _next_button: Button
 
 func _ready() -> void:
+	UINav.add_back_button(self)
 	_build_ui()
 	_load_favorites()
 	_load_cosmetics()
