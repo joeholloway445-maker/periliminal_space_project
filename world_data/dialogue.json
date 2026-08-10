@@ -386,6 +386,132 @@
           ]
         }
       ]
+    },
+    {
+      "dialogue_id": "banker_dialogue",
+      "start_node": "greeting",
+      "nodes": [
+        {
+          "id": "greeting",
+          "text": "Interest compounds. So does worry. The Crown keeps the ledger, but the ledge is yours to walk.",
+          "options": [
+            {"label": "What do you guard in the vault?", "next_node": "vaultline"},
+            {"label": "Maybe later", "next_node": "END", "action": "nothing"}
+          ]
+        },
+        {
+          "id": "vaultline",
+          "text": "More than coins. Every hoard is a life-stage someone decided to crystallize. A safe is a diary with the pages sealed. Ask about the interest and I'll pretend it's yours.",
+          "options": [
+            {"label": "Farewell", "next_node": "END", "action": "nothing"}
+          ]
+        }
+      ]
+    },
+    {
+      "dialogue_id": "armorer_dialogue",
+      "start_node": "greeting",
+      "nodes": [
+        {
+          "id": "greeting",
+          "text": "Steel remembers every fight it survives. So does its owner. Shop steel or shop memory \u2014 same till.",
+          "options": [
+            {"label": "Tell me about the steel.", "next_node": "temper"},
+            {"label": "Not today", "next_node": "END", "action": "nothing"}
+          ]
+        },
+        {
+          "id": "temper",
+          "text": "A blade is a promise the heat already kept. Most folks buy the shine; the few who buy the grain come back with a war story instead of a funeral. Both are valid customers.",
+          "options": [
+            {"label": "Farewell", "next_node": "END", "action": "nothing"}
+          ]
+        }
+      ]
+    },
+    {
+      "dialogue_id": "blacksmith_dialogue",
+      "start_node": "greeting",
+      "nodes": [
+        {
+          "id": "greeting",
+          "text": "The forge asks only your patience and your coin, and answers in edge and ring.",
+          "options": [
+            {"label": "What are you working?", "next_node": "anvil"},
+            {"label": "Some other time", "next_node": "END", "action": "nothing"}
+          ]
+        },
+        {
+          "id": "anvil",
+          "text": "Right now an ingot that can't decide if it wants to be a stake or a stroke. It'll pick on the downswing. Striking steel is the only argument I trust \u2014 it has a finish line.",
+          "options": [
+            {"label": "Farewell", "next_node": "END", "action": "nothing"}
+          ]
+        }
+      ]
+    },
+    {
+      "dialogue_id": "market_trader_dialogue",
+      "start_node": "greeting",
+      "nodes": [
+        {
+          "id": "greeting",
+          "text": "Prices turn at dawn whether you slept through them or not. Mine is the best bargain on the block \u2014 and I say that every day, which should tell you something.",
+          "options": [
+            {"label": "What's the catch?", "next_node": "catch"},
+            {"label": "Just browsing", "next_node": "END", "action": "nothing"}
+          ]
+        },
+        {
+          "id": "catch",
+          "text": "The catch is that nothing here is worth more or less than the street will carry. Barter is a rumor with numbers. Hold your price, hold your nerve \u2014 the stall outlasts the haggler.",
+          "options": [
+            {"label": "Farewell", "next_node": "END", "action": "nothing"}
+          ]
+        }
+      ]
+    },
+    {
+      "dialogue_id": "stockyard_herder_dialogue",
+      "start_node": "greeting",
+      "nodes": [
+        {
+          "id": "greeting",
+          "text": "The stock reads the weather quicker than any forecast. Right now it's uneasy, and I don't price that unease into the drive.",
+          "options": [
+            {"label": "What are they uneasy about?", "next_node": "instinct"},
+            {"label": "Leave them be", "next_node": "END", "action": "nothing"}
+          ]
+        },
+        {
+          "id": "instinct",
+          "text": "They smell the boundary before we see it. When the whole pen leans one direction, that isn't weather \u2014 that's somewhere else leaking through. We herd the herd; nobody here has ever herded a somewhere-else.",
+          "options": [
+            {"label": "Farewell", "next_node": "END", "action": "nothing"}
+          ]
+        }
+      ]
+    },
+    {
+      "dialogue_id": "wager_hall_dialogue",
+      "start_node": "greeting",
+      "nodes": [
+        {
+          "id": "greeting",
+          "text": "Odds are a mirror that holds up on its own. Stare long enough and eventually you'll be betting against yourself.",
+          "options": [
+            {"label": "How do the odds work?", "next_node": "oddsline"},
+            {"label": "I'll pass", "next_node": "END", "action": "nothing"}
+          ]
+        },
+        {
+          "id": "oddsline",
+          "text": "Every wager is a heartbeat on paper. The house counts them, not out of cruelty, but because someone must keep score while the crowd forgets its own name. Gamble in the hall; never gamble the way home.",
+          "options": [
+            {"label": "Farewell", "next_node": "END", "action": "nothing"}
+          ]
+        }
+      ]
     }
   ]
 }
