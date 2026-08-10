@@ -25,12 +25,12 @@ func _ready() -> void:
 
 # ---------------------------------------------------------------- library
 
-func create(kind: String, base_id: String, display_name: String) -> Dictionary:
+func create(kind: String, base_id: String, display_name: String, preset: String = "") -> Dictionary:
 	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _library.size() >= MAX_LIBRARY:
 		NotificationUI.notify_error("Blueprint library full (%d)." % MAX_LIBRARY)
 		return {}
-	var bp := BlueprintData.fresh(kind, base_id, display_name)
+	var bp: Dictionary = BlueprintData.preset_bp(kind, preset, display_name) if preset != "" else BlueprintData.fresh(kind, base_id, display_name)
 	_library[bp.id] = bp
 	save_library()
 	library_changed.emit()

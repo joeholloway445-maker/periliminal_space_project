@@ -14,6 +14,7 @@ var _preview_vp: SubViewport
 var _preview_root: Node3D
 var _preview_pivot: Node3D
 var _name_edit: LineEdit
+var _preset_picker: OptionButton # starter-design dropdown for + New
 var _current: Dictionary = {} # working copy of the selected blueprint
 
 func _ready() -> void:
@@ -39,12 +40,21 @@ func _ready() -> void:
 	_kind_tabs = TabBar.new()
 	for k in BlueprintData.KINDS:
 		_kind_tabs.add_tab(k.capitalize())
-	_kind_tabs.tab_changed.connect(func(_i): _refresh_library())
+	_kind_tabs.tab_changed.connect(_on_kind_changed)
 	left.add_child(_kind_tabs)
 	_library_list = ItemList.new()
 	_library_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_library_list.item_selected.connect(_on_select)
 	left.add_child(_library_list)
+	var preset_row := HBoxContainer.new()
+	left.add_child(preset_row)
+	var preset_lbl := Label.new()
+	preset_lbl.text = "Preset:"
+	preset_row.add_child(preset_lbl)
+	_preset_picker = OptionButton.new()
+	_preset_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	preset_row.add_child(_preset_picker)
+	_populate_presets()
 	var new_btn := Button.new()
 	new_btn.text = "+ New Blueprint"
 	new_btn.pressed.connect(_on_new)
@@ -143,6 +153,17 @@ func _unhandled_input(event: InputEvent) -> void:
 func _kind() -> String:
 	return BlueprintData.KINDS[_kind_tabs.current_tab]
 
+func _on_kind_changed(_i: int) -> void:
+	_refresh_library()
+	_populate_presets()
+
+func _populate_presets() -> void:
+	_preset_picker.clear()
+	_preset_picker.add_item("< Default >")
+	for n in BlueprintData.preset_names(_kind()):
+		_preset_picker.add_item(n)
+	_preset_picker.select(0)
+
 # ---------------------------------------------------------------- library
 
 func _refresh_library() -> void:
@@ -162,7 +183,11 @@ func _on_select(idx: int) -> void:
 
 func _on_new() -> void:
 	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
-	var bp = BlueprintManager.create(_kind(), "custom", "New %s" % _kind().capitalize())
+	var preset := ""
+	if _preset_picker != null and _preset_picker.selected > 0:
+		preset = _preset_picker.get_item_text(_preset_picker.selected)
+	var bp = BlueprintManager.create(_kind(), "custom",
+			preset if preset != "" else "New %s" % _kind().capitalize(), preset)
 	if bp.is_empty():
 		return
 	_refresh_library()
