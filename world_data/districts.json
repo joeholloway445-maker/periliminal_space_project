@@ -3,11 +3,11 @@
   "_guide": "Each district has: id, display_name, description, scene_path, music_track, entry_fee (0=free), color_hex, max_players",
   "districts": [
     {
-      "id": "paw_vegas",
-      "display_name": "Paws Vegas",
+      "id": "neon_imperium",
+      "display_name": "Neon Imperium",
       "description": "The glittering heart of the city — neon signs, slot machines, and endless excitement.",
-      "scene_path": "res://scenes/world/paw_vegas_hub.tscn",
-      "music_track": "res://assets/audio/music/paw_vegas_theme.ogg",
+      "scene_path": "res://scenes/world/neon_imperium_hub.tscn",
+      "music_track": "res://assets/audio/music/neon_imperium_theme.ogg",
       "entry_fee": 0,
       "color_hex": "#9B59B6",
       "max_players": 200,

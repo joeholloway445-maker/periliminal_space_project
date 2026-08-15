@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cq0535gxhqajv"]
+
+[ext_resource type="Script" uid="uid://1bfql4r7ffmd" path="res://src/dev/city_viewer_tool.gd" id="1"]
+
+[node name="CityView4" type="Node3D" unique_id=570903631]
+script = ExtResource("1")

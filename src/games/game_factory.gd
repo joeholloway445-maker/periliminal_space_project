@@ -77,13 +77,13 @@ func get_all_variants(type: GameType) -> Array[Dictionary]:
 ## Lobby catalog — one featured card per game type with a real scene when possible.
 func get_game_catalog() -> Array:
 	var featured := [
-		{name="Lucky Cat Slots", type=GameType.SLOTS, type_label="Slots", scene="res://scenes/games/slots/slot_machine.tscn", min_bet=10},
+		{name="Neon Slots", type=GameType.SLOTS, type_label="Slots", scene="res://scenes/games/slots/slot_machine.tscn", min_bet=10},
 		{name="Neon Circuit", type=GameType.RACING, type_label="Racing", scene="res://scenes/games/racing/race_track.tscn", min_bet=50},
 		{name="Paw Ball", type=GameType.SPORTS, type_label="Sports", scene="res://scenes/games/sports/paw_ball.tscn", min_bet=25},
-		{name="Black Cat 21", type=GameType.CARDS, type_label="Cards", scene="res://scenes/games/arcade/blackjack.tscn", min_bet=10},
-		{name="Whisker Wins Poker", type=GameType.CARDS, type_label="Cards", scene="res://scenes/games/arcade/paw_poker.tscn", min_bet=10},
+		{name="Neon 21", type=GameType.CARDS, type_label="Cards", scene="res://scenes/games/arcade/blackjack.tscn", min_bet=10},
+		{name="Five Card Draw", type=GameType.CARDS, type_label="Cards", scene="res://scenes/games/arcade/paw_poker.tscn", min_bet=10},
 		{name="Texas Hold'em", type=GameType.CARDS, type_label="Cards", scene="res://scenes/games/arcade/holdem.tscn", min_bet=20},
-		{name="Cat Puzzle", type=GameType.PUZZLE, type_label="Puzzle", scene="res://scenes/games/arcade/cat_puzzle.tscn", min_bet=15},
+		{name="Tile Match", type=GameType.PUZZLE, type_label="Puzzle", scene="res://scenes/games/arcade/cat_puzzle.tscn", min_bet=15},
 		{name="Fortune Wheel", type=GameType.ARCADE, type_label="Arcade", scene="res://scenes/games/arcade/fortune_wheel.tscn", min_bet=20},
 		{name="Scratch Card", type=GameType.ARCADE, type_label="Arcade", scene="res://scenes/games/arcade/scratch_card.tscn", min_bet=15},
 		{name="Coin Pusher", type=GameType.ARCADE, type_label="Arcade", scene="res://scenes/games/arcade/coin_pusher.tscn", min_bet=10},

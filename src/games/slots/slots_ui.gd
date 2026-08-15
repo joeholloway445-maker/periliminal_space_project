@@ -9,7 +9,7 @@ extends Control
 @onready var balance_label: Label = $VBox/BalanceLabel
 @onready var result_label: Label = $VBox/ResultLabel
 
-const SYMBOLS := ["🐱", "🌟", "🎭", "🐾", "💎", "🔔", "🍀", "💰"]
+const SYMBOLS := ["☆", "★", "♣", "♠", "♦", "♪", "✦", "◉"]
 var _spinning := false
 
 func _ready() -> void:
@@ -45,7 +45,7 @@ func _spin() -> void:
 				NotificationUI.notify_error(result.error)
 				result_label.text = "Error!"
 				return
-			var symbols: Array = result.get("symbols", ["🐱", "🐱", "🐱"])
+			var symbols: Array = result.get("symbols", ["☆", "☆", "☆"])
 			_animate_result(symbols, result)
 	)
 
@@ -65,7 +65,7 @@ func _animate_result(symbols: Array, result: Dictionary) -> void:
 
 	var payout: int = result.get("payout", 0)
 	if payout > 0:
-		result_label.text = "WIN! +%d chips 🎉" % payout
+		result_label.text = "WIN! +%d chips [WIN]" % payout
 		NotificationUI.notify_win("Slots: +%d chips!" % payout)
 		AchievementManager.check("win", payout)
 		AchievementManager.check("spin")

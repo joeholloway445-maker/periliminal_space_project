@@ -9,7 +9,7 @@ extends Node3D
 ## instantiates at most max_npcs_in_district and lets NpcBody.update_lod
 ## swap far NPCs to silhouette impostors.
 
-@export var district_id: String = "paw_vegas"
+@export var district_id: String = "neon_imperium"
 @export var max_npcs_in_district: int = 50
 ## Set by the layer/city that owns this spawner (codebase convention —
 ## systems get _player handed to them, there is no "player" group).

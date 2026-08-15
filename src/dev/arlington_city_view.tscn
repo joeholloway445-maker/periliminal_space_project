@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://da6ho5jxck1jq"]
+
+[ext_resource type="Script" uid="uid://1bfql4r7ffmd" path="res://src/dev/city_viewer_tool.gd" id="1"]
+
+[node name="ArlingtonCityView" type="Node3D" unique_id=952223889]
+script = ExtResource("1")

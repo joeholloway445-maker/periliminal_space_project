@@ -2,28 +2,28 @@ class_name NPCData
 # All NPC definitions across the 5 districts
 
 const NPCS: Array[Dictionary] = [
-	# Paws Vegas NPCs
-	{id="dealer_dev", name="Dealer Dev", district="paw_vegas", role="dealer",
+	# Neon Imperium NPCs
+	{id="dealer_dev", name="Dealer Dev", district="neon_imperium", role="dealer",
 	 dialogue_key="dealer_dev", pos=Vector3(5, 0, 3),
 	 greeting="Welcome to the main floor! The odds are always interesting here.",
 	 quest_ids=[], shop_type="none"},
 
-	{id="lucky_lira", name="Lucky Lira", district="paw_vegas", role="gambler",
+	{id="lucky_lira", name="Lucky Lira", district="neon_imperium", role="gambler",
 	 dialogue_key="lucky_lira", pos=Vector3(-3, 0, 5),
 	 greeting="I've been on a 12-game win streak. The secret? Companion synergy.",
 	 quest_ids=["find_sovereign_crown"], shop_type="none"},
 
-	{id="crown_rep", name="Crown Representative", district="paw_vegas", role="faction_rep",
+	{id="crown_rep", name="Crown Representative", district="neon_imperium", role="faction_rep",
 	 dialogue_key="crown_rep", pos=Vector3(0, 0, -8),
 	 greeting="The SovereignCrown is always looking for exceptional talent.",
 	 quest_ids=["faction_allegiance"], shop_type="none"},
 
-	{id="slot_sam", name="Slot Sam", district="paw_vegas", role="vendor",
+	{id="slot_sam", name="Slot Sam", district="neon_imperium", role="vendor",
 	 dialogue_key="slot_sam", pos=Vector3(8, 0, 0),
 	 greeting="Potions, boosts, and lucky charms. Everything you need to beat the house.",
 	 quest_ids=[], shop_type="consumables"},
 
-	{id="mystery_cat", name="???", district="paw_vegas", role="mysterious",
+	{id="mystery_cat", name="???", district="neon_imperium", role="mysterious",
 	 dialogue_key="mystery_cat", pos=Vector3(-6, 0, -6),
 	 greeting="...",
 	 quest_ids=[], shop_type="none"},

@@ -81,7 +81,7 @@ func _run() -> void:
 		{"id": "37_extraliminal", "path": "res://scenes/layers/extraliminal.tscn"},
 		{"id": "38_pvxc_gate", "path": "res://scenes/pvxc/pvxc_gate.tscn"},
 		{"id": "39_pvxc_zone", "path": "res://scenes/pvxc/pvxc_zone.tscn"},
-		{"id": "41_paw_vegas_hub", "path": "res://scenes/world/paw_vegas_hub.tscn"},
+		{"id": "41_neon_imperium_hub", "path": "res://scenes/world/neon_imperium_hub.tscn"},
 		{"id": "42_neon_alley", "path": "res://scenes/world/neon_alley.tscn"},
 		{"id": "43_cat_forest", "path": "res://scenes/world/cat_forest.tscn"},
 		{"id": "44_cat_coliseum", "path": "res://scenes/world/cat_coliseum.tscn"},

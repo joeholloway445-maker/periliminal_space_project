@@ -4,14 +4,14 @@ class_name SlotReel
 
 signal reel_stopped(symbol: String)
 
-const SYMBOLS: Array[String] = ["🐱", "🌟", "🎭", "🐾", "💎", "🎰", "⭐", "🔔"]
+const SYMBOLS: Array[String] = ["☆", "★", "♣", "♠", "♦", "♻", "☆", "♪"]
 
 @export var symbol_height: float = 80.0
 @export var visible_symbols: int = 3
 
 var strip: VBoxContainer
 var _symbol_labels: Array[Label] = []
-var _current_symbol: String = "🐱"
+var _current_symbol: String = "☆"
 var _spinning: bool = false
 var _spin_tween: Tween = null
 var _display: Label

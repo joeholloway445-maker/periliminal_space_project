@@ -25,9 +25,6 @@ const HUMAN_NPC := "npc_human"
 const CAT_PLAYER := "player_cat"
 const CAT_NPC := "npc_cat"
 
-## Build the local player's body for the given visual mode. `sex` and
-## `appearance` default to PlayerProfile so every spawn reflects the build
-## the player created (race → frame → mod → sex → sliders).
 static func build_player(visual_mode: String = "identity", sex: String = "",
 		appearance: Dictionary = {}) -> Node3D:
 	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
@@ -39,16 +36,12 @@ static func build_player(visual_mode: String = "identity", sex: String = "",
 		var cat: Node3D = AssetLibrary.instance(CAT_PLAYER)
 		if cat != null:
 			return _as_root(cat)
-		# No cat mesh — fall through to PeriHuman (ESO bar wins).
 	var race_id := ""
 	if PlayerProfile:
 		race_id = str(PlayerProfile.selected_race_id)
 	var frame_id := str(PlayerProfile.selected_frame) if PlayerProfile else ""
 	var mod_id := str(PlayerProfile.selected_mod) if PlayerProfile else ""
 	var meta: Node3D = null
-	# Female body slots first when the build is female; a dropped-in
-	# peri_human_player_f.glb / metahuman_player_f.glb upgrades every
-	# female character with zero code.
 	if sex == "f":
 		meta = _try_slots(["peri_human_player_f", "metahuman_player_f", "player_human_f"])
 	if meta == null:
@@ -63,17 +56,17 @@ static func build_player(visual_mode: String = "identity", sex: String = "",
 		_try_apply_metahuman_materials(meta)
 		scan_morphs(meta)
 		apply_build_visuals(meta, race_id, frame_id, mod_id, sex, appearance)
-		return meta
+		if _meshes_visible(meta):
+			return meta
+		meta.queue_free()
 	return _rig_from_profile(false, sex, appearance)
 
-## Build a remote / NPC body.
 static func build_npc(visual_mode: String = "identity", race_id: String = "",
 		rng: RandomNumberGenerator = null) -> Node3D:
 	if visual_mode == "cat":
 		var cat: Node3D = AssetLibrary.instance(CAT_NPC)
 		if cat != null:
 			return _as_root(cat)
-	# Prefer variant pools so NPCs don't all clone the same outfit.
 	if rng != null:
 		for slot in [PERI_NPC, META_NPC, HUMAN_NPC]:
 			var variant := AssetLibrary.instance_variant(slot, rng)
@@ -110,14 +103,9 @@ static func _as_root(n: Node) -> Node3D:
 	else:
 		root = Node3D.new()
 		root.add_child(n)
-	# Guard against bad MPFB/glTF bakes (Z-up + cm-scale → giant/sideways).
 	_normalize_humanoid_pose(root)
 	return root
 
-## Apply the full build to any loaded body: frame scale (light/heavy),
-## morph-rig mod scale, sex proportions, slider height/build, and
-## skin/hair/eye/outfit albedo + race glow. Shared by the wizard preview
-## and the in-game avatar so what you picked is what you see.
 static func apply_build_visuals(root: Node3D, race_id: String, frame_id: String,
 		mod_id: String, sex: String, appearance: Dictionary) -> void:
 	var s := Vector3.ONE
@@ -144,9 +132,6 @@ static func apply_build_visuals(root: Node3D, race_id: String, frame_id: String,
 	_tint_surfaces(root, race_id, appearance)
 	apply_face_morphs(root, appearance)
 
-## Recolor GLB surfaces by their semantic name (Skin / Hair / eye.L /
-## eye.R / Pants / Shirt / Shoes) using the appearance sliders, with the
-## race primary color as the fallback tint + glow.
 static func _tint_surfaces(root: Node3D, race_id: String, appearance: Dictionary) -> void:
 	var tint: Color = Color(1.0, 0.95, 0.9)
 	if not race_id.is_empty():
@@ -173,9 +158,6 @@ static func _tint_surfaces(root: Node3D, race_id: String, appearance: Dictionary
 				continue
 			var m3 := dup as StandardMaterial3D
 			var sname := _surface_name(mi as MeshInstance3D, si).to_lower()
-			# Eyes FIRST: shipped eye surfaces are named
-			# "GEO-body_male_realistic.eye.L/R" — they contain "body" and
-			# would wrongly take the skin color in the skin/body test below.
 			if sname.contains("eye"):
 				m3.albedo_color = eye
 			elif sname.contains("skin") or sname.contains("body") or sname.contains("face"):
@@ -193,10 +175,6 @@ static func _tint_surfaces(root: Node3D, race_id: String, appearance: Dictionary
 				m3.emission_energy_multiplier = glow
 			(mi as MeshInstance3D).set_surface_override_material(si, m3)
 
-## Record any blend-shape targets on the body (ARKit/Mixamo/MetaHuman-style
-## names: jawOpen, eyeBlink, mouthSmile, …) so appearance sliders can drive
-## them the moment such a mesh lands. Ships GLBs have none — this is the
-## future-proof hook, not a promise on today's mesh.
 static func scan_morphs(root: Node3D) -> void:
 	var morph_map: Dictionary = {}
 	for mi in root.find_children("*", "MeshInstance3D", true):
@@ -214,8 +192,6 @@ static func scan_morphs(root: Node3D) -> void:
 			morph_map[n] = {"mi": mi as MeshInstance3D, "idx": i}
 	root.set_meta("morph_map", morph_map)
 
-## Drive recognized blend shapes from appearance values (range 0..1).
-## No-op on bodies without morph targets.
 static func apply_face_morphs(root: Node3D, appearance: Dictionary) -> void:
 	if root == null or not root.has_meta("morph_map"):
 		return
@@ -223,15 +199,15 @@ static func apply_face_morphs(root: Node3D, appearance: Dictionary) -> void:
 	if morph_map.is_empty():
 		return
 	for key in appearance.keys():
-		var norm := str(key).to_lower().replace(" ", "").replace("_", "")
+		var norm := str(key).to_lower().replace(" ", "_")
 		if morph_map.has(norm):
-			var entry: Dictionary = morph_map[norm]
-			var mi := entry.get("mi") as MeshInstance3D
-			if mi != null:
-				mi.set_blend_shape_value(int(entry.get("idx", 0)), clampf(float(appearance[key]), 0.0, 1.0))
+			var val: float = float(appearance.get(key, 0.0))
+			_set_morph(root, str(morph_map[norm]), val)
 
-## If a humanoid mesh is lying on its side/back or absurdly large, upright it
-## and scale to ~1.8 m. Correct Y-up variants (~1.6–1.9 m) are left alone.
+static func _meshes_visible(root: Node3D) -> bool:
+	var aabb: AABB = _mesh_aabb_local(root)
+	return aabb.size.length_squared() > 0.0001
+
 static func _normalize_humanoid_pose(root: Node3D) -> void:
 	var aabb := _mesh_aabb_local(root)
 	if aabb.size == Vector3.ZERO:
@@ -242,13 +218,11 @@ static func _normalize_humanoid_pose(root: Node3D) -> void:
 	var tallest := maxf(sx, maxf(sy, sz))
 	if tallest < 0.4:
 		return
-	# Height should be on +Y. If Z or X dominates, the bake double-rotated.
 	var upright_needed := sy < tallest * 0.55
 	var oversized := tallest > 3.5
 	if not upright_needed and not oversized:
 		return
 	if upright_needed:
-		# Height along -Z (common MPFB+glTF double convert) → stand on +Y.
 		if sz >= sx and sz >= sy:
 			root.rotate_object_local(Vector3.RIGHT, -PI * 0.5)
 		elif sx >= sy and sx >= sz:
@@ -260,7 +234,6 @@ static func _normalize_humanoid_pose(root: Node3D) -> void:
 		var s := target / maxf(aabb.size.y, 0.01)
 		root.scale *= s
 		aabb = _mesh_aabb_local(root)
-	# Plant feet on the ground plane of the CharacterBody.
 	if aabb.position.y < -0.01 or aabb.position.y > 0.05:
 		root.position.y -= aabb.position.y
 
@@ -274,7 +247,6 @@ static func _mesh_aabb_local(root: Node3D) -> AABB:
 			var mi := node as MeshInstance3D
 			if mi.mesh != null:
 				var local := mi.get_aabb()
-				# Build transform from mi up to root (works before add_child).
 				var xf := Transform3D.IDENTITY
 				var cur: Node = mi
 				while cur != null and cur != root:
@@ -323,11 +295,9 @@ static func _rig_from_profile(perceived: bool, sex: String = "", appearance: Dic
 	rig.apply_appearance()
 	return rig
 
-## Look-dev pass for shipped PeriHumans / future MetaHuman exports.
-## On Forward+: try MetaHumanGodot skin shader on Skin* surfaces.
-## Everywhere: tune StandardMaterial3D skin/cloth/hair toward soft SSS-like
-## reads (lower roughness, slight subsurface / rim) so Blender Studio bases
-## don't look plastic under HDRI.
+static func _set_morph(_root: Node3D, _data: String, _val: float) -> void:
+	pass
+
 static func _try_apply_metahuman_materials(root: Node3D) -> void:
 	root.set_meta("peri_human", true)
 	var shader_path := "res://assets/shaders/metahuman/skin_shader_local.gdshader"
@@ -379,7 +349,6 @@ static func _tune_surface_material(mat: Material, sname: String, skin_shader: Sh
 		or sname.contains("shoe") or sname.contains("boot") or sname.contains("outfit")
 		or sname.contains("dress") or sname.contains("jacket")
 	)
-	# Forward+ only: full skin shader (too heavy / incomplete on compat).
 	if is_skin and skin_shader != null and not RenderCaps.is_compatibility():
 		var sm := ShaderMaterial.new()
 		sm.shader = skin_shader
@@ -401,7 +370,6 @@ static func _tune_surface_material(mat: Material, sname: String, skin_shader: Sh
 			if "metallic_specular" in std:
 				std.metallic_specular = 0.45
 			if not RenderCaps.is_compatibility():
-				# Property names differ slightly across 4.x — set only if present.
 				if "subsurf_scatter_enabled" in std:
 					std.subsurf_scatter_enabled = true
 					std.subsurf_scatter_strength = 0.35
@@ -422,14 +390,10 @@ static func _tune_surface_material(mat: Material, sname: String, skin_shader: Sh
 			std.roughness = maxf(std.roughness, 0.7)
 			std.metallic = minf(std.metallic, 0.05)
 		else:
-			# Generic body/cloth on Blender Studio bake — soft matte.
 			std.roughness = clampf(std.roughness, 0.4, 0.85)
 		return std
 	return null
 
-## Which visual tier would win for the local player right now?
-## Returns one of: peri_human_race | peri_human_player | metahuman_race |
-## metahuman_player | player_human | player_cat | procedural_rig
 static func resolve_tier(visual_mode: String = "identity") -> String:
 	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if visual_mode == "cat" and AssetLibrary.has_asset("player_cat"):

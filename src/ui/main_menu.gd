@@ -17,7 +17,7 @@ const CUSTOM_BG_PATH := "res://assets/ui/custom_bg.png"
 const THEME_SONG_PATH := "res://assets/audio/theme_song.ogg"
 
 const DISTRICTS = [
-	{id="paw_vegas",     name="Paws Vegas",     icon="🎰", desc="Slots, cards, and neon lights."},
+	{id="neon_imperium", name="Neon Imperium",  icon="🏙️", desc="Seven districts. The house always wins."},
 	{id="cat_coliseum",  name="Cat Coliseum",   icon="⚔️", desc="Combat arena. Prove yourself."},
 	{id="neon_alley",    name="Neon Alley",     icon="🏁", desc="Racing district. High speed."},
 	{id="cat_forest",    name="Cat Forest",     icon="🌿", desc="Quests, companions, and mystery."},
@@ -59,9 +59,6 @@ func _build_ui() -> void:
 		{label="🐾 Companions", scene="res://scenes/ui/companion_viewer.tscn"},
 		{label="🛒 Shop", scene="res://scenes/ui/shop.tscn"},
 		{label="🏆 Achievements", scene="res://scenes/ui/achievements.tscn"},
-		{label="🌐 Game Modes", scene="res://scenes/ui/game_mode_store.tscn"},
-		{label="🗺️ Overworld", scene="res://scenes/layers/supraliminal.tscn"},
-		{label="🌀 Reality Layers", scene="res://scenes/layers/layer_select.tscn"},
 		{label="🌗 Ascension", scene="res://scenes/ui/ascension.tscn"},
 		{label="🔴 The PVXC", scene="res://scenes/pvxc/pvxc_gate.tscn"},
 		{label="🏟️ Arena", scene="res://scenes/ui/arena_hub.tscn"},
@@ -115,8 +112,8 @@ func _travel_district(district_id: String) -> void:
 	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	enter_district.emit(district_id)
 	var path := "res://scenes/world/%s.tscn" % district_id
-	if district_id == "paw_vegas":
-		path = "res://scenes/world/paw_vegas_hub.tscn"
+	if district_id == "neon_imperium":
+		path = "res://scenes/world/neon_imperium_hub.tscn"
 	if ResourceLoader.exists(path):
 		get_tree().change_scene_to_file(path)
 	else:

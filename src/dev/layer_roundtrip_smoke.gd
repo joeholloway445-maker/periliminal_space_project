@@ -46,7 +46,7 @@ func _process(delta: float) -> bool:
 			_phase = 3
 			_check_at = _t
 
-	if _phase == 3 and current_scene != null and "paw_vegas" in str(current_scene.get_scene_file_path()).to_lower():
+	if _phase == 3 and current_scene != null and "neon_imperium" in str(current_scene.get_scene_file_path()).to_lower():
 		_check_at = _t
 		print("LAYER_RT hyperliminal (catsino) reached")
 		lm.transition_to("liminal")

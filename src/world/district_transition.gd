@@ -6,7 +6,7 @@ signal transition_started(from_district: String, to_district: String)
 signal transition_finished(district: String)
 
 const DISTRICT_SCENES = {
-	"paw_vegas":     "res://scenes/world/paw_vegas_hub.tscn",
+	"neon_imperium": "res://scenes/world/neon_imperium_hub.tscn",
 	"cat_coliseum":  "res://scenes/world/cat_coliseum.tscn",
 	"neon_alley":    "res://scenes/world/neon_alley.tscn",
 	"cat_forest":    "res://scenes/world/cat_forest.tscn",
@@ -14,7 +14,7 @@ const DISTRICT_SCENES = {
 }
 
 const DISTRICT_NAMES = {
-	"paw_vegas":     "Paws Vegas 🎰",
+	"neon_imperium": "Neon Imperium 🏙️",
 	"cat_coliseum":  "Cat Coliseum ⚔️",
 	"neon_alley":    "Neon Alley 🏁",
 	"cat_forest":    "Cat Forest 🌿",
@@ -22,14 +22,14 @@ const DISTRICT_NAMES = {
 }
 
 const ENTRY_COSTS = {
-	"paw_vegas":     0,
+	"neon_imperium": 100,
 	"cat_coliseum":  0,
 	"neon_alley":    0,
 	"cat_forest":    0,
 	"arcade_galaxy": 0,
 }
 
-var _current_district: String = "paw_vegas"
+var _current_district: String = "neon_imperium"
 var _transitioning: bool = false
 
 func get_current_district() -> String:

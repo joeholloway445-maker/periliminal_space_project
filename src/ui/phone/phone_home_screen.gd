@@ -122,7 +122,7 @@ func _populate_news_feed(feed: VBoxContainer) -> void:
 				items.append({"icon": "⭐", "text": ev_name})
 
 	items.append({"icon": "🌐", "text": "Periliminal.Space — six realities, one of you."})
-	items.append({"icon": "🐈", "text": "Paws Vegas crowd: %d cats on the floor." % _crowd_count()})
+	items.append({"icon": "🐈", "text": "Neon Imperium crowd: %d cats on the floor." % _crowd_count()})
 	items.append({"icon": "💛", "text": "Hope stage: %s (bond %d)." % [_hope_stage_name(), Hope.bond if Hope != null else 0]})
 
 	for item in items.slice(0, 5):
@@ -141,7 +141,7 @@ func _populate_news_feed(feed: VBoxContainer) -> void:
 func _crowd_count() -> int:
 	var DistrictManager = AutoloadGate.get_node("DistrictManager")
 	if DistrictManager != null and DistrictManager.has_method("get_player_count"):
-		return int(DistrictManager.get_player_count(DistrictManager.District.PAW_VEGAS))
+		return int(DistrictManager.get_player_count(DistrictManager.District.NEON_IMPERIUM))
 	return 0
 
 func _hope_stage_name() -> String:
@@ -553,7 +553,7 @@ func _open_hope() -> void:
 
 func _open_casino() -> void:
 	var lobby := GameLobbyUI.new()
-	_open_app_panel("Paws Vegas", lobby)
+	_open_app_panel("Neon Imperium", lobby)
 
 func _open_subliminal() -> void:
 	var LayerManager = AutoloadGate.get_node("LayerManager")

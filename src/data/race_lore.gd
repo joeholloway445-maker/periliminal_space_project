@@ -28,7 +28,7 @@ static func _build_lore_table() -> Dictionary:
 			description = "Creatures of living light whose bodies emit a warm, radiant glow from crystalline fur-nodes. Lumenari can focus this inner illumination into concussive bursts of photonic energy at peak concentration.",
 			homeworld = "The Veiled Current — drifting cities of stained glass and light-caught mist",
 			affinity_stats = ["resonance", "frequency"],
-			lore_blurb = "The Lumenari do not walk into shadow — they bring their own sun. Every Lumenari is a walking lantern, an ambient presence that shifts the mood of any room simply by entering it. Their Radiant Pulse at max Focus is less an attack and more a statement: 'I am here, I am fully charged, and the darkness has been moved elsewhere.' The drawback — reduced Focus in darkness — means they avoid the back alleys of Paws Vegas entirely, which is how the Gutterkin like it."
+			lore_blurb = "The Lumenari do not walk into shadow — they bring their own sun. Every Lumenari is a walking lantern, an ambient presence that shifts the mood of any room simply by entering it. Their Radiant Pulse at max Focus is less an attack and more a statement: 'I am here, I am fully charged, and the darkness has been moved elsewhere.' The drawback — reduced Focus in darkness — means they avoid the back alleys of Neon Imperium entirely, which is how the Gutterkin like it."
 		},
 		"Gutterkin": {
 			name = "Gutterkin",
@@ -84,7 +84,7 @@ static func _build_lore_table() -> Dictionary:
 			description = "Digital-native entities whose consciousness exists partly in data space. Echoes passively destabilize nearby electronic systems, causing unpredictable glitches in enemy equipment.",
 			homeworld = "Wildlands Ascendant — the Data-Veldt, where information grows like grass and is harvested by thought",
 			affinity_stats = ["resonance", "frequency"],
-			lore_blurb = "The Echoes are everywhere and nowhere. Every screen in Paws Vegas carries a fraction of their attention, every security camera has seen them without recording them. Their System Hack is not a deliberate act — it is the ambient consequence of their existence leaking into local networks. Enemy weapons jam, locks cycle randomly, communication lines develop static. An Echo in a firefight is dangerous not because of what they do, but because of what stops working around them. Their vulnerability is concentrated EMP fields, which scramble not just their equipment but their sense of self."
+			lore_blurb = "The Echoes are everywhere and nowhere. Every screen in Neon Imperium carries a fraction of their attention, every security camera has seen them without recording them. Their System Hack is not a deliberate act — it is the ambient consequence of their existence leaking into local networks. Enemy weapons jam, locks cycle randomly, communication lines develop static. An Echo in a firefight is dangerous not because of what they do, but because of what stops working around them. Their vulnerability is concentrated EMP fields, which scramble not just their equipment but their sense of self."
 		},
 		"Hollowed": {
 			name = "Hollowed",

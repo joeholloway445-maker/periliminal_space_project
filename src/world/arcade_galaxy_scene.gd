@@ -1,11 +1,10 @@
 extends Node
 
-signal minigame_result(game: String, win: int)
-
-const SYMBOLS: Array[String] = ["🐱", "⭐", "💎", "🎰", "🍀", "🔔", "7️⃣", "🌙"]
+signal minigame_result(game: String, win: int)const SYMBOLS: Array[String] = ["◆", "★", "♦", "♻", "✦", "♪", "7", "☾"]
 const SYMBOL_PAYOUTS: Dictionary = {
-	"🐱": 5, "⭐": 3, "💎": 20, "🎰": 10,
-	"🍀": 8, "🔔": 4, "7️⃣": 15, "🌙": 2
+	"◆": 5, "★": 3, "♦": 20, "♻": 10,
+	"✦": 8, "♪": 4, "7": 15, "☾": 2
+}🌙": 2
 }
 
 var _current_number: int = 5

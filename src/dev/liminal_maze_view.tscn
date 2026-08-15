@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dgjp7khbahih7"]
+
+[ext_resource type="Script" uid="uid://cketvd1gohnh7" path="res://src/dev/liminal_maze_viewer_tool.gd" id="1"]
+
+[node name="LiminalMazeView" type="Node3D" unique_id=2123376398]
+script = ExtResource("1")

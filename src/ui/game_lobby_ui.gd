@@ -17,7 +17,7 @@ var cashout_chips_button: Button
 func _ready() -> void:
 	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	_ensure_ui()
-	title_label.text = "PAWS VEGAS — Game Lobby"
+	title_label.text = "NEON IMPERIUM — Game Lobby"
 	if not close_button.pressed.is_connected(_on_close_pressed):
 		close_button.pressed.connect(_on_close_pressed)
 	if buy_chips_button and not buy_chips_button.pressed.is_connected(_on_buy_chips):

@@ -15,7 +15,7 @@ const RACE_GAME_BONUSES: Dictionary = {
 	"Gutterkin": {
 		slot_mult=1.10, race_spd_bonus=8, combat_crit=0.11,
 		signature_move="Hazard Conversion", signature_desc="Restores HP when standing in hazard zones",
-		hometown_district="paw_vegas", unlock_cost_coins=500,
+		hometown_district="neon_imperium", unlock_cost_coins=500,
 	},
 	"Deepborne": {
 		slot_mult=1.05, race_spd_bonus=2, combat_crit=0.08,
@@ -30,7 +30,7 @@ const RACE_GAME_BONUSES: Dictionary = {
 	"Veilstriders": {
 		slot_mult=1.15, race_spd_bonus=12, combat_crit=0.12,
 		signature_move="Phase Skip", signature_desc="5% chance to ignore any incoming hit entirely",
-		hometown_district="paw_vegas", unlock_cost_coins=1000,
+		hometown_district="neon_imperium", unlock_cost_coins=1000,
 	},
 	"Chronarchs": {
 		slot_mult=1.15, race_spd_bonus=4, combat_crit=0.10,
@@ -60,7 +60,7 @@ const RACE_GAME_BONUSES: Dictionary = {
 	"Riftspawn": {
 		slot_mult=1.05, race_spd_bonus=10, combat_crit=0.11,
 		signature_move="Minor Gravity Pull", signature_desc="Pulls nearby targets 1m toward you every 4s; interrupts channeling",
-		hometown_district="paw_vegas", unlock_cost_coins=1000,
+		hometown_district="neon_imperium", unlock_cost_coins=1000,
 	},
 	"Mirekin": {
 		slot_mult=1.05, race_spd_bonus=3, combat_crit=0.08,
@@ -70,7 +70,7 @@ const RACE_GAME_BONUSES: Dictionary = {
 	"Sunspun": {
 		slot_mult=1.10, race_spd_bonus=9, combat_crit=0.10,
 		signature_move="Radiant Burst", signature_desc="Unleashes stored light: deals bonus damage scaling with Focus level",
-		hometown_district="paw_vegas", unlock_cost_coins=1000,
+		hometown_district="neon_imperium", unlock_cost_coins=1000,
 	},
 	"Coldmarrow": {
 		slot_mult=1.0, race_spd_bonus=0, combat_crit=0.07,
@@ -90,7 +90,7 @@ const RACE_GAME_BONUSES: Dictionary = {
 	"Crownless": {
 		slot_mult=1.15, race_spd_bonus=3, combat_crit=0.10,
 		signature_move="Authority Override", signature_desc="Take temporary control of hostile turrets/doors for 4 seconds",
-		hometown_district="paw_vegas", unlock_cost_coins=1500,
+		hometown_district="neon_imperium", unlock_cost_coins=1500,
 	},
 	"Rotweavers": {
 		slot_mult=1.20, race_spd_bonus=2, combat_crit=0.08,
@@ -105,7 +105,7 @@ const RACE_GAME_BONUSES: Dictionary = {
 	"Starfall": {
 		slot_mult=1.0, race_spd_bonus=15, combat_crit=0.13,
 		signature_move="Impact Entry", signature_desc="Falling from any height creates a damaging AoE at landing point; no fall damage",
-		hometown_district="paw_vegas", unlock_cost_coins=1500,
+		hometown_district="neon_imperium", unlock_cost_coins=1500,
 	},
 }
 

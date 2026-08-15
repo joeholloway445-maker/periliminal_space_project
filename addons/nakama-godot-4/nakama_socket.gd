@@ -54,6 +54,7 @@ func connect_async(session: NakamaSession, timeout: float = 8.0) -> Variant:
 		Engine.get_main_loop().root.add_child(self)
 	_peer = WebSocketPeer.new()
 	var scheme := "wss" if _ssl else "ws"
+
 	var url := "%s://%s:%d/ws?token=%s&lang=en&status=true" % [scheme, _host, _port, session.token.uri_encode()]
 	var err := _peer.connect_to_url(url)
 	if err != OK:

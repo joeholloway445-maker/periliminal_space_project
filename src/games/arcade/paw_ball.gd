@@ -1,5 +1,5 @@
 extends Node
-class_name PawBall
+class_name SportsBetting
 # Sports prediction game — bet on paw ball match outcomes
 # Server confirms RNG result; client shows animated match
 

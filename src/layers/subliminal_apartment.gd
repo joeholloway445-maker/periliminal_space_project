@@ -19,10 +19,11 @@ func _ready() -> void:
 	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
 	LayerManager.current_layer_id = "subliminal"
 	_build_room()
+	_build_furniture()
 	_build_camera()
 	add_child(SensoriumAmbience.new())
 	_build_panel()
-	_build_mode_selector()
+	_build_door()
 	SubliminalManager.apartment_updated.connect(_refresh_slots)
 	_refresh_slots()
 
@@ -52,10 +53,13 @@ func _build_room() -> void:
 	floor_mi.material_override = IdentityLens.world_material(Color(0.35, 0.3, 0.4))
 	add_child(floor_mi)
 
-	# Walls
+	# Walls — front, left, right. Back wall built in two pieces flanking
+	# the exit door so the doorway is actually passable.
+	var back_z := d / 2.0 + 1.0
+	var door_w := 2.0
+	var gap_half := door_w / 2.0 + 0.2  # frame clearance
 	for wall in [
 		{size=Vector3(w + 2, 4, 0.3), pos=Vector3(0, 2, -d / 2 - 1)},
-		{size=Vector3(w + 2, 4, 0.3), pos=Vector3(0, 2, d / 2 + 1)},
 		{size=Vector3(0.3, 4, d + 2), pos=Vector3(-w / 2 - 1, 2, 0)},
 		{size=Vector3(0.3, 4, d + 2), pos=Vector3(w / 2 + 1, 2, 0)},
 	]:
@@ -67,12 +71,97 @@ func _build_room() -> void:
 		mi.material_override = IdentityLens.world_material(Color(0.25, 0.22, 0.3), 0.5)
 		add_child(mi)
 
+	# Back wall segments flanking the door
+	var seg_w := (w + 2 - gap_half * 2.0) / 2.0
+	for seg in [
+		{size=Vector3(seg_w, 4, 0.3), pos=Vector3(-(gap_half + seg_w / 2.0), 2, back_z)},
+		{size=Vector3(seg_w, 4, 0.3), pos=Vector3(+(gap_half + seg_w / 2.0), 2, back_z)},
+	]:
+		var mi2 := MeshInstance3D.new()
+		var box2 := BoxMesh.new()
+		box2.size = seg.size
+		mi2.mesh = box2
+		mi2.position = seg.pos
+		mi2.material_override = IdentityLens.world_material(Color(0.25, 0.22, 0.3), 0.5)
+		add_child(mi2)
+
 	# One warm lamp — the calm room.
 	var lamp := OmniLight3D.new()
 	lamp.light_color = IdentityLens.sensorium().light
 	lamp.light_energy = 1.4
 	lamp.position = Vector3(0, 3.2, 0)
 	add_child(lamp)
+
+func _build_furniture() -> void:
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
+	var grid: Vector2i = SubliminalManager.APARTMENT_GRID
+	var w := grid.x * SLOT_SIZE
+	var d := grid.y * SLOT_SIZE
+
+	# ---- Rug — warm felt under the center of the room ----
+	var rug := MeshInstance3D.new()
+	var rug_mesh := PlaneMesh.new()
+	rug_mesh.size = Vector2(w * 0.5, d * 0.4)
+	rug.mesh = rug_mesh
+	rug.position = Vector3(0, 0.03, 0)
+	var rug_mat := StandardMaterial3D.new()
+	rug_mat.albedo_color = Color(0.6, 0.35, 0.25)
+	rug_mat.roughness = 0.9
+	rug.material_override = rug_mat
+	add_child(rug)
+
+	# ---- Side table (left wall) ----
+	var table_h := 1.2
+	var table_x := -w / 2.0 + 1.8
+	var table_z := -d / 2.0 + 1.5
+	for part in [
+		{size = Vector3(1.2, 0.08, 0.9), pos = Vector3(0, table_h, 0)},
+
+		{size = Vector3(0.08, table_h, 0.08), pos = Vector3(-0.5, table_h / 2.0, -0.35)},
+		{size = Vector3(0.08, table_h, 0.08), pos = Vector3(0.5, table_h / 2.0, -0.35)},
+		{size = Vector3(0.08, table_h, 0.08), pos = Vector3(-0.5, table_h / 2.0, 0.35)},
+		{size = Vector3(0.08, table_h, 0.08), pos = Vector3(0.5, table_h / 2.0, 0.35)},
+	]:
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = part.size
+		mi.mesh = box
+		mi.position = Vector3(table_x, 0, table_z) + part.pos
+		mi.material_override = IdentityLens.world_material(Color(0.45, 0.35, 0.3), 0.3)
+		add_child(mi)
+
+	# ---- Small lamp on the table ----
+	var table_lamp := OmniLight3D.new()
+	table_lamp.light_color = Color(1.0, 0.8, 0.5)
+	table_lamp.light_energy = 0.5
+	table_lamp.omni_range = 4.0
+	table_lamp.position = Vector3(table_x, table_h + 0.15, table_z)
+	add_child(table_lamp)
+
+	# ---- Wall art frame (right wall, a simple dark rectangle) ----
+	var frame := MeshInstance3D.new()
+	var frame_mesh := BoxMesh.new()
+	frame_mesh.size = Vector3(1.4, 0.9, 0.05)
+	frame.mesh = frame_mesh
+	frame.position = Vector3(w / 2.0 + 1.05, 1.8, d / 2.0 - 2.0)
+	var fmat := StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.15, 0.12, 0.2)
+	fmat.metallic = 0.6
+	frame.material_override = fmat
+	add_child(frame)
+
+	# ---- Cushion / seating near the rug (simple box with warm fabric) ----
+	var cushion := MeshInstance3D.new()
+	var c_mesh := BoxMesh.new()
+	c_mesh.size = Vector3(1.5, 0.35, 1.0)
+	cushion.mesh = c_mesh
+	cushion.position = Vector3(0, 0.2, d / 2.0 - 1.8)
+	var c_mat := StandardMaterial3D.new()
+	c_mat.albedo_color = Color(0.5, 0.3, 0.4)
+	c_mat.roughness = 0.85
+	cushion.material_override = c_mat
+	add_child(cushion)
 
 	# Slot markers
 	for x in range(grid.x):
@@ -245,49 +334,7 @@ func _build_panel() -> void:
 		locked.modulate = Color(0.65, 0.55, 0.55)
 		box.add_child(locked)
 
-	var leave := Button.new()
-	leave.text = "⬅ Step out"
-	leave.pressed.connect(func():
-		var LayerManager = AutoloadGate.get_node("LayerManager")
-		LayerManager.transition_to("hyperliminal"))
-	box.add_child(leave)
-
-## The mode selector — the Subliminal IS the start screen, every session.
-## From your calm room you step into any of the six realities (entry rules
-## enforced by LayerManager; the Periliminal shows but never opens — it
-## takes you, you don't take it). The casino is one door of six.
-func _build_mode_selector() -> void:
-	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
-	var LayerManager = AutoloadGate.get_node("LayerManager")
-	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	var panel := PanelContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
-	panel.position += Vector2(-360, 0)
-	panel.custom_minimum_size = Vector2(340, 0)
-	layer.add_child(panel)
-	var box := VBoxContainer.new()
-	panel.add_child(box)
-
-	var title := Label.new()
-	title.text = "WHERE TO, %s?" % PlayerProfile.username.to_upper()
-	title.add_theme_font_size_override("font_size", 18)
-	box.add_child(title)
-
-	for l in RealityLayers.LAYERS:
-		if l.id == "subliminal":
-			continue # you're standing in it
-		var btn := Button.new()
-		btn.text = str(l.name)
-		btn.tooltip_text = str(l.desc)
-		var gate = LayerManager.can_enter(str(l.id))
-		if not bool(gate.get("ok", true)):
-			btn.disabled = true
-			btn.text += "  (%s)" % str(gate.get("reason", "locked"))
-		btn.pressed.connect(func(): LayerManager.transition_to(str(l.id)))
-		box.add_child(btn)
-
+	# The door replaces "Step out" — walk through to the Metroplex.
 	box.add_child(HSeparator.new())
 
 	var forge := Button.new()
@@ -299,8 +346,6 @@ func _build_mode_selector() -> void:
 			add_child(f))
 	box.add_child(forge)
 
-	# Tier shop: buy the space that fits — private studio up to a 300-soul
-	# public pavilion.
 	box.add_child(HSeparator.new())
 	var tier_lbl := Label.new()
 	var cur: Dictionary = SubliminalManager.current_tier()
@@ -325,3 +370,73 @@ func _build_mode_selector() -> void:
 		pub.button_pressed = SubliminalManager.is_public
 		pub.toggled.connect(func(on): SubliminalManager.set_public(on))
 		box.add_child(pub)
+
+## The one physical exit from the Subliminal: a door on the back wall that
+## opens onto the DFW Metroplex. No menu, no layer picker — walk through it.
+func _build_door() -> void:
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
+	var grid: Vector2i = SubliminalManager.APARTMENT_GRID
+	var d := grid.y * SLOT_SIZE
+	var wall_z := d / 2.0 + 1.0
+	var door_w := 2.0
+	var door_h := 3.0
+
+	# Door frame — two posts + header on the back wall.
+	var frame_mat: Material = IdentityLens.world_material(Color(0.5, 0.42, 0.35), 0.7)
+	for piece in [
+		{size = Vector3(0.18, door_h, 0.3), pos = Vector3(-door_w / 2.0, door_h / 2.0, wall_z)},
+		{size = Vector3(0.18, door_h, 0.3), pos = Vector3(door_w / 2.0, door_h / 2.0, wall_z)},
+		{size = Vector3(door_w + 0.36, 0.18, 0.3), pos = Vector3(0.0, door_h, wall_z)},
+	]:
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = piece.size
+		mi.mesh = box
+		mi.position = piece.pos
+		mi.material_override = frame_mat
+		add_child(mi)
+
+	# Threshold glow — the luminous plane you step through.
+	var threshold := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(door_w, door_h)
+	threshold.mesh = plane
+	threshold.position = Vector3(0.0, door_h / 2.0, wall_z - 0.1)
+	var tmat := StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.6, 0.8, 1.0, 0.25)
+	tmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	tmat.emission_enabled = true
+	tmat.emission = Color(0.4, 0.6, 1.0)
+	tmat.emission_energy_multiplier = 2.5
+	tmat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	threshold.material_override = tmat
+	add_child(threshold)
+
+	# Label
+	var lbl := Label3D.new()
+	lbl.text = "THE METROPLEX"
+	lbl.position = Vector3(0.0, door_h + 0.6, wall_z)
+	lbl.font_size = 28
+	lbl.modulate = Color(0.7, 0.8, 1.0)
+	lbl.outline_size = 4
+	add_child(lbl)
+
+	# Walk-through trigger.
+	var area := Area3D.new()
+	area.name = "ExitDoor"
+	var cs := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(door_w, door_h, 1.5)
+	cs.shape = box
+	area.add_child(cs)
+	area.position = Vector3(0.0, door_h / 2.0, wall_z)
+	area.body_entered.connect(_on_door_entered)
+	add_child(area)
+
+func _on_door_entered(body: Node3D) -> void:
+	if body is ThirdPersonController:
+		var LayerManager = AutoloadGate.get_node("LayerManager")
+		var NotificationUI = AutoloadGate.get_node("NotificationUI")
+		NotificationUI.notify_info("The door opens onto the DFW Metroplex.")
+		LayerManager.transition_to("supraliminal")

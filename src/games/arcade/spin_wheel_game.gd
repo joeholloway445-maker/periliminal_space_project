@@ -56,7 +56,7 @@ func _spin() -> void:
 			spin_btn.disabled = false
 			segment_label.text = "▶ %s" % seg
 			if payout > 0:
-				result_label.text = "Won: +%d coins! 🎉" % payout
+				result_label.text = "Won: +%d coins! [WIN]" % payout
 				NotificationUI.notify_win("Fortune Wheel: +%d!" % payout)
 				AchievementManager.check("win", payout)
 				QuestManager.update_progress("spin_5")

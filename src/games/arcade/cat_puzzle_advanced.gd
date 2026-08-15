@@ -1,4 +1,4 @@
-class_name CatPuzzleAdvanced
+class_name TileMatchAdvanced
 extends Node2D
 # Advanced Cat Puzzle with combo chain tracking and server score submission
 
@@ -9,7 +9,7 @@ extends Node2D
 @onready var bet_spin: SpinBox = $CanvasLayer/UI/BetSpin
 
 const GRID_SIZE := 6
-const SYMBOLS := ["🐱", "🌟", "🎭", "🐾", "💎", "🔔"]
+const SYMBOLS := ["☆", "★", "♣", "♠", "♦", "♪"]
 const GAME_TIME := 60.0
 
 var _board: Array = []  # 6x6 of symbol indices

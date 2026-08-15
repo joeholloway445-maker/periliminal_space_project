@@ -104,10 +104,10 @@ func exit_alive() -> void:
 	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if not active: return
 	var earned := preview_reward()
-	EconomyManager.earn_currency("fragments", earned, "periliminal_depth_%d" % depth)
+	EconomyManager.earn_currency("fragments", earned, "periliminal_alive")
 	run_survived.emit(depth, earned)
 	active = false
-	LayerManager.transition_to("liminal", true)
+	LayerManager.transition_to("subliminal", true)
 
 ## Slipping out the unwitnessed way (Proprioception's recall): the run just
 ## ends. No blessing, no banked fragments — escape pays nothing — but no

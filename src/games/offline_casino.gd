@@ -3,11 +3,11 @@ class_name OfflineCasino
 ## Mirrors Nakama RPC payout rules so blackjack, slots, and poker work
 ## without a live host. Wallet changes go through EconomyManager.
 
-const SLOT_SYMBOLS := ["🐱", "🌟", "🎭", "🐾", "💎", "🎰", "⭐", "🔔"]
+const SLOT_SYMBOLS := ["◆", "★", "♣", "♠", "♦", "♻", "◇", "♪"]
 const SLOT_WEIGHTS := [30, 20, 20, 15, 8, 4, 2, 1]
 const SLOT_PAYOUTS := {
-	"🐱🐱🐱": 3, "🌟🌟🌟": 5, "🎭🎭🎭": 5, "🐾🐾🐾": 8,
-	"💎💎💎": 15, "🎰🎰🎰": 25, "⭐⭐⭐": 50, "🔔🔔🔔": 100,
+	"◆◆◆": 3, "★★★": 5, "♣♣♣": 5, "♠♠♠": 8,
+	"♦♦♦": 15, "♻♻♻": 25, "◇◇◇": 50, "♪♪♪": 100,
 }
 
 const POKER_PAYOUTS := {
@@ -626,8 +626,8 @@ static func _draw_fortune(data: Dictionary) -> Dictionary:
 
 # ── Scratch card ──────────────────────────────────────────────────────────────
 
-const SCRATCH_SYMBOLS := ["🐱", "🌟", "🎭", "🐾", "💎", "🎰"]
-const SCRATCH_PAYOUTS := {"🐱": 2, "🌟": 3, "🎭": 3, "🐾": 5, "💎": 10, "🎰": 20}
+const SCRATCH_SYMBOLS := ["☆", "★", "♣", "♠", "♦", "♻"]
+const SCRATCH_PAYOUTS := {"☆": 2, "★": 3, "♣": 3, "♠": 5, "♦": 10, "♻": 20}
 
 static func _buy_scratch_card(data: Dictionary) -> Dictionary:
 	var bet := int(data.get("bet", 50))

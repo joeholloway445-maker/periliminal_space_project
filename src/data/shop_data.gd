@@ -2,11 +2,11 @@ class_name ShopData
 # Full shop catalogue across all districts
 
 const SHOP_ITEMS: Array[Dictionary] = [
-	# Paws Vegas — Slot Sam's shop
-	{id="hp_potion", shop="slot_sam", district="paw_vegas", name="HP Potion", price=100, type="consumable"},
-	{id="luck_charm", shop="slot_sam", district="paw_vegas", name="Lucky Charm", price=200, type="consumable"},
-	{id="slot_multiplier", shop="slot_sam", district="paw_vegas", name="Slot Multiplier ×2", price=400, type="consumable"},
-	{id="xp_boost_small", shop="slot_sam", district="paw_vegas", name="XP Boost (Small)", price=250, type="consumable"},
+	# Neon Imperium — Slot Sam's shop
+	{id="hp_potion", shop="slot_sam", district="neon_imperium", name="HP Potion", price=100, type="consumable"},
+	{id="luck_charm", shop="slot_sam", district="neon_imperium", name="Lucky Charm", price=200, type="consumable"},
+	{id="slot_multiplier", shop="slot_sam", district="neon_imperium", name="Slot Multiplier ×2", price=400, type="consumable"},
+	{id="xp_boost_small", shop="slot_sam", district="neon_imperium", name="XP Boost (Small)", price=250, type="consumable"},
 
 	# Neon Alley — Aqua Merchant cosmetic skins (NOT OmniDex identity frames;
 	# the OmniDex has exactly 20 frames — cosmetics must not inflate that count).

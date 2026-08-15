@@ -34,7 +34,7 @@ func spin_wheel(bet: int) -> Dictionary:
 func claim_daily_bonus() -> Dictionary:
 	return await post_json("/api/economy/daily-bonus", {})
 
-func get_leaderboard(district: String = "paw_vegas", limit: int = 50) -> Dictionary:
+func get_leaderboard(district: String = "neon_imperium", limit: int = 50) -> Dictionary:
 	return await get_json("/api/leaderboard", {"district": district, "limit": limit})
 
 func get_active_events() -> Dictionary:

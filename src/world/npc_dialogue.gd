@@ -2,11 +2,11 @@ class_name NPCDialogue
 # Static dialogue trees for world NPCs by district
 
 const DIALOGUES: Dictionary = {
-	"paw_vegas": [
+	"neon_imperium": [
 		{
 			npc_id="pvg_merchant", name="Gilded Merchant Voss", faction="SovereignCrown", emoji="🪙",
 			lines=[
-				"Welcome to Paws Vegas! Coins flow like water here — make sure yours flows toward you.",
+				"Welcome to Neon Imperium! Coins flow like water here — make sure yours flows toward you.",
 				"The SovereignCrown controls the finest establishments. Shop wisely, friend.",
 				"I've seen cats arrive with nothing and leave with empires. And the reverse. Often the reverse.",
 				"Looking for companions? Check the Companion Hall on the east side of the district.",
@@ -28,14 +28,14 @@ const DIALOGUES: Dictionary = {
 			lines=[
 				"Move along, citizen. The Crown's peace must be maintained.",
 				"Cat Coliseum is accepting challengers. Have you the courage?",
-				"All paths in Paws Vegas lead back to the Crown. Remember that.",
+				"All paths in Neon Imperium lead back to the Crown. Remember that.",
 			],
 			quest_trigger="",
 		},
 		{
 			npc_id="pvg_scholar", name="Scholar Luminara", faction="Factionless", emoji="📚",
 			lines=[
-				"Fascinating! I'm documenting all companion species in Paws Vegas.",
+				"Fascinating! I'm documenting all companion species in Neon Imperium.",
 				"Did you know there are 200 named companions across all four factions?",
 				"The race bloodlines are ancient. Each has unique affinities — study them well.",
 				"I could use your help collecting companion data. What do you say?",

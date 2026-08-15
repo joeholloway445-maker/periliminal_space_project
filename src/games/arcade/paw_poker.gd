@@ -1,12 +1,12 @@
 extends Node
-class_name PawPoker
+class_name ArcadePoker
 # Arcade poker variant — simplified 3-card hand evaluation, server-validated
 
 signal hand_dealt(cards: Array[Dictionary])
 signal result_received(hand_name: String, payout: int)
 signal error_occurred(message: String)
 
-const SUITS = ["🐾", "🐱", "🌟", "🎭"]
+const SUITS = ["♠", "♥", "♦", "♣"]
 const VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 
 var _bet: int = 0

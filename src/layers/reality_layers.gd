@@ -5,10 +5,11 @@ class_name RealityLayers
 
 const LAYERS: Array[Dictionary] = [
 	{
-		id="hyperliminal", name="Hyperliminal — Catsino",
-		desc="The neon casino reality. Games of chance, districts, tournaments. Where everyone starts spending.",
-		entry="always", pvp=false, persistence="static",
-		scene="res://scenes/world/paw_vegas_hub.tscn",
+		id="hyperliminal", name="Hyperliminal — Neon Imperium",
+		desc="A walled city of vice. Seven districts of casino floors, dangerous streets, and the only place the house always wins. Entry costs chips — nothing in the Imperium is free.",
+		entry="always", pvp=true, persistence="static",
+		entry_cost=0,
+		scene="res://scenes/world/neon_imperium_hub.tscn",
 		currency="chips",
 	},
 	{

@@ -37,7 +37,7 @@ func _ready() -> void:
 	back.text = "⬅ Back"
 	back.position = Vector2(12, 12)
 	back.pressed.connect(func() -> void:
-		get_tree().change_scene_to_file("res://scenes/world/paw_vegas_hub.tscn"))
+		get_tree().change_scene_to_file("res://scenes/world/neon_imperium_hub.tscn"))
 	add_child(back)
 
 func _on_spin_pressed() -> void:
@@ -47,7 +47,7 @@ func _on_spin_pressed() -> void:
 	_spin_btn.disabled = true
 	_result_label.text = "Spinning..."
 
-	var payload = JSON.stringify({"bet": _bet, "game": "lucky_cat_jackpot"})
+	var payload = JSON.stringify({"bet": _bet, "game": "slot_jackpot"})
 	NetworkManager.call_rpc("spin_slots", payload, _on_spin_result)
 
 func _on_spin_result(result: Dictionary) -> void:
@@ -58,7 +58,7 @@ func _on_spin_result(result: Dictionary) -> void:
 		_result_label.text = "Error: " + result.get("error", "?")
 		return
 
-	var symbols = result.get("symbols", ["🐱", "🐱", "🐱"])
+	var symbols = result.get("symbols", ["☆", "☆", "☆"])
 	var payout = result.get("payout", 0)
 
 	if _reel1: _reel1.set_symbol(symbols[0])
@@ -66,7 +66,7 @@ func _on_spin_result(result: Dictionary) -> void:
 	if _reel3: _reel3.set_symbol(symbols[2])
 
 	if payout > 0:
-		_result_label.text = "🎉 WIN: +%d chips" % payout
+		_result_label.text = "[WIN] WIN: +%d chips" % payout
 		spin_won.emit(payout)
 	else:
 		_result_label.text = "Try again!"

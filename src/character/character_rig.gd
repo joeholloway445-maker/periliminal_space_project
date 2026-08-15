@@ -122,7 +122,8 @@ func build_from_loadout(race: Dictionary, frame: Dictionary, mod: Dictionary = {
 			perceived_profile, race.get("primary_color", Color.WHITE))
 		scale *= seen.view.apparent_scale
 
-	var skin_mat := _make_mat(race, Color("#d9a066"))
+	var primary: Color = race.get("primary_color", Color("#d9a066"))
+	var skin_mat := _make_mat(race, primary)
 	var hair_mat := StandardMaterial3D.new()
 	hair_mat.albedo_color = Color("#2b1d12")
 	hair_mat.roughness = 0.75

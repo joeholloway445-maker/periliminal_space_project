@@ -2,11 +2,11 @@ extends Control
 class_name Minimap
 # Minimap showing current district and player position
 
-var _current_district: String = "paw_vegas"
+var _current_district: String = "neon_imperium"
 var _player_dot: Control
 
 const DISTRICT_COLORS = {
-	"paw_vegas":      Color(0.8, 0.2, 1.0),
+	"neon_imperium":      Color(0.8, 0.2, 1.0),
 	"cat_coliseum":   Color(1.0, 0.3, 0.1),
 	"neon_alley":     Color(0.0, 0.9, 1.0),
 	"cat_forest":     Color(0.2, 0.9, 0.2),
@@ -14,7 +14,7 @@ const DISTRICT_COLORS = {
 }
 
 const DISTRICT_POSITIONS = {
-	"paw_vegas":     Vector2(0.5, 0.5),
+	"neon_imperium":     Vector2(0.5, 0.5),
 	"cat_coliseum":  Vector2(0.2, 0.3),
 	"neon_alley":    Vector2(0.8, 0.4),
 	"cat_forest":    Vector2(0.3, 0.7),

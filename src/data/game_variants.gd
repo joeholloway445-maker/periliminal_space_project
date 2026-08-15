@@ -26,13 +26,13 @@ const SLOTS_VARIANTS: Array[Dictionary] = [
 
 const RACING_VARIANTS: Array[Dictionary] = [
 	{id="race_sprint", name="Neon Sprint", laps=1, track="neon_alley", ai_count=5, prize_mult=2},
-	{id="race_circuit", name="Paws Vegas Circuit", laps=3, track="paw_vegas", ai_count=7, prize_mult=5},
+	{id="race_circuit", name="Neon Imperium Circuit", laps=3, track="neon_imperium", ai_count=7, prize_mult=5},
 	{id="race_endurance", name="Forest Endurance", laps=10, track="cat_forest", ai_count=3, prize_mult=15},
 	{id="race_drag", name="Alley Drag", laps=1, track="drag_strip", ai_count=1, prize_mult=2},
 	{id="race_coliseum", name="Coliseum Grand Prix", laps=5, track="coliseum_ring", ai_count=11, prize_mult=20},
 	{id="race_midnight", name="Midnight Run", laps=2, track="neon_alley_night", ai_count=5, prize_mult=8},
 	{id="race_off_road", name="Wild Offroad", laps=3, track="cat_forest_dirt", ai_count=5, prize_mult=12},
-	{id="race_time_trial", name="Time Trial", laps=1, track="paw_vegas", ai_count=0, prize_mult=3},
+	{id="race_time_trial", name="Time Trial", laps=1, track="neon_imperium", ai_count=0, prize_mult=3},
 	{id="race_reverse", name="Reverse Circuit", laps=3, track="neon_alley_rev", ai_count=5, prize_mult=10},
 	{id="race_obstacle", name="Obstacle Course", laps=2, track="obstacle_track", ai_count=5, prize_mult=18},
 	{id="race_faction_cup", name="Faction Cup", laps=3, track="faction_arena", ai_count=3, prize_mult=25},

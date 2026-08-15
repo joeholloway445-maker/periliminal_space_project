@@ -76,6 +76,18 @@ func transition_to(layer_id: String, pulled: bool = false) -> bool:
 		if not check.ok:
 			NotificationUI.notify_error(check.reason)
 			return false
+
+	# ---- Entry cost: pay chips to walk into Neon Imperium ----
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var layer_data := RealityLayers.by_id(layer_id)
+	var entry_cost: int = int(layer_data.get("entry_cost", 0))
+	if entry_cost > 0:
+		if EconomyManager.get_balance("chips") < entry_cost:
+			NotificationUI.notify_error("Entry requires %d chips. Visit the chip cage." % entry_cost)
+			return false
+		EconomyManager.spend_currency_local("chips", entry_cost, "layer_entry_%s" % layer_id)
+		NotificationUI.notify_info("Paid %d chips — welcome to %s." % [entry_cost, str(layer_data.get("name", layer_id))])
+
 	var from := current_layer_id
 	current_layer_id = layer_id
 	if layer_id == "liminal":

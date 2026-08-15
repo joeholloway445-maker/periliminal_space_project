@@ -58,7 +58,7 @@ func _add_back_button(root: Node) -> void:
 		back.text = "⬅ Back"
 		back.position = Vector2(12, 12)
 		back.pressed.connect(func() -> void:
-			get_tree().change_scene_to_file("res://scenes/world/paw_vegas_hub.tscn"))
+			get_tree().change_scene_to_file("res://scenes/world/neon_imperium_hub.tscn"))
 		root.add_child(back)
 
 func _on_spin_pressed() -> void:

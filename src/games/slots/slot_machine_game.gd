@@ -148,7 +148,7 @@ func _evaluate_result() -> void:
 	if s0 == s1 and s1 == s2:
 		var mult: int = PAYOUT_MULTIPLIERS.get(s0, 1)
 		win_amount = _current_bet * mult
-		result_label.text = "🎉 JACKPOT! %s %s %s  +%d chips!" % [s0, s1, s2, win_amount]
+		result_label.text = "[WIN] JACKPOT! %s %s %s  +%d chips!" % [s0, s1, s2, win_amount]
 		result_label.modulate = Color(1.0, 0.85, 0.1)
 	elif s0 == s1 or s1 == s2 or s0 == s2:
 		win_amount = int(_current_bet * 1.5)

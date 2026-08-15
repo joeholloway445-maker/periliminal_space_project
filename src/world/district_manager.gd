@@ -8,7 +8,7 @@ signal player_count_updated(district: District, count: int)
 
 # ── Enums ──────────────────────────────────────────────────────────────────────
 enum District {
-	PAW_VEGAS,       # Casino hub
+	NEON_IMPERIUM,   # Casino hub — the Hyperliminal
 	NEON_ALLEY,      # Racing district
 	CAT_COLISEUM,    # Sports arena
 	ARCADE_GALAXY,   # Mini-game hub
@@ -17,7 +17,7 @@ enum District {
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 const DISTRICT_SCENES: Dictionary = {
-	District.PAW_VEGAS:     "res://scenes/world/paw_vegas_hub.tscn",
+	District.NEON_IMPERIUM: "res://scenes/world/neon_imperium_hub.tscn",
 	District.NEON_ALLEY:    "res://scenes/world/neon_alley.tscn",
 	District.CAT_COLISEUM:  "res://scenes/world/cat_coliseum.tscn",
 	District.ARCADE_GALAXY: "res://scenes/world/arcade_galaxy.tscn",
@@ -25,7 +25,7 @@ const DISTRICT_SCENES: Dictionary = {
 }
 
 const DISTRICT_MUSIC_CONTEXT: Dictionary = {
-	District.PAW_VEGAS:     "theme",
+	District.NEON_IMPERIUM:  "theme",
 	District.NEON_ALLEY:    "racing",
 	District.CAT_COLISEUM:  "ascension",
 	District.ARCADE_GALAXY: "theme",
@@ -35,11 +35,11 @@ const DISTRICT_MUSIC_CONTEXT: Dictionary = {
 const MAX_PLAYERS_PER_DISTRICT := 200
 
 # ── State ──────────────────────────────────────────────────────────────────────
-var current_district: District = District.PAW_VEGAS
+var current_district: District = District.NEON_IMPERIUM
 var _current_scene_node: Node  = null
 var _is_transitioning: bool    = false
 var _player_counts: Dictionary = {
-	District.PAW_VEGAS:     0,
+	District.NEON_IMPERIUM: 0,
 	District.NEON_ALLEY:    0,
 	District.CAT_COLISEUM:  0,
 	District.ARCADE_GALAXY: 0,
@@ -58,9 +58,8 @@ func get_current_district() -> District:
 	return current_district
 
 func get_district_name(district: District) -> String:
-	# Enum stays PAW_VEGAS (ids/paths); display brand is Paws Vegas.
-	if district == District.PAW_VEGAS:
-		return "Paws Vegas"
+	if district == District.NEON_IMPERIUM:
+		return "Neon Imperium"
 	return District.keys()[district].replace("_", " ").capitalize()
 
 func get_player_count(district: District) -> int:

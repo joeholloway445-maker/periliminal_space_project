@@ -14,7 +14,7 @@ const LOGO_PATH := "res://assets/ui/logo.png"
 const LOADING_STEPS = [
 	"Initializing game world...",
 	"Loading faction data...",
-	"Connecting to Paws Vegas...",
+	"Connecting to Neon Imperium...",
 	"Waking up companions...",
 	"Shuffling the deck...",
 	"Spinning up the reels...",
@@ -108,4 +108,4 @@ func _start_loading() -> void:
 	# If auth already moved us to title during init, do not clobber it.
 	if GameManager and GameManager.game_state == GameManager.GameState.WORLD:
 		return
-	get_tree().change_scene_to_file("res://scenes/ui/login.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/title_screen.tscn")

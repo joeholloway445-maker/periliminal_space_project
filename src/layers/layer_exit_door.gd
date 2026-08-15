@@ -14,7 +14,7 @@ extends Node3D
 
 const TARGET_STYLE := {
 	"subliminal":   {"label": "HOME", "color": Color(1.0, 0.75, 0.4)},
-	"hyperliminal": {"label": "THE CATSINO", "color": Color(0.3, 0.95, 0.9)},
+	"hyperliminal": {"label": "NEON IMPERIUM", "color": Color(0.3, 0.95, 0.9)},
 	"supraliminal": {"label": "THE METROPLEX", "color": Color(0.5, 0.7, 1.0)},
 	"extraliminal": {"label": "GUILD WAR GROUNDS", "color": Color(0.75, 0.35, 0.95)},
 	"liminal":      {"label": "THE BETWEEN", "color": Color(0.85, 0.85, 0.9)},

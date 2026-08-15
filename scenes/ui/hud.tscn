@@ -37,7 +37,7 @@ show_percentage = false
 [node name="DistrictLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=368798129]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Paws Vegas"
+text = "Neon Imperium"
 horizontal_alignment = 2
 
 [node name="WinPopup" type="PanelContainer" parent="." unique_id=278398245]

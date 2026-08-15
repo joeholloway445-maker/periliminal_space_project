@@ -30,7 +30,7 @@ var _appearance: Dictionary = {
 var _customize_panel: VBoxContainer = null
 
 var _title: Label
-var _roster_row: HBoxContainer
+var _roster_row: GridContainer
 var _roster_scroll: ScrollContainer
 var _preview_viewport: SubViewportContainer
 var _preview_subviewport: SubViewport
@@ -135,8 +135,9 @@ func _build_ui() -> void:
 	_portrait_image = TextureRect.new()
 	_portrait_image.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_portrait_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_portrait_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait_image.expand_mode = TextureRect.EXPAND_FIT_WIDTH
 	_portrait_image.visible = false
+	_portrait_image.z_index = 10
 	preview_wrapper.add_child(_portrait_image)
 
 	_portrait = ColorRect.new()
@@ -160,9 +161,13 @@ func _build_ui() -> void:
 	_roster_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	mid.add_child(_roster_scroll)
-	_roster_row = HBoxContainer.new()
-	_roster_row.add_theme_constant_override("separation", 10)
+	_roster_row = GridContainer.new()
+	_roster_row.columns = 4
+	_roster_row.add_theme_constant_override("h_separation", 12)
+	_roster_row.add_theme_constant_override("v_separation", 12)
 	_roster_scroll.add_child(_roster_row)
+	_roster_scroll.add_theme_constant_override("margin_left", 8)
+	_roster_scroll.add_theme_constant_override("margin_top", 8)
 
 	# Customize step panel (sliders) — replaces the roster strip.
 	_customize_panel = _build_customize_panel()
@@ -378,12 +383,14 @@ func _build_roster() -> void:
 	for i in _entries.size():
 		var e: Dictionary = _entries[i]
 		var tile := Button.new()
-		tile.custom_minimum_size = Vector2(96, 96)
+		tile.custom_minimum_size = Vector2(128, 144)
 		# Authored concept art wins over the flat color tile for frames/mods.
 		# The art is stacked above the name via a child VBox so the portrait
 		# isn't squeezed beside the label.
 		var art: Texture2D = null
 		match step:
+			"race":
+				art = IdentityArt.portrait(str(e.id), str(_picked.get("sex", "m")), "", "")
 			"frame":
 				art = CharacterArt.frame_icon(str(e.id), 64)
 			"mod":
@@ -455,16 +462,35 @@ func _update_portrait() -> void:
 		_:
 			_preview_instance.preview(_picked.get("race", ""), _picked.get("frame", ""), _picked.get("mod", ""), cur_sex, _appearance)
 
-	# The 3D body IS the preview. The shipped PeriHuman GLB is a static bake
-	# that can't show frame/mod/slider changes, so the wizard shows the live
-	# articulated rig — there is deliberately NO 2D portrait layered on top
-	# anymore (it duplicated the body and froze the "dead" look you saw).
-	# Roster tiles keep their concept-art thumbnails as the pick targets.
-	if _portrait_image != null:
-		_portrait_image.visible = false
-		_portrait_image.offset_bottom = 0.0
-	if _preview_viewport != null:
-		_preview_viewport.visible = true
+	# Show Claude-made 2D portraits for the relevant step. IdentityArt handles
+	# the filename chain: race.jpg -> race_f.jpg -> race_f_frame.jpg -> etc.
+	var show_art := false
+	if _portrait_image != null and _preview_viewport != null:
+		var race_id: String = str(_picked.get("race", str(e.id)))
+		var frame_id: String = str(_picked.get("frame", ""))
+		var mod_id: String = str(_picked.get("mod", ""))
+		match step:
+			"race":
+				race_id = str(e.id)
+			"frame":
+				frame_id = str(e.id)
+			"mod":
+				mod_id = str(e.id)
+		var tex := IdentityArt.portrait(race_id, cur_sex, frame_id, mod_id)
+		if tex != null:
+			_portrait_image.texture = tex
+			if _preview_viewport.get_parent() != null:
+				_preview_viewport.get_parent().remove_child(_preview_viewport)
+			_portrait_image.show()
+			show_art = true
+	if not show_art:
+		if _portrait_image != null:
+			_portrait_image.hide()
+		if _preview_viewport != null and _preview_viewport.get_parent() == null:
+			var wrapper: Control = _portrait_image.get_parent() as Control
+			wrapper.add_child(_preview_viewport)
+			wrapper.move_child(_preview_viewport, 0)
+			_preview_viewport.show()
 
 func _render_final_preview() -> void:
 	var stats := CharacterCreatorLogic.build_starting_stats(_picked.race, "Factionless", _picked.frame)

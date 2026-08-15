@@ -12,7 +12,7 @@ extends Control
 @onready var bet_spin: SpinBox = $VBox/Controls/BetSpin
 @onready var result_label: Label = $VBox/ResultLabel
 
-const SUITS := ["🐾", "🐱", "🌟", "🎭"]
+const SUITS := ["♠", "♥", "♦", "♣"]
 const VALUES := ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 
 func _ready() -> void:
@@ -25,7 +25,7 @@ func _ready() -> void:
 	back.text = "⬅ Back"
 	back.position = Vector2(12, 12)
 	back.pressed.connect(func() -> void:
-		get_tree().change_scene_to_file("res://scenes/world/paw_vegas_hub.tscn"))
+		get_tree().change_scene_to_file("res://scenes/world/neon_imperium_hub.tscn"))
 	add_child(back)
 
 func _deal() -> void:
@@ -85,11 +85,11 @@ func _finish(result: Dictionary) -> void:
 		"blackjack":
 			result_label.text = "BLACKJACK! +%d chips 🃏" % payout
 			AchievementManager.check("blackjack")
-		"win": result_label.text = "You WIN! +%d chips 🎉" % payout
-		"bust": result_label.text = "BUST! 💸"
-		"dealer_bust": result_label.text = "Dealer busts! +%d chips 🎉" % payout
+		"win": result_label.text = "You WIN! +%d chips [WIN]" % payout
+		"bust": result_label.text = "BUST! "
+		"dealer_bust": result_label.text = "Dealer busts! +%d chips [WIN]" % payout
 		"push": result_label.text = "PUSH — bet returned"
-		"lose": result_label.text = "Dealer wins 😿"
+		"lose": result_label.text = "Dealer wins "
 	if payout > 0:
 		NotificationUI.notify_win("Blackjack: +%d chips!" % payout)
 		AchievementManager.check("win", payout)

@@ -72,7 +72,7 @@ func _draw() -> void:
 func _render_hand() -> void:
 	for child in hand_container.get_children():
 		child.queue_free()
-	const SUITS := ["🐾", "🐱", "🌟", "🎭"]
+	const SUITS := ["♠", "♥", "♦", "♣"]
 	const VALUES := ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 	for i in range(_cards.size()):
 		var card: Dictionary = _cards[i] as Dictionary

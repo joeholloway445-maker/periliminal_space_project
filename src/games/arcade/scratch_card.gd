@@ -8,14 +8,14 @@ signal cell_revealed(index: int, symbol: String)
 signal card_complete(winning: bool, payout: int)
 signal error_occurred(message: String)
 
-const SYMBOLS = ["🐱", "🌟", "🎭", "🐾", "💎", "🎰"]
+const SYMBOLS = ["☆", "★", "♣", "♠", "♦", "♻"]
 const PAYOUT_TABLE = {
-	"🐱": 2,
-	"🌟": 3,
-	"🎭": 3,
-	"🐾": 5,
-	"💎": 10,
-	"🎰": 20,
+	"☆": 2,
+	"★": 3,
+	"♣": 3,
+	"♠": 5,
+	"♦": 10,
+	"♻": 20,
 }
 
 var _cells: Array[String] = []

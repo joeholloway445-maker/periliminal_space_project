@@ -19,7 +19,7 @@ var _win_tween: Tween = null
 
 # Lifecycle
 func _ready() -> void:
-	# This script may be attached bare to a CanvasLayer (paw_vegas_hub) where
+	# This script may be attached bare to a CanvasLayer (neon_imperium_hub) where
 	# its child nodes don't exist; guard everything so _ready never crashes.
 	if not is_instance_valid(win_popup):
 		return

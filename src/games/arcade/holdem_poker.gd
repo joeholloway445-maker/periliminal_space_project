@@ -10,7 +10,7 @@ extends Control
 @onready var call_btn: Button = $VBox/Controls/CallBtn
 @onready var result_label: Label = $VBox/ResultLabel
 
-const SUITS := ["🐾", "🐱", "🌟", "🎭"]
+const SUITS := ["♠", "♥", "♦", "♣"]
 const VALUES := ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 
 var _in_hand := false
@@ -24,7 +24,7 @@ func _ready() -> void:
 	back.text = "⬅ Back"
 	back.position = Vector2(12, 12)
 	back.pressed.connect(func() -> void:
-		get_tree().change_scene_to_file("res://scenes/world/paw_vegas_hub.tscn"))
+		get_tree().change_scene_to_file("res://scenes/world/neon_imperium_hub.tscn"))
 	add_child(back)
 
 func _deal() -> void:

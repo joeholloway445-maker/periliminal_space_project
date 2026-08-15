@@ -1,5 +1,5 @@
 extends Node
-class_name CatPuzzle
+class_name TileMatch
 # Tile-matching puzzle game — match cat symbols for coins
 # Completely client-side visual; server validates final score
 
@@ -7,7 +7,7 @@ signal puzzle_complete(score: int, payout: int)
 signal move_made(remaining_moves: int)
 signal board_updated(board: Array)
 
-const SYMBOLS = ["🐱", "🌟", "🎭", "🐾", "💎", "⭐"]
+const SYMBOLS = ["☆", "★", "♣", "♠", "♦", "☆"]
 const BOARD_SIZE = 6
 const MOVE_LIMIT = 30
 const MIN_MATCH = 3

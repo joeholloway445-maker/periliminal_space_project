@@ -21,23 +21,40 @@ func _ready() -> void:
 	await _terrain.ensure_built(layer_id)
 
 	# Liminal uses a procedural hallway maze instead of open terrain.
-	# The terrain is still built underneath for height references / chunk
-	# streaming, but the maze is what the player walks through.
+	# The terrain is hidden — the maze floor IS the only walkable surface.
+	# Stairwells and archways provide the only plausible vertical transitions.
 	if layer_id == "liminal":
+		_terrain.visible = false
 		var hallway_seed := randi()
 		var hallway_maze := LiminalHallwayBuilder.build(
 			hallway_seed, 24, 4.0, 3.5,
 			OS.get_name() == "Web" or OS.get_name() == "Android"
 		)
 		add_child(hallway_maze)
+		_build_liminal_exits(hallway_maze, hallway_seed)
 
 	_sky = DayNightSky.new()
 	match layer_id:
 		"liminal":
-			# Was 90s — phone prototype nightfall felt broken. Slow cycle +
-			# freeze in prototype mode so show-off stays readable.
-			_sky.day_length_seconds = 2400.0
-			_sky.start_hour = 11.0
+			# Permanent twilight — the between-space has no true daylight.
+			# Dim, uncertain, never fully dark but never bright either.
+			_sky.day_length_seconds = 999999.0
+			_sky.start_hour = 3.5
+			# Add fog — the Liminal dissolves at the edges of perception.
+			var fog_env := WorldEnvironment.new()
+			var fog := Environment.new()
+			fog.volumetric_fog_enabled = true
+			fog.volumetric_fog_density = 0.03
+			fog.volumetric_fog_albedo = Color(0.08, 0.04, 0.12)
+			fog.volumetric_fog_emission = Color(0.05, 0.02, 0.1)
+			fog.volumetric_fog_emission_energy = 0.3
+			fog.fog_enabled = true
+			fog.fog_mode = Environment.FOG_MODE_DEPTH
+			fog.fog_density = 0.008
+			fog.fog_light_color = Color(0.06, 0.03, 0.1)
+			fog.fog_light_energy = 0.2
+			fog_env.environment = fog
+			add_child(fog_env)
 		"periliminal":
 			_sky.day_length_seconds = 999999.0
 			_sky.start_hour = 4.5 # permanent night, but not pitch-black
@@ -126,6 +143,101 @@ var _player_hp := 100
 var _shield := 0
 var _attack_damage := 20
 var _hostile_tick := 0.0
+
+## Place stairwell structures at the maze perimeter — four exits,
+## one per cardinal direction. Each is a small room with stairs going down
+## into the unknown, plus a glowing archway with the destination label.
+func _build_liminal_exits(maze_root: Node3D, maze_seed: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("liminal_exits_" + str(maze_seed))
+	var maze_size := 24
+	var hw := 4.0
+	var half_extent: float = (maze_size - 1) * hw * 0.5
+
+	var exits: Array[Dictionary] = [
+		{label = "NEON IMPERIUM",    layer = "hyperliminal",  dir = Vector3(0, 0, -half_extent - 6)},
+		{label = "THE METROPLEX",    layer = "supraliminal", dir = Vector3(half_extent + 6, 0, 0)},
+		{label = "EXTRALIMINAL",     layer = "extraliminal",  dir = Vector3(0, 0, half_extent + 6)},
+		{label = "DUNGEON",          layer = "subliminal",    dir = Vector3(-half_extent - 6, 0, 0)},
+	]
+
+	for exit_data in exits:
+		var exit_root := Node3D.new()
+		exit_root.name = "LiminalExit_" + exit_data.label.replace(" ", "_")
+		exit_root.position = exit_data.dir
+
+		# Stairwell room — a small box room that descends
+		var room := MeshInstance3D.new()
+		var room_box := BoxMesh.new()
+		room_box.size = Vector3(5, 3, 5)
+		room.mesh = room_box
+		room.position.y = -1.5
+		var room_mat := StandardMaterial3D.new()
+		room_mat.albedo_color = Color(0.12, 0.1, 0.18)
+		room.material_override = room_mat
+		exit_root.add_child(room)
+
+		# Stairs going down — a ramp-like structure
+		for step_i in range(5):
+			var step := MeshInstance3D.new()
+			var step_box := BoxMesh.new()
+			step_box.size = Vector3(2.5, 0.25, 0.6)
+			step.mesh = step_box
+			step.position = Vector3(0, -0.25 - step_i * 0.5, 1.5 - step_i * 0.6)
+			var smat := StandardMaterial3D.new()
+			smat.albedo_color = Color(0.3, 0.28, 0.35)
+			step.material_override = smat
+			exit_root.add_child(step)
+
+		# Glowing archway marker
+		var arch := MeshInstance3D.new()
+		var arch_plane := PlaneMesh.new()
+		arch_plane.size = Vector2(3, 3.5)
+		arch.mesh = arch_plane
+		arch.position = Vector3(0, 1.5, 2.0)
+		var amat := StandardMaterial3D.new()
+		amat.albedo_color = Color(0.4, 0.6, 1.0, 0.3)
+		amat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		amat.emission_enabled = true
+		amat.emission = Color(0.3, 0.5, 1.0)
+		amat.emission_energy_multiplier = 2.0
+		amat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		arch.material_override = amat
+		exit_root.add_child(arch)
+
+		# Label
+		var lbl := Label3D.new()
+		lbl.text = exit_data.label
+		lbl.position = Vector3(0, 3.8, 2.0)
+		lbl.font_size = 22
+		lbl.modulate = Color(0.6, 0.8, 1.0)
+		lbl.outline_size = 3
+		exit_root.add_child(lbl)
+
+		# Transition area
+		var area := Area3D.new()
+		var cs := CollisionShape3D.new()
+		var bshape := BoxShape3D.new()
+		bshape.size = Vector3(4, 4, 2)
+		cs.shape = bshape
+		area.add_child(cs)
+		area.position = Vector3(0, 1.5, 2.5)
+		var target_layer: String = exit_data.layer
+		area.body_entered.connect(func(body: Node3D):
+			if body is ThirdPersonController:
+				var lm = AutoloadGate.get_node("LayerManager")
+				lm.transition_to(target_layer))
+		exit_root.add_child(area)
+
+		# Small point light at each exit
+		var pt_light := OmniLight3D.new()
+		pt_light.position = Vector3(0, 2.0, 2.0)
+		pt_light.light_color = Color(0.5, 0.6, 1.0)
+		pt_light.light_energy = 2.0
+		pt_light.omni_range = 8.0
+		exit_root.add_child(pt_light)
+
+		maze_root.add_child(exit_root)
 
 func _wire_presence() -> void:
 	var PresenceManager = AutoloadGate.get_node("PresenceManager")
@@ -635,14 +747,6 @@ func _build_hud() -> void:
 	layer.name = "LayerHud"
 	add_child(layer)
 	_hud_layer = layer
-	var back := Button.new()
-	back.text = "⬅ Catsino"
-	back.position = Vector2(10, 10)
-	back.pressed.connect(func():
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		LayerManager.transition_to("hyperliminal"))
-	layer.add_child(back)
-
 	# Coins always visible in-world — the primary currency. Live-updates via
 	# EconomyManager.balance_changed.
 	_hud_coins_label = Label.new()

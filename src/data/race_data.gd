@@ -8,7 +8,7 @@ const TRACKS: Array[Dictionary] = [
 		entry_fee=200, difficulty="beginner"
 	},
 	{
-		id="paw_strip", name="Paws Vegas Strip", district="paw_vegas",
+		id="neon_imperium_strip", name="Neon Imperium Strip", district="neon_imperium",
 		laps=1, distance=2000.0, description="A straight-line drag race down the strip.",
 		entry_fee=500, difficulty="intermediate"
 	},

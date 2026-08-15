@@ -3,8 +3,7 @@ extends Node
 signal bonus_complete(total_win: int)
 
 const FREE_SPINS: int = 5
-const MULTIPLIER: int = 2
-const SYMBOLS: Array[String] = ["🐱", "⭐", "💎", "🎰", "🍀", "🔔", "7️⃣", "🌙"]
+const MULTIPLIER: intconst SYMBOLS: Array[String] = ["◆", "★", "♦", "♻", "✦", "♪", "7", "☾"], "🌙"]
 const REEL_SIZE: int = 3
 
 var _base_bet: int = 0
@@ -55,13 +54,13 @@ func _spin_reels() -> Array[String]:
 func _evaluate_spin(reels: Array[String]) -> int:
 	if reels[0] == reels[1] and reels[1] == reels[2]:
 		match reels[0]:
-			"💎": return _base_bet * 20
+			"♦": return _base_bet * 20
 			"7️⃣": return _base_bet * 15
-			"🎰": return _base_bet * 10
-			"🍀": return _base_bet * 8
-			"🐱": return _base_bet * 5
-			"⭐": return _base_bet * 3
-			"🔔": return _base_bet * 4
+			"♻": return _base_bet * 10
+			"✦": return _base_bet * 8
+			"☆": return _base_bet * 5
+			"☆": return _base_bet * 3
+			"♪": return _base_bet * 4
 			_: return _base_bet * 2
 	if reels[0] == reels[1] or reels[1] == reels[2] or reels[0] == reels[2]:
 		return _base_bet
