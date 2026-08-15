@@ -89,7 +89,6 @@ func _process(_delta: float) -> void:
 
 # ─── Ground ───────────────────────────────────────────────────────────────────
 func _build_ground() -> void:
-	var TerrainBridge = AutoloadGate.get_node("TerrainBridge")
 	var terrain: Node = TerrainBridge.new()
 	terrain.name = "Terrain"
 	add_child(terrain)
