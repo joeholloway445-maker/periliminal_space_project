@@ -204,6 +204,8 @@ func _execute_delegation(task: Dictionary) -> void:
 			_delegate_to_knoll(task)
 		"GODOT":
 			_delegate_to_godot(task)
+		"WORKFLOW":
+			_delegate_to_workflow(task)
 		_:
 			push_warning("APEX: Unknown delegation target: %s" % str(task.get("target", "")))
 
@@ -260,6 +262,46 @@ func _delegate_to_godot(task: Dictionary) -> void:
 	# Godot receives environment rendering tasks
 	if task_name == "environment_shift":
 		print_rich("  [color=aqua]APEX → GODOT[/color]: Environment shift: %s" % JSON.stringify(params))
+
+func _delegate_to_workflow(task: Dictionary) -> void:
+	## Delegate a task to hdv-orchestrator via the HDVWorkflow autoload.
+	## MoE routing selects the optimal model; KNOLL gates server-side.
+	var HDVWorkflow = get_node_or_null("/root/HDVWorkflow")
+	if HDVWorkflow == null:
+		push_warning("APEX: HDVWorkflow autoload not found — add HDVWorkflowClient as autoload 'HDVWorkflow'")
+		return
+
+	var task_name: String = str(task.get("task", ""))
+	var params: Dictionary = task.get("params", {})
+	var workflow_id: String = str(params.get("workflow_id", ""))
+	var intent: String     = str(params.get("intent", task_name))
+	var category: String   = str(params.get("category", "general"))
+	var user_id: String    = str(params.get("user_id", ""))
+
+	# Local MoE routing for the log line
+	var route: Dictionary = HDVWorkflow.route(intent, category)
+	print_rich("  [color=aqua]APEX → WORKFLOW[/color]: intent=%s model=%s workflow=%s" % [
+		intent, route.get("model", "?"), workflow_id
+	])
+
+	match task_name:
+		"trigger":
+			if workflow_id.is_empty():
+				push_warning("APEX: workflow delegation requires params.workflow_id")
+				return
+			HDVWorkflow.trigger_workflow(workflow_id, intent, params, category,
+				HDVWorkflow.BudgetTier.HIGH if params.get("budget") == "high"
+				else HDVWorkflow.BudgetTier.LOW if params.get("budget") == "low"
+				else HDVWorkflow.BudgetTier.MEDIUM,
+				user_id)
+		"simulate":
+			var workflow_def: Dictionary = params.get("workflow", {})
+			HDVWorkflow.simulate_workflow(workflow_def, params)
+		"route":
+			# Fire-and-forget — emits route_decision_received signal
+			emit_signal("delegation_made", "workflow_route", "WORKFLOW", Priority.LOW)
+		_:
+			push_warning("APEX: Unknown workflow task: %s" % task_name)
 
 # ─── Utilities ───────────────────────────────────────────────────────────────
 
