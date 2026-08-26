@@ -146,21 +146,84 @@ func record(event: String, context: Dictionary) -> void:
 	_save_queue()
 	_try_flush()
 
-## Push queued rows to Supabase through the web API (hope_telemetry table).
-## Soft-fails when the endpoint is missing / offline — queue stays on disk.
+## ── AI Dialogue ──────────────────────────────────────────────────────────
+## Send a message to Hope and get a reply via the Nakama hope_chat RPC.
+## The RPC proxies to the configured LLM backend (Anthropic or vLLM/Mistral).
+## Returns the reply string, or "" on error.
+signal chat_reply(reply: String)
+
+var _chat_history: Array = []  # [{role, content}, ...]
+
+func chat(message: String) -> String:
+	var Nakama = AutoloadGate.get_node_or_null("Nakama")
+	if not Nakama:
+		push_warning("Hope.chat: Nakama autoload not found")
+		return ""
+	var payload := JSON.stringify({
+		"message": message,
+		"history": _chat_history.slice(-12),
+		"profile": profile,
+		"stage": str(stage().get("name", "")),
+	})
+	var result = await Nakama.rpc_async("hope_chat", payload)
+	if result.is_exception():
+		push_warning("Hope.chat RPC error: %s" % result.get_exception().message)
+		return ""
+	var data: Dictionary = result.payload if result.payload is Dictionary else {}
+	var reply := str(data.get("reply", ""))
+	if not reply.is_empty():
+		_chat_history.append({"role": "user", "content": message})
+		_chat_history.append({"role": "assistant", "content": reply})
+		if _chat_history.size() > 24:
+			_chat_history = _chat_history.slice(_chat_history.size() - 24)
+		gain_bond(2, "dialogue")
+		chat_reply.emit(reply)
+	return reply
+
+## Clear local and server-side dialogue history.
+func clear_chat_history() -> void:
+	_chat_history = []
+	var Nakama = AutoloadGate.get_node_or_null("Nakama")
+	if Nakama:
+		await Nakama.rpc_async("hope_clear_history", "{}")
+
+## Restore server-side history into local cache (e.g. on login).
+func restore_chat_history() -> void:
+	var Nakama = AutoloadGate.get_node_or_null("Nakama")
+	if not Nakama:
+		return
+	var result = await Nakama.rpc_async("hope_get_history", "{}")
+	if result.is_exception():
+		return
+	var data: Dictionary = result.payload if result.payload is Dictionary else {}
+	var history = data.get("history", [])
+	if history is Array:
+		_chat_history = history
+
+## Push queued rows via Nakama hope_telemetry RPC (falls back to web API).
+## Soft-fails when offline — queue stays on disk.
 func _try_flush() -> void:
-	var CasinoHTTPClient = AutoloadGate.get_node("CasinoHTTPClient")
 	if _queue.is_empty():
 		return
+	var Nakama = AutoloadGate.get_node_or_null("Nakama")
+	if Nakama:
+		var batch := _queue.duplicate()
+		var result = await Nakama.rpc_async("hope_telemetry", JSON.stringify(batch))
+		if not result.is_exception():
+			_queue = _queue.slice(batch.size())
+			_save_queue()
+			return
+		push_warning("Hope telemetry Nakama soft-fail, trying HTTP fallback")
+	# Fallback to direct HTTP
+	var CasinoHTTPClient = AutoloadGate.get_node_or_null("CasinoHTTPClient")
 	if not CasinoHTTPClient:
 		return
-	var batch := _queue.duplicate()
-	var response: Dictionary = await CasinoHTTPClient.post_json(TELEMETRY_ENDPOINT, {"rows": batch})
+	var batch2 := _queue.duplicate()
+	var response: Dictionary = await CasinoHTTPClient.post_json(TELEMETRY_ENDPOINT, {"rows": batch2})
 	if response.get("ok", false):
-		_queue = _queue.slice(batch.size())
+		_queue = _queue.slice(batch2.size())
 		_save_queue()
 		return
-	# Don't spam: one warning per batch, keep local queue for a later flush.
 	var err := str(response.get("error", "telemetry unreachable"))
 	if not err.is_empty():
 		push_warning("Hope telemetry soft-fail: %s" % err)

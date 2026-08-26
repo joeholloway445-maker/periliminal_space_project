@@ -34,6 +34,7 @@ import { rpcGetStoryTallies, rpcStoryVote } from "./story_vote_rpc";
 import { rpcCreateTournament, rpcGetActiveTournaments, rpcJoinTournament } from "./tournament_rpc";
 import { claimDailyBonus } from "./wallet_rpc";
 import { rpcClaimWorldBossSpawn, rpcGetWorldBossState, rpcNoteZoneBossKill, rpcReportWorldBossKill } from "./world_boss_rpc";
+import { rpcHopeChat, rpcHopeClearHistory, rpcHopeGetHistory, rpcHopeTelemetry } from "./hope_rpc";
 import { register_init_rpc } from "./init_rpc";
 import { register_score_rpc } from "./score_rpc";
 
@@ -119,13 +120,17 @@ function InitModule(
     initializer.registerRpc("claim_world_boss_spawn", rpcClaimWorldBossSpawn);
     initializer.registerRpc("report_world_boss_kill", rpcReportWorldBossKill);
     initializer.registerRpc("note_zone_boss_kill", rpcNoteZoneBossKill);
+    initializer.registerRpc("hope_chat", rpcHopeChat);
+    initializer.registerRpc("hope_get_history", rpcHopeGetHistory);
+    initializer.registerRpc("hope_clear_history", rpcHopeClearHistory);
+    initializer.registerRpc("hope_telemetry", rpcHopeTelemetry);
 
     // Match handlers
     initializer.registerMatch("layer_presence", { matchInit: layerMatchInit, matchJoinAttempt: layerMatchJoinAttempt, matchJoin: layerMatchJoin, matchLeave: layerMatchLeave, matchLoop: layerMatchLoop, matchTerminate: layerMatchTerminate, matchSignal: layerMatchSignal, });
     initializer.registerMatch("catsino_match", { matchInit: catsinoMatchInit, matchJoinAttempt: catsinoMatchJoinAttempt, matchJoin: catsinoMatchJoin, matchLeave: catsinoMatchLeave, matchLoop: catsinoMatchLoop, matchTerminate: catsinoMatchTerminate, });
     initializer.registerMatch("moba_match", { matchInit: mobaMatchInit, matchJoinAttempt: mobaMatchJoinAttempt, matchJoin: mobaMatchJoin, matchLeave: mobaMatchLeave, matchLoop: mobaMatchLoop, matchTerminate: mobaMatchTerminate, });
 
-    logger.info("All 70 RPCs + 3 matches registered. Server ready.");
+    logger.info("All 74 RPCs + 3 matches registered. Server ready.");
 }
 
 // Nakama looks up this exact global name at module load time.
