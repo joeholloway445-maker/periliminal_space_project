@@ -105,6 +105,8 @@ DREAM="*res://src/core/dream_engine.gd"
 VISION="*res://src/core/vision_observer.gd"
 APEX="*res://src/core/apex_orchestrator.gd"
 KNOLL="*res://src/core/knoll_boundary.gd"
+HopeGateway="*res://src/core/hope_gateway.gd"
+HDVWorkflow="*res://src/core/hdv_workflow_client.gd"
 RoomNetwork="*res://src/world/room_network.gd"
 PhantomCameraManager="*uid://duq6jhf6unyis"
 Panku="*uid://cyftuo4syatlv"
@@ -244,3 +246,11 @@ renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 anti_aliasing/quality/msaa_2d=2
 anti_aliasing/quality/msaa_3d=2
+
+[hdv]
+
+supabase_url=""
+supabase_anon_key=""
+workflow_api_url=""
+workflow_api_key=""
+agent_core_ws_url=""

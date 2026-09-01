@@ -16,7 +16,8 @@ func _ready() -> void:
 func _validate_autoloads() -> void:
 	var required := ["NetworkManager", "PlayerProfile", "AchievementManager",
 		"QuestManager", "XPManager", "EventManager", "FactionSystem",
-		"DailyRewards", "BattlePass", "NotificationUI"]
+		"DailyRewards", "BattlePass", "NotificationUI",
+		"HopeGateway", "HDVWorkflow", "DREAM", "VISION", "APEX", "KNOLL"]
 	for req_name in required:
 		if not has_node("/root/" + req_name):
 			push_warning("[AutoloadInit] Missing autoload: " + req_name)
