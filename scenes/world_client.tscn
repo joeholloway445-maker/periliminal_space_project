@@ -1,0 +1,66 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/world/world_run.gd" id="1_world"]
+[ext_resource type="Script" path="res://src/world/player_body.gd" id="2_player"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.1, 0.1, 0.12, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.35, 0.34, 0.32, 1)
+fog_enabled = true
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+
+[node name="World" type="Node3D"]
+script = ExtResource("1_world")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 12, 0)
+shadow_enabled = false
+
+[node name="Ground" type="CSGBox3D" parent="."]
+use_collision = true
+size = Vector3(80, 1, 80)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 6)
+script = ExtResource("2_player")
+
+[node name="Body" type="CSGCylinder3D" parent="Player"]
+radius = 0.35
+height = 1.6
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="Camera3D" type="Camera3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 4.2)
+current = true
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Status" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 900.0
+offset_bottom = 48.0
+text = "layer"
+
+[node name="HopeLine" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 640.0
+offset_right = 900.0
+offset_bottom = 700.0
+text = "HOPE"
+
+[node name="Help" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 52.0
+offset_right = 900.0
+offset_bottom = 120.0
+text = "WASD move  click strike/talk  E door  C casino  H help  V vote  N city  P persist  CTRL crouch  1-6 layer  ESC mouse"
